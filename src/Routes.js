@@ -1,8 +1,10 @@
 import React from 'react';
 import { BrowserRouter as Router, Route } from 'react-router-dom';
-import Member from './Components/Member/Member';
+import S010100040 from './S010100040';
 import S010100130 from './S010100130';
 import S010100140 from './S010100140';
+import S010100010 from './S010100010';
+import S010100050 from './S010100050';
 import LoginPage from './Components/LoginPage/LoginPage';
 import PaymentStatus from './Components/PaymentStatus/PaymentStatus';
 import Swon from './Components/Staff/Swon';
@@ -15,9 +17,9 @@ export default () => (
 
 
           {/* 회원현황 */}
-          <Route exact path = "/member" component = {Member}></Route> 
+          <Route exact path = "/S010100040" component = {S010100040}></Route> 
           {/* 납부현황 */}
-          <Route path = "/paymentStatus" component = {PaymentStatus}></Route>
+          <Route exact path = "/paymentStatus" component = {PaymentStatus}></Route>
           {/* 상담현황 */}
           <Route exact path = "/S010100130" component = {S010100130}></Route>
           {/* 직원관리 */}
@@ -29,6 +31,10 @@ export default () => (
 
           {/* 상담등록 */}
           <Route exact path = "/S010100140" component = {S010100140}></Route>
+          {/* 이용계약서  */}
+          <Route exact path = "/S010100010" component = {S010100010}></Route>
+          {/* 회원상세정보 */}
+          <Route exact path = "/S010100050" component = {S010100050}></Route>
   </Router>
 )
 

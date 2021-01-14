@@ -5,13 +5,14 @@ import { Link } from 'react-router-dom';
 
 
 
+
 class Main extends Component {
     render() {
       return (
             <header id="header" className="clearfix">
                 <nav className="nav">
                     <ul className="clearfix">
-                        <li><Link to="/member">회원현황</Link>
+                        <li><Link to="/S010100040">회원현황</Link>
                         </li>
                         <li><Link to ="/paymentStatus">납부현황</Link>
                         </li>

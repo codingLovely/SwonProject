@@ -1,4 +1,4 @@
-import React,{ Component, Fragment,useState } from 'react';
+import React,{ Fragment,useState } from 'react';
 import Main from'../Main/Main.js';
 
 //<!--켈린더 라이브러리시작

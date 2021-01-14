@@ -3,7 +3,7 @@
 //import {loginUser} from '../_actions/user_action';
 import axios from 'axios';
 import React,{Fragment} from 'react';
-import {useState,useEffect} from 'react';
+import {useState} from 'react';
 import Main from'../Main/Main.js'
 
 
