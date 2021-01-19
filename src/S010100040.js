@@ -1,5 +1,5 @@
 import React,{ Fragment,useState,useEffect } from 'react';
-import Main from'./Components/Main/Main';
+import Navbar from'./Navbar';
 import S010100010 from './S010100010';
 import S010100050 from './S010100050';
 import axios from "axios";
@@ -31,24 +31,23 @@ let contractsStatus = [{key:'전체',value:'전체'},
                        {key:'T',value:'가계약'}]
 
 
-
+var num = '';
+var rNum = 0;
 function S010100040 (props) {
    
-    const[memberNm, setMemberNm] = useState("")
-    const[regNo, setRegNo] = useState([])
-    const[memberTp, setMemberTp] = useState([])
-    const[contractStatus, setContractStatus] = useState([])
-    const[memberSt, setMemberSt] = useState("")
-    const [name,setName] = useState("")
-
+    const[memberNm, setMemberNm] = useState('')
+    const[regNo, setRegNo] = useState('')
+    const[memberTp, setMemberTp] = useState('')
+    const[contractStatus, setContractStatus] = useState('')
+    const[memberSt, setMemberSt] = useState('')
+    const [name,setName] = useState('')
+    const [numForDetailModal,setNumForDetailModal] = useState('')
 
       //<!--모달창 속성 및 이벤트 
       const [open, setOpen] = React.useState(false);
       const [storeOpen, setStoreOpen] = React.useState(false);
-    
-    
 
-      //<Lov시작>
+
     for(let i = 0; i<queryArr.length; i++){
                 
         let firstVal = queryArr[i][0];
@@ -63,6 +62,7 @@ function S010100040 (props) {
                         arr.push({
                         value: data.CD_V_MEANING,
                         key: data.CD_V
+
                     }));       
                 
                     valueArr[i] = arr;
@@ -72,28 +72,38 @@ function S010100040 (props) {
                 }
             })
             
-    }
-   
+    }  
 
-     //<
+     
     const onHandleClickOpen = () => {
         setStoreOpen(true); 
     };  
 
     const onHandleClickClose = () =>{
         setStoreOpen(false);
+        
+        axios.post('/api/s010100010')
+        .then(response => {
+            if(response.data.success){
+                //console.log('tb_member',response.data.rows);
+                setTbMember(response.data.rows);
+            }else{ 
+                alert("데이터 조회를 실패하였습니다.")
+            }
+
+        })
+
     }
 
     
     const memberStHandler=(event)=>{
         setMemberSt(event.currentTarget.value);
     }
+
     const nameHandler=(event)=>{
         setName(event.currentTarget.value);
     }
 
-
-    //상담등록 모달 끝>
 
     //<!--onSubmit
     const onFormSubmitHandler = (event)=>{
@@ -106,7 +116,6 @@ function S010100040 (props) {
                 memberTp,
                 contractStatus
         }
-      
 
         axios.post('/api/s010100040/searchMember', body)
             .then(response => {
@@ -136,10 +145,17 @@ function S010100040 (props) {
     const contractStatusHandler=(event)=>{
         setContractStatus(event.currentTarget.value);
     }
+    
     const onHandleDetailClickOpen = (event)=>{
+        num = event.target.innerHTML;
+        rNum = parseInt(num);
+        setNumForDetailModal(rNum);
+
         setOpen(true);
     }
 
+        //console.log(num);
+        
     const onHandleDetailClickClose = () => {
            
         // axios.post('/api/s010100130')
@@ -155,9 +171,7 @@ function S010100040 (props) {
         setOpen(false);
     };
 
-    const onRegistHandler = (event)=>{
 
-    }
     const onModifyHandler = (event)=>{
         
     }
@@ -189,15 +203,15 @@ function S010100040 (props) {
     const s010100040R = tbMember.map((tbMember,index)=>{
         return (
                     <tr>
-                            <td name ="uname" variant="outlined" color="primary" id={tbMember.ASK_ID}> {tbMember.MEMBER_ID}</td>
-                            <td>{tbMember.MEMBER_NM}</td>
-                            <td onClick={onHandleDetailClickOpen}><u>{tbMember.REG_NO}</u></td>
-                            <td>{tbMember.NAME}</td>
-                            <td>{tbMember.EMP_HP}</td>
-                            <td>{tbMember.EMP_EMAIL}</td>
-                            <td>{tbMember.MEMBER_TP}</td>
-                            <td></td>
-                            <td></td>
+                            <td key ={tbMember.id} name ="uname" variant="outlined" color="primary" id={tbMember.MEMBER_ID}> {index+1}</td>
+                            <td key ={tbMember.id} >{tbMember.MEMBER_NM}</td>
+                            <td key ={tbMember.id} onClick={onHandleDetailClickOpen} id={tbMember.REG_NO}>{tbMember.REG_NO}</td>
+                            <td key ={tbMember.id}>{tbMember.NAME}</td>
+                            <td key ={tbMember.id}>{tbMember.EMP_HP}</td>
+                            <td key ={tbMember.id}>{tbMember.EMP_EMAIL}</td>
+                            <td key ={tbMember.id}>{tbMember.MEMBER_TP}</td>
+                            <td key ={tbMember.id}></td>
+                            <td key ={tbMember.id}></td>
                     </tr>
                 )});
 
@@ -206,59 +220,59 @@ function S010100040 (props) {
       return (
 
             <Fragment>
-                <Main/>
-                <div style={{display:'flex', justifyContent:'center',alignItems:'center',width:'100%'}}>
-                    <form style = {{display:'flex', flexDirection:'column'}}
+                <Navbar/>
+                
+                    <form style = {{display:'flex', flexDirection:'column', justifyContent:'center',alignItems:'center',width:'100%'}}
                      onSubmit={onFormSubmitHandler}
                     >
 
                     <h1>회원현황</h1>
-                    <div id = "search">
+                        <div id = "search">
 
-                    회원명
-                    <input type="text" value = {memberNm} id="memberNm" name="memberNm" size = "5"
-                    onChange={memberNmHandler}/>
-                    &nbsp; 
+                        회원명
+                        <input type="text" value = {memberNm} id="memberNm" name="memberNm" size = "5"
+                        onChange={memberNmHandler}/>
+                        &nbsp; 
 
 
-                    사업자번호   
-                    <input type="text" value = {regNo} id="regNo" name="regNo" size = "5"
-                    onChange={regNoHandler}/>
-                    &nbsp; 
-                     
-                       
-                    대표자명
-                    <input type="text" value = {name} id="name" name="name" size = "5"
-                    onChange={nameHandler}/>
-                    &nbsp; 
-
-                        회원구분
-                        <select onChange ={memberTpHandler} value ={memberTp}>  
-                                            
-                            {valueArr[0].map(item => ( 
-                                <option key ={item.key} value ={item.key}>{item.value}</option>                          
-                            ))}
-                        </select>
-                        종료
-                        <select onChange ={contractStatusHandler} value ={contractStatus}>   
-                        {endStatus.map(item => ( 
-                                <option key ={item.key} value ={item.key}>{item.value}</option>                          
-                            ))}
-                        </select>
+                        사업자번호   
+                        <input type="text" value = {regNo} id="regNo" name="regNo" size = "5"
+                        onChange={regNoHandler}/>
+                        &nbsp; 
                         
-                        &nbsp;
-                        상태 
-                        <select onChange ={memberStHandler} value ={memberSt}>  
-                                             
-                            {contractsStatus.map(item => ( 
-                                <option key ={item.key} value ={item.key}>{item.value}</option>                          
-                            ))}
-                        </select>
-                   
-                        &nbsp;&nbsp;&nbsp;&nbsp;
                         
-                        <button type = "submit"> 조회</button>
-                    </div>
+                        대표자명
+                        <input type="text" value = {name} id="name" name="name" size = "5"
+                        onChange={nameHandler}/>
+                        &nbsp; 
+
+                            회원구분
+                            <select multiple={false} onChange ={memberTpHandler} value ={memberTp}>  
+                                                
+                                {valueArr[0].map(item => ( 
+                                    <option key ={item.key} value ={item.key}>{item.value}</option>                          
+                                ))}
+                            </select>
+                            종료
+                            <select multiple={false} onChange ={contractStatusHandler} value ={contractStatus}>   
+                            {endStatus.map(item => ( 
+                                    <option key ={item.key} value ={item.key}>{item.value}</option>                          
+                                ))}
+                            </select>
+                            
+                            &nbsp;
+                            상태 
+                            <select multiple={false} onChange ={memberStHandler} value ={memberSt}>  
+                                                
+                                {contractsStatus.map(item => ( 
+                                    <option key ={item.key} value ={item.key}>{item.value}</option>                          
+                                ))}
+                            </select>
+                    
+                            &nbsp;&nbsp;&nbsp;&nbsp;
+                            
+                            <button type = "submit"> 조회</button>
+                        </div>
                     <Dialog
                             maxWidth = {"lg"}
                             //fullWidth = {true}
@@ -270,7 +284,7 @@ function S010100040 (props) {
                             <DialogContent>
                             <DialogTitle id="alert-dialog-title"><h1>회원상세정보</h1></DialogTitle>
                             <DialogContentText id="alert-dialog-description">
-                                <S010100050/>
+                                <S010100050 dataNum ={numForDetailModal}/>
                             </DialogContentText>
                             </DialogContent>
                             <DialogActions>
@@ -284,65 +298,53 @@ function S010100040 (props) {
 
 
                     <table id = "btn">
-                        <tr>
-                            <td id = "btd"> <button className='loginBtn'  onClick={onHandleClickOpen}>신규회원</button> </td>
-                             {/* 모달창 시작*/}
-                        <Dialog
-                            maxWidth = {"1200sm"}
-                            
-                            //fullWidth = {true}
-                            open={storeOpen}
-                            onClose={onHandleClickClose}
-                            aria-labelledby="alert-dialog-title"
-                            aria-describedby="alert-dialog-description"
-                        >
-                            <DialogTitle id="alert-dialog-title"><h1>이용계약서</h1></DialogTitle>
-                            <DialogContent>
-                            <DialogContentText id="alert-dialog-description">
-                            <S010100010/> 
-                            </DialogContentText>
-                            </DialogContent>
-                            <DialogActions>
-                            {/* <Button onClick={onhandleStoreClose} color="primary" autoFocus>
-                                저장
-                            </Button> */}
-                            <Button onClick={onHandleClickClose} color="primary">
-                                닫기
-                            </Button>
-                            </DialogActions>
-                        </Dialog>
-                        {/* // 모달창 끝 */}
-
-                        
-                      
-       
-                            <td id = "btd"> <button className='loginBtn'  onClick={onModifyHandler}>SNS</button> </td>    
-                            <td id = "btd"> <button className='loginBtn'  onClick={onApprovalHandler}>메일전송</button> </td>                        
-                            <td id = "btd2"> <button>엑셀다운로드</button> </td>
-                        </tr>
+                        <thead>
+                            <tr>
+                                <td id = "btd"> <button className='loginBtn'  onClick={onHandleClickOpen}>신규회원</button> </td>
+                                <td id = "btd"> <button className='loginBtn'  onClick={onModifyHandler}>SNS</button> </td>    
+                                <td id = "btd"> <button className='loginBtn'  onClick={onApprovalHandler}>메일전송</button> </td>                        
+                                <td id = "btd2"> <button>엑셀다운로드</button> </td>
+                            </tr>
+                        </thead>
                     </table>
 
                     <table id = "list">
-                        <tr>
-                            <th rowSpan="2">No</th>
-                            <th rowSpan="2">회원명</th>
-                            <th rowSpan="2">사업자번호</th>
-                            <th colSpan="3">대표자</th>
-                            <th rowSpan="2">회원구분</th>
-                            <th rowSpan="2">상태</th>
-                            <th rowSpan="2">종료여부</th>
-                        </tr>
+                        <thead>
+                            <tr>
+                                <th rowSpan="2">No</th>
+                                <th rowSpan="2">회원명</th>
+                                <th rowSpan="2">사업자번호</th>
+                                <th colSpan="3">대표자</th>
+                                <th rowSpan="2">회원구분</th>
+                                <th rowSpan="2">상태</th>
+                                <th rowSpan="2">종료여부</th>
+                            </tr>
 
-                        <tr>
-                            <th>성명</th>
-                            <th>연락처</th>
-                            <th>E-mail</th>
-                        </tr>
+                            <tr>
+                                <th>성명</th>
+                                <th>연락처</th>
+                                <th>E-mail</th>
+                            </tr>
+                        </thead>
+                        <tbody>
                             {s010100040R}
+                        </tbody>
                     </table>
 
                     </form>
-                </div>
+
+                    <Dialog
+                        maxWidth = {"lg"}
+                        open={storeOpen}
+                        onClose={onHandleClickClose}>
+                        <S010100010/> 
+                        <DialogActions>
+                            <Button onClick={onHandleClickClose} color="primary">
+                                닫기
+                            </Button>
+                        </DialogActions>
+                    </Dialog>
+
             </Fragment>
       );
     

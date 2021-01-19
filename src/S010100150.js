@@ -1,13 +1,10 @@
-// import { Component, Fragment } from 'react';
-// import {useDispatch} from 'react-redux';
-//import {loginUser} from '../_actions/user_action';
 import axios from 'axios';
 import React,{Fragment} from 'react';
 import {useState} from 'react';
-import Main from'../Main/Main.js'
+import Navbar from'./Navbar.js';
 
 
-function LoginPage( props){
+function S010100150( props){
   // const dispatch = useDispatch();
 
   const [E_mal,setE_mal] = useState("")
@@ -43,9 +40,8 @@ function LoginPage( props){
 
     return (
       <Fragment>
-          <Main/>
-          <div style={{display:'flex', justifyContent:'center',alignItems:'center',width:'100%',height:'50vh'}}>
-            <form style = {{display:'flex', flexDirection:'column'}}
+          <Navbar/>
+            <form style = {{display:'flex', flexDirection:'column', justifyContent:'center',alignItems:'center',width:'100%',height:'50vh'}}
              onSubmit={onSubmitHandler}
             >
               
@@ -57,11 +53,9 @@ function LoginPage( props){
                 <button type="submit">Login</button>
             
             
-            </form>
-          </div>
-         
+            </form>   
           </Fragment>
     )
 }
 
-export default LoginPage
+export default S010100150;

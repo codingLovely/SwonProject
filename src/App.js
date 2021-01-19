@@ -1,13 +1,12 @@
-import './App.css';
-import Routes from './Routes';
-
+import { Fragment } from 'react';
+import Routes from './Routes/Routes';
 
 function App(props) {
 
     return (
-      <div id="wrap" >
+      <Fragment>
         <Routes/>
-      </div>
+      </Fragment>
     );
 
 }

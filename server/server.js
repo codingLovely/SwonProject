@@ -110,13 +110,13 @@ app.post('/api/s010100140',(req,res) => {
             'TB_S10_ASK010 ( ASK_TP, ASK_DATE, ASK_METHOD, ASK_PATH, ASK_NAME, ASK_INFO, ASK_CONTENT ) '+ 
             'VALUES ( ?, ?, ?, ?, ?, ?, ? )';
 
-  let ask_tp = req.body.ask_tp;
-  let ask_date = req.body.ask_date;
-  let ask_method = req.body.ask_method;
-  let ask_path = req.body.ask_path;
-  let ask_name = req.body.ask_name;
-  let ask_info = req.body.ask_info;
-  let ask_content = req.body.ask_content;
+  let ask_tp = req.body.modalAskTp;
+  let ask_date = req.body.modalAskDate;
+  let ask_method = req.body.modalAskMethod;
+  let ask_path = req.body.modalAskPath;
+  let ask_name = req.body.modalAskName;
+  let ask_info = req.body.modalAskInfo;
+  let ask_content = req.body.modalAskContent;
 
   let params =[ask_tp,ask_date,ask_method,ask_path,ask_name,ask_info,ask_content];
 
@@ -153,7 +153,8 @@ app.post('/api/s010100130',(req,res) => {
             ' LEFT OUTER JOIN TB_S10_CODE CODE3'+
             ' ON ASK010.ASK_PATH = CODE3.CD_V'+
             ' AND CODE3.CD_TP = "ACCESS_PATH"'+
-            ' AND CODE3.ATTRIBUTE2 = "ASK"'
+            ' AND CODE3.ATTRIBUTE2 = "ASK"'+
+            ' ORDER BY ASK_ID DESC'
 
   //상담등록(TB_S10_ASK010 에 들어있는 모든 데이터 가져오기)
   connection.query(sql, (error, rows) => {
@@ -243,17 +244,18 @@ app.get('/api/s010100140/tb_s10_ask010_by_id', (req,res) => {
 //<2-5.검색하기
 app.post('/api/s010100130/search',(req,res)=>{
   
-  //console.log(req.body);
+  console.log(req.body);
 
-  let startDate = req.body.startDate;
-  let endDate = req.body.endDate;
+  let startDate = req.body.startAsk_date;
+  let endDate = req.body.endAsk_date;
   let ask_tp = req.body.ask_tp;
-  let searchName = req.body.searchName;
+  let searchName = req.body.ask_name;
 
-    console.log('ask_tp',req.body.ask_tp);
-  // console.log(req.body.searchName);
-  // console.log(startDate);
-  // console.log(endDate);
+
+
+   // console.log(req.body.searchName);
+   console.log(startDate);
+   console.log(endDate);
 
  
   let sql = 
@@ -277,9 +279,12 @@ app.post('/api/s010100130/search',(req,res)=>{
             ' ON ASK010.ASK_PATH = CODE3.CD_V'+
             ' AND CODE3.CD_TP = "ACCESS_PATH"'+
             ' AND CODE3.ATTRIBUTE2 = "ASK"'+
-            ' WHERE ASK010.ASK_DATE BETWEEN DATE_FORMAT("'+startDate+'","%y-%m-%d") AND DATE_FORMAT("'+endDate+'","%y-%m-%d") '+ 
-            ' AND ASK010.ASK_TP= "'+ask_tp+'" '+ 
-            ' AND ASK010.ASK_NAME LIKE "%'+searchName+'%"'
+            ' WHERE ASK010.ASK_DATE BETWEEN DATE_FORMAT("'+startDate+'","%y-%m-%d") AND DATE_FORMAT("'+endDate+'","%y-%m-%d") ';
+            
+            if(ask_tp != null && ask_tp != "전체")
+              sql +=' AND ASK010.ASK_TP= "'+ask_tp+'" ';
+            if(searchName != null && searchName != "")
+              sql += ' AND ASK010.ASK_NAME LIKE "%'+searchName+'%"'
 
   connection.query(sql , (error, rows) => {//쿼리문 
     if (error) throw error;
@@ -312,17 +317,60 @@ app.post('/api/s010100130/search',(req,res)=>{
         connection.query(init_sql,(error,rows) => {
           if(error) throw error;
           res.send({success:true, rows})
+          console.log('date',rows);
         })
 
      }else{res.send({success: true,rows});}
-    console.log('search Rows값',rows);   
+    //console.log('search Rows값',rows);   
   });
 
 })
-
-
-
 //2-5.끝>
+
+
+//<3-1.회원정보 상세정보
+app.post('/api/s010100050/detailMember_by_id',(req,res)=>{
+
+ //쿼리를 이용해서 가져올때는 body가 아닌type으로 가져온다
+ let type = req.query.type
+ let regNo = req.query.id
+ //console.log(Rnum)
+ let sql = 
+            'SELECT '+ 
+            ' MEM.MEMBER_NM,MEM.REG_NO,CODE1.CD_V_MEANING AS "MEMBER_TP",CODE2.CD_V_MEANING AS "MEMBER_ST", '+
+            ' EMP.NAME,EMP.EMP_HP,EMP.EMP_EMAIL,EMP.ADDRESS, '+
+            ' CON.CONTRACT_ID,CON.CONTRACT_DATE,CODE3.CD_V_MEANING AS "CONTRACT_TP", '+
+            ' CON.CONTRACT_TERM,CON.PAY_DATE,CON.CONTRACT_MONEY, '+
+            ' CON.END_FLAG '+
+            'FROM TB_S10_MEMBER010 MEM '+
+            ' INNER JOIN TB_S10_EMP010 EMP '+
+            ' ON MEM.CEO_ID = EMP.EMP_ID '+
+            ' INNER JOIN TB_S10_CONTRACT010 CON '+
+            ' ON MEM.MEMBER_ID = CON.MEMBER_ID '+
+            ' INNER JOIN TB_S10_CODE CODE1 '+
+            ' ON MEM.MEMBER_TP = CODE1.CD_V '+
+            ' AND CODE1.CD_TP ="MEMBER_TP" '+
+            ' INNER JOIN TB_S10_CODE CODE2 '+
+            ' ON MEM.MEMBER_ST = CODE2.CD_V '+
+            ' AND CODE2.CD_TP ="MEMBER_ST" '+
+            ' INNER JOIN TB_S10_CODE CODE3 '+
+            ' ON CON.CONTRACT_TP = CODE3.CD_V '+
+            ' AND CODE3.CD_TP ="CONTRACT_TP" '+
+            ' AND CODE3.ATTRIBUTE1 = "CONTRACT" '+
+            ' WHERE MEM.REG_NO = "'+regNo+'"'
+
+ connection.query(sql , (error, rows) => {//쿼리문 
+   if (error) throw error;
+   res.send({success: true,rows});
+   //console.log(rows);
+ });
+})
+
+
+//3-1.끝>
+
+
+
 
 //3. 로그인 routing
 //로그인 기능을 위한 라우터
@@ -362,78 +410,143 @@ app.post('/api/s010100130/search',(req,res)=>{
 
 //<이용계약서 등록
 app.post('/api/s010100010/insertMember010',(req,res)=>{
-
-  let sqlMember = 
-            'INSERT INTO '+
-            'TB_S10_MEMBER010 ( MEMBER_NM, REG_NO, MEMBER_TP) '+ 
-            'VALUES (?, ?, ?)';
-
-  let memberNm = req.body.memberNm;
-    // 전화번호
-    let firstRegNo = req.body.firstRegNo;
-    let secondRegNo = req.body.secondRegNo;
-    let thirdRegNo = req.body.thirdRegNo;
-  let regNo = firstRegNo + secondRegNo + thirdRegNo;
-
-  let memberTp = req.body.memberTp;
+  let memberId;
+  let ceoId;
+  let sql = 
+            'SELECT MEMBER_ID '+
+            'FROM ( '+
+              'SELECT '+
+                 'MEMBER_ID '+
+                ',ROW_NUMBER() OVER(ORDER BY MEMBER_ID DESC) AS RN '+
+                'FROM TB_S10_MEMBER010 MEM010 '+
+                ') MEM010 '+
+            'WHERE RN = 1'; 
   
-  let memberParams =[memberNm,regNo,memberTp];
+let csql = 
+'SELECT CEO_ID '+
+'FROM ( '+
+  'SELECT '+
+      'CEO_ID '+
+    ',ROW_NUMBER() OVER(ORDER BY CEO_ID DESC) AS RN '+
+    'FROM TB_S10_MEMBER010 MEM010 '+
+    ') MEM010 '+
+'WHERE RN = 1'; 
+           
+           
 
-  connection.query(sqlMember,memberParams,(error) => {  //쿼리문 
-    // if (error) throw error;
-    // res.send({success: true});
-  });
+ connection.query(sql , (error, rows) => {//쿼리문 
+   if (error) throw error;
+    memberId = rows[0].MEMBER_ID+1;
+ });
+ connection.query(csql , (error, rows) => {//쿼리문 
+  if (error) throw error;
+   ceoId = rows[0].CEO_ID+1;
+});
 
+  connection.beginTransaction(function(error){
 
-  let sqlEmp = 
+          let sqlMember = 
           'INSERT INTO '+
-          'TB_S10_EMP010(NAME,EMP_HP,EMP_EMAIL,ZIP_CODE,ADDRESS,DETAIL_ADDRESS) '+ 
-          'VALUES (?, ?, ?, ?, ? ,?)';
+          'TB_S10_MEMBER010 ( MEMBER_NM, REG_NO, MEMBER_TP,CREATED_DATE,CEO_ID) '+ 
+          'VALUES (?, ?, ?, SYSDATE(),'+ceoId+')';
 
-  let empIdName = req.body.empIdName;
+            let memberNm = req.body.memberNm;
+            // 전화번호
+            let firstRegNo = req.body.firstRegNo;
+            let secondRegNo = req.body.secondRegNo;
+            let thirdRegNo = req.body.thirdRegNo;
+            let regNo = firstRegNo + secondRegNo + thirdRegNo;
 
-    let firstEmpHp = req.body.firstEmpHp;
-    let secondEmpHp = req.body.secondEmpHp;
-    let thirdEmpHp = req.body.thirdEmpHp;
-  let empHp = firstEmpHp + secondEmpHp + thirdEmpHp;
+            let memberTp = req.body.memberTp;
 
-    let empEmailId = req.body.empEmailId;
-    let domainAddress = req.body.domainAddress;
-  let empEmail = empEmailId + domainAddress;
+            let memberParams =[memberNm,regNo,memberTp];
 
-  let zipcode = req.body.zipcode;
-  let empAddress = req.body.empAddresss;
-  let empDetailAddress = req.body.empDetailAddress;
-
-
-  let empParams = [empIdName,empHp,empEmail,zipcode,empAddress,empDetailAddress];
-
-  connection.query(sqlEmp,empParams,(error) => {  //쿼리문 
-    // if (error) throw error;
-    // res.send({success: true});
-  });
-
-
-  let sqlContract = 
+          //@@@@@@@
+          let sqlEmp = 
           'INSERT INTO '+
-          'TB_S10_CONTRACT010(CONTRACT_TP,CONTRACT_TERM,PAY_DATE,PAY_METHOD,CONTRACT_MONEY,CONTRACT_PATH) '+ 
-          'VALUES (?, ?, ?, ?, ? ,?)';
+          'TB_S10_EMP010(NAME,EMP_HP,EMP_EMAIL,ZIP_CODE,ADDRESS,DETAIL_ADDRESS,CREATED_DATE) '+ 
+          'VALUES (?, ?, ?, ?, ? ,? ,SYSDATE())';
+            
+            let empIdName = req.body.empIdName;
+            console.log('empIdName:',empIdName);
+            let firstEmpHp = req.body.firstEmpHp;
+            let secondEmpHp = req.body.secondEmpHp;
+            let thirdEmpHp = req.body.thirdEmpHp;
+            let empHp = firstEmpHp + secondEmpHp + thirdEmpHp;
+            console.log('empHp:',empHp);
+            let empEmailId = req.body.empEmailId;
+            let domainAddress = req.body.domainAddress;
+            let empEmail = empEmailId + domainAddress;
 
-  let contractTp = req.body.contractTp;
-  let contractTerm = req.body.contractTerm;
-  let payDate = req.body.payDate;
-  let payMethod = req.body.payMethod;
-  let contractMoney = req.body.contractMoney;
-  let contractPath = req.body.contractPath;
+            let zipcode = req.body.zipcode;
+            let empAddress = req.body.empAddresss;
+            let empDetailAddress = req.body.empDetailAddress;
 
-  let contractParams = [contractTp, contractTerm, payDate, payMethod,contractMoney,contractPath];
 
-  connection.query(sqlContract,contractParams,(error) => {  //쿼리문 
-    if (error) throw error;
-    res.send({success: true});
-  });
+            let empParams = [empIdName,empHp,empEmail,zipcode,empAddress,empDetailAddress];
 
-})
+          //@@@@@@@@@@
+          let sqlContract = 
+          'INSERT INTO '+
+          'TB_S10_CONTRACT010(CONTRACT_TP,CONTRACT_TERM,PAY_DATE,PAY_METHOD,CONTRACT_MONEY,CONTRACT_PATH,CREATED_DATE,CONTRACT_DATE,MEMBER_ID ) '+ 
+          'VALUES (?, ?, ?, ?, ? ,?,SYSDATE(),SYSDATE(),'+memberId+')';
+
+            let contractTp = req.body.contractTp;
+            let contractTerm = req.body.contractTerm;
+            let payDate = req.body.payDate;
+            let payMethod = req.body.payMethod;
+            let contractMoney = req.body.contractMoney;
+            let contractPath = req.body.contractPath;
+
+            let contractParams = [contractTp, contractTerm, payDate, payMethod,contractMoney,contractPath];
+
+          if(error) throw error;
+          
+          connection.query(sqlMember,memberParams,function(error,result){
+            //console.log(result);   
+              if (error){
+                connection.rollback(function(){
+                  console.log('1.error');
+                  throw error;
+                });
+              }
+            
+            connection.query(sqlEmp,empParams,function(error,result){
+              //console.log(result);   
+               if (error){
+                connection.rollback(function(){
+                  console.log('2.error');
+                  throw error;
+                });
+              }
+                    
+              connection.query(sqlContract,contractParams, function(error, result){  //쿼리문 
+                //console.log(result);
+                
+                  if (error){
+                    connection.rollback(function(){
+                      console.log('3.error');
+                      throw error;
+                    });
+                  }
+                
+                connection.commit(function(err) {
+                  if (err) {
+                    connection.rollback(function() {
+                      throw err;
+                    });
+                  }
+
+                  console.log('success!');
+                  res.send({success: true});
+                });//commit
+                      
+            });//contract
+         });//emp
+      });//member
+  });//transaction
+})  
+
 
 
 app.post('/api/s010100040/searchMember',(req,res)=>{

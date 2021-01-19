@@ -3,11 +3,7 @@ li {list-style: none;}
 a {color: #333; text-decoration: none;}
 .clearfix::before, .clearfix::after {display: block; content: ''; clear: both;}
 
-
-#wrap {width: 1000px; height: 1000px; margin: 0 auto; }
-
-
-#header {height: 100px;}
+#header {height: 100px; width: 1000px;height: 100px;margin: 0 auto;}
 #header h1 {float: left; padding-top: 30px; }
 #header h1 img {width: 130px;}
 #header .nav {float: right; z-index: 100; position: relative; margin-top: 20px;}
