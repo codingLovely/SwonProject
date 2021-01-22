@@ -1,38 +1,28 @@
 import React, { Fragment, useState, useEffect } from 'react';
 import DaumPostcode from 'react-daum-postcode';
-import axios from "axios";
-
+import axios from 'axios';
+import './css/S010100010.css'
+import { Link } from 'react-router-dom';
 //<!--모달창 라이브러리
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 //모달창 라이브러리 끝-->
 
 //<!--켈린더 라이브러리시작
-import DatePicker, { registerLocale } from "react-datepicker";
+import DatePicker, { registerLocale } from 'react-datepicker';
 import ko from 'date-fns/locale/ko';
 registerLocale("ko", ko);
 //켈린더 라이브러리 끝-->
 
 let valueArr = [[],[],[],[],[]];
-let queryArr = [['MEMBER_TP',''],['CONTRACT_TP','ASK'],['L',''],['PAY_METHOD',''],['CONTRACT_PATH','']];
-
-const payDates = [{key:'전체',value:'전체'},
-                {key:1,value:'1일'},
-                {key:2,value:'2일'},
-                {key:3,value:'3일'},
-                {key:4,value:'4일'},
-                {key:5,value:'5일'},
-                {key:6,value:'6일'},
-                {key:7,value:'7일'},
-                {key:8,value:'8일'},
-                {key:9,value:'9일'},
-                {key:10,value:'10일'}]
-
-var contractPaths =[];
-
+let queryArr = [['MEMBER_TP',''],['CONTRACT_TP','ASK'],['PAY_METHOD','']];
+let contractPaths =[];
+let roomLockers = [];
+let payDates = [];
 
 function S010100010(props) {
-
+ //console.log(props.params);
+    
     //회원정보
     const [memberNm, setMemberNm] = useState('')
     const [firstRegNo, setFisrtRegNo] = useState('')
@@ -72,7 +62,57 @@ function S010100010(props) {
         setOpen(false);      
     }
 
-    //const [isPostOpen, setIsPostOpen] = useState(false);
+
+    
+    const rNum = props.dataNum;
+ 
+    useEffect(()=>{
+    
+                if (props.cDataForm === 'I'){
+                    
+                axios.get(`/api/s01010010/tb_s10_contract010_by_id?id=${rNum}&type=single`)
+                .then(response => {
+                        if(response.data.success){
+                            const modalCMemberNm = response.data.rows[0].MEMBER_NM;
+                            const modalCRegNo = response.data.rows[0].REG_NO;
+                            const modalCMemberTp = response.data.rows[0].MEMBER_TP;
+                            const modalCMemberSt = response.data.rows[0].MEMBER_ST;
+                            const modalCName = response.data.rows[0].NAME;
+                            const modalCEmpHp = response.data.rows[0].EMP_HP;
+                            const modalCEmpemail = response.data.rows[0].EMP_EMAIL;
+                            const modalCAddress = response.data.rows[0].ADDRESS;
+                            const modalCContractDate = response.data.rows[0].CONTRACT_DATE;
+                            const modalCContractTp = response.data.rows[0].CONTRACT_TP;
+                            const modalCContractTerm = response.data.rows[0].CONTRACT_TERM;
+                            const modalCPayDate = response.data.rows[0].PAY_DATE;
+                            const modalCContractMoney = response.data.rows[0].CONTRACT_MONEY;
+                            const modalCPayMethod = response.data.rows[0].PAY_METHOD;
+                            const modalCContractPath = response.data.rows[0].CONTRACT_Path;
+                            //console.log(response.data.rows[0]);
+
+                            setMemberNm(modalCMemberNm);
+                            setFisrtRegNo(modalCRegNo);
+                            setMemberTp(modalCMemberTp);
+                            //setMemberTpVal(modalCMemberSt);
+                            setEmpIdName(modalCName);
+                            setFirstEmpHp(modalCEmpHp);
+                            setEmpEmailId(modalCEmpemail);
+                            setZipcode(modalCAddress);  
+                            //setContractDate( modalCContractDate); 
+                            setContractTp(modalCContractTp); 
+                            setContractTerm(modalCContractTerm); 
+                            setPayDate(modalCPayDate); 
+                            setContractMoney(modalCContractMoney); 
+                            setPayMethod(modalCPayMethod);
+                            setContractPath(modalCContractPath);
+                            //setEndFlag(modalEndFLag); 
+                        }else{
+                            alert("상세 정보 가져오기를 실패하였습니다.")
+                        }
+                    })
+                }
+               
+        },[])
 
     const handleComplete = (data) => {
         let fullAddress = data.address;
@@ -115,7 +155,7 @@ useEffect(()=>{
                     valueArr[i] = arr;
                     //console.log(valueArr[2]);
                 }else{
-                    alert("문의구분 데이터를 불러오는데 실패하였습니다.");
+                    alert(" 데이터를 불러오는데 실패하였습니다.");
                 }
             })
             
@@ -139,12 +179,33 @@ useEffect(()=>{
             contractPaths=arr;
             
         }else{
-            alert("문의구분 데이터를 불러오는데 실패하였습니다.");
+            alert("데이터를 불러오는데 실패하였습니다.");
         }
     })
 },[])
 
-var contractTpVals = [{key:'전체',value:'전체'},
+
+useEffect(()=>{
+    axios.post('/api/s010100010/roomLocker')
+    .then(response => {
+        if(response.data.success){
+            //console.log('roomlocker',response.data);
+            let arr = [{key: '전체', value: '전체' }]
+
+            response.data.rows.map((data) => 
+                arr.push({
+                value:data.CD_V_MEANING, key:data.CD_V
+            }));
+            
+            roomLockers=arr;
+            
+        }else{
+            alert("데이터를 불러오는데 실패하였습니다.");
+        }
+    })
+},[])
+
+let contractTpVals = [{key:'전체',value:'전체'},
                       {key:'R2_302',value:'302호'},
                       {key:'R2_409',value:'409호'},
                       {key:'R2_410',value:'410호'},
@@ -152,10 +213,25 @@ var contractTpVals = [{key:'전체',value:'전체'},
                       {key:'R2_412',value:'412호'},
                      ]
 
+let arr = [{ key: '전체', value: '전체' }];
+
+for(let i=1; i<=31; i++){
+  arr.push({
+      value: i,
+      key:i
+  });
+  payDates = arr;
+}
+
+//console.log(payDates);
+
+// let payDates = new Array();
+//     for(let i = 0; i<31; i++){
+//         payDates.push(i+1);
+//     }
 
 
-
-//<하이라키->호실
+//<하이어라키->호실
 // useEffect(()=>{
 //     axios.post('/api/s010100010/contract')
 //     .then(response => {
@@ -171,7 +247,7 @@ var contractTpVals = [{key:'전체',value:'전체'},
 //             contractTpVals=arr;
             
 //         }else{
-//             alert("문의구분 데이터를 불러오는데 실패하였습니다.");
+//             alert(" 데이터를 불러오는데 실패하였습니다.");
 //         }
 //     })
 // },[])
@@ -315,6 +391,7 @@ var contractTpVals = [{key:'전체',value:'전체'},
     }
     //onSubmit끝-->
 
+   
 
     //console.log(DaumPostcode);
 
@@ -375,6 +452,7 @@ var contractTpVals = [{key:'전체',value:'전체'},
         setEmpDetailAddress(event.currentTarget.value);
     }
 
+   
     const postCodeStyle = {
         display: "block",
         position: "absolute",
@@ -384,7 +462,7 @@ var contractTpVals = [{key:'전체',value:'전체'},
         padding:''
        
       }
-
+  
     return (
 
                 <form style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', width: '100%' }}
@@ -401,24 +479,31 @@ var contractTpVals = [{key:'전체',value:'전체'},
                                 <th>회원명</th>
                                 <td>
                                     <input type="text" value={memberNm} id="memberNm" name="memberNm" size="5"
-                                        onChange={onMemberNmHandler} /></td>
+                                        onChange={onMemberNmHandler} disabled = {props.cDataForm === 'I'}/></td>
 
                                 <th>사업자 번호</th>
                                 <td colSpan="2">
-                                    <input type="text" value={firstRegNo} id="firstRegNo" name="firstRegNo" size="3"
-                                        onChange={onFirstRegNoHandler} />
-                                    -
-                                    <input type="text" value={secondRegNo} id="secondRegNo" name="secondRegNo" size="3"
-                                                onChange={onSecondRegNoHandler} />
-                                    -
-                                    <input type="text" value={thirdRegNo} id="thirdRegNo" name="thirdRegNo" size="3"
-                                                onChange={onThirdRegNoHandler} />
+                                    <input type="text" value={firstRegNo} id="firstRegNo" name="firstRegNo" size="10"
+                                        onChange={onFirstRegNoHandler} disabled = {props.cDataForm === 'I'} hidden = {props.cDataForm !== 'I'}/>
 
-                                    <button>중복체크</button>
+                                    <input type="text" value={firstRegNo} id="firstRegNo" name="firstRegNo" size="3"
+                                        onChange={onFirstRegNoHandler} hidden = {props.cDataForm === 'I'}/>
+                                    
+                                    <span hidden = {props.cDataForm === 'I'}>-</span>
+                                    
+                                    <input type="text" value={secondRegNo} id="secondRegNo" name="secondRegNo" size="3"
+                                                onChange={onSecondRegNoHandler} hidden = {props.cDataForm === 'I'} />
+                                    
+                                    <span hidden = {props.cDataForm === 'I'}>-</span>
+                                    
+                                    <input type="text" value={thirdRegNo} id="thirdRegNo" name="thirdRegNo" size="3"
+                                                onChange={onThirdRegNoHandler} hidden = {props.cDataForm === 'I'} />
+
+                                    <button hidden = {props.cDataForm === 'I'}>중복체크</button>
                                 </td>
                                 <th>회원구분</th>
                                 <td colSpan="2">
-                                    <select onChange={onMemberTpHandler} value={memberTp}>
+                                    <select onChange={onMemberTpHandler} value={memberTp} disabled = {props.cDataForm === 'I'}>
 
                                         {valueArr[0].map(item => ( 
                                                     <option key ={item.key} value ={item.key}>{item.value}</option>                          
@@ -431,53 +516,69 @@ var contractTpVals = [{key:'전체',value:'전체'},
                                 <th>대표자<span className="star">(*)</span></th>
                                 <td>
                                     <input type="text" value={empIdName} id="empIdName" name="empIdName" size="5"
-                                        onChange={onEmpIdNameHandler} /></td>
+                                        onChange={onEmpIdNameHandler} disabled = {props.cDataForm === 'I'}/></td>
 
                                 <th>연락처<span className="star">(*)</span></th>
                                 <td colSpan="2">
+                                    <input type="text" value={firstEmpHp} id="firstEmpHp" name="firstEmpHp" size="10"
+                                        onChange={onFirstEmpHpHandler} disabled = {props.cDataForm === 'I'} hidden = {props.cDataForm !== 'I'} />
+
                                     <input type="text" value={firstEmpHp} id="firstEmpHp" name="firstEmpHp" size="5"
-                                        onChange={onFirstEmpHpHandler} />
-                                    -
+                                        onChange={onFirstEmpHpHandler} hidden = {props.cDataForm === 'I'} />
+                                    
+                                    <span hidden = {props.cDataForm === 'I'}>-</span>
+
                                     <input type="text" value={secondEmpHp} id="secondEmpHp" name="secondEmpHp" size="5"
-                                                onChange={onSecondEmpHpHandler} />
-                                    -
+                                                onChange={onSecondEmpHpHandler}  hidden = {props.cDataForm === 'I'}/>
+                                    
+                                    <span hidden = {props.cDataForm === 'I'}>-</span>
+
                                     <input type="text" value={thirdEmpHp} id="thirdEmpHp" name="thirdEmpHp" size="5"
-                                                onChange={onThirdEmpHpHandler} />
+                                                onChange={onThirdEmpHpHandler}  hidden = {props.cDataForm === 'I'}/>
                                         </td>
 
                                 <th>E-mail<span className="star">(*)</span></th>
                                 <td colSpan="2">
+                                     <input type="text" value={empEmailId} id="empEmailId" name="empEmailId" size="10"
+                                        onChange={onEmpEmailIdHandler} disabled = {props.cDataForm === 'I'}hidden = {props.cDataForm !== 'I'} />
+
                                     <input type="text" value={empEmailId} id="empEmailId" name="empEmailId" size="5"
-                                        onChange={onEmpEmailIdHandler} />
-                                    @
+                                        onChange={onEmpEmailIdHandler} hidden = {props.cDataForm === 'I'} />
+
+                                    <span hidden = {props.cDataForm === 'I'}>@</span>
+                                    
                                     <input type="text" value={domainAddress} id="domainAddress" name="domainAddress" size="5"
-                                                onChange={onDomainAddressHandler} />
+                                                onChange={onDomainAddressHandler} hidden = {props.cDataForm === 'I'} />
                                 </td>
                             </tr>
                             <tr>
                                 <th rowSpan="2">대표자 주소</th>
                             
                                 <td colSpan="9">
+
+                                <input type="text" value={zipcode} id="zipcode" name="zipcode" size="50"
+                                    onChange={onZipcodeHandler} disabled = {props.cDataForm === 'I'} hidden = {props.cDataForm !== 'I'}/>
                                     
                                 <input type="text" value={zipcode} id="zipcode" name="zipcode" size="10"
-                                    onChange={onZipcodeHandler}/>
-                                <button type = "button" onClick={handleOpenPost}>우편번호찾기</button>
+                                    onChange={onZipcodeHandler} hidden = {props.cDataForm === 'I'}/>
+
+                                <button type = "button" onClick={handleOpenPost} hidden = {props.cDataForm === 'I'}>우편</button>
                                     
                                 <input type="text" value={empAddress} id="empAddress" name="empAddress" size="30"
-                                onChange={onEmpAddressHandler} />
+                                onChange={onEmpAddressHandler} hidden = {props.cDataForm === 'I'} />
                                 </td>
 
                             </tr>
-                            <tr>
-                                <td colSpan="9"><input type="text" value={empDetailAddress} id="empDetailAddress" name="empDetailAddress" size="30"
+                            <tr >
+                                <td hidden = {props.cDataForm === 'I'} colSpan="9"><input type="text" value={empDetailAddress} id="empDetailAddress" name="empDetailAddress" size="30"
                                     onChange={onEmpDetailAddressHandler} />
                                 </td>
                             </tr>
 
                             <tr>
                                 <th>첨부파일</th>
-                                <td colSpan="4"><input type="text" /><button>파일 선택</button></td>
-                                <td colSpan="5"><input type="text" /><button>파일 선택</button></td>
+                                <td colSpan="4"><input type="text" disabled = {props.cDataForm === 'I'} /><button hidden = {props.cDataForm === 'I'} >파일 선택</button></td>
+                                <td colSpan="5"><input type="text" disabled = {props.cDataForm === 'I'}/><button hidden = {props.cDataForm === 'I'} >파일 선택</button></td>
                             </tr>
                             
                         
@@ -491,7 +592,7 @@ var contractTpVals = [{key:'전체',value:'전체'},
                             <tr>
                                 <th>계약구분</th>
                                 <td>
-                                    <select multiple={false} onChange={onContractTpHandler} value={contractTp}>
+                                    <select multiple={false} onChange={onContractTpHandler} value={contractTp} disabled = {props.cDataForm === 'I'}>
 
                                         {valueArr[1].map(item => ( 
                                                     <option key ={item.key} value ={item.key}>{item.value}</option>                          
@@ -500,7 +601,7 @@ var contractTpVals = [{key:'전체',value:'전체'},
 
                                 <th>호실</th>
                                 <td>
-                                    <select multiple={false} onChange={onContractTpValHandler} value={contractTpVal}>
+                                    <select multiple={false} onChange={onContractTpValHandler} value={contractTpVal} disabled = {props.cDataForm === 'I'}>
                                             
                                         {contractTpVals.map(item => ( 
                                                     <option key ={item.key} value ={item.key}>{item.value}</option>                          
@@ -510,9 +611,9 @@ var contractTpVals = [{key:'전체',value:'전체'},
 
                                 <th>사물함</th>
                                 <td>
-                                    <select multiple={false} onChange={onRoomLockerTpHandler} value={roomLockerTp}>
+                                    <select multiple={false} onChange={onRoomLockerTpHandler} value={roomLockerTp} disabled = {props.cDataForm === 'I'}>
 
-                                        {valueArr[2].map(item => ( 
+                                        {roomLockers.map(item => ( 
                                                     <option key ={item.key} value ={item.key}>{item.value}</option>                          
                                                 ))}
                                     </select>
@@ -520,20 +621,20 @@ var contractTpVals = [{key:'전체',value:'전체'},
 
                                 <th>월회비</th>
                                 <td>
-                                    <input type="text" value={contractMoney} id="contractMoney" name="contractMoney" size="5"
+                                    <input type="text" value={contractMoney} id="contractMoney" name="contractMoney" size="5" disabled = {props.cDataForm === 'I'}
                                         onChange={onContractMoneyHandler} />
                                 </td>
                             </tr>
 
                             <tr>
                                 <th>이용기간</th>
-                                <td><input type="text" value={contractTerm} id="contractTerm" name="contractTerm" size="10"
+                                <td><input type="text" value={contractTerm} id="contractTerm" name="contractTerm" size="10" disabled = {props.cDataForm === 'I'}
                                     onChange={onContractTermHandler} />개월
                             </td>
 
                                 <th>입금일</th>
                                 <td>
-                                    <select multiple={false} onChange={onPayDateHandler} value={payDate}>
+                                    <select multiple={false} onChange={onPayDateHandler} value={payDate} disabled = {props.cDataForm === 'I'}>
 
                                         {payDates.map(item => ( 
                                                     <option key ={item.key} value ={item.key}>{item.value}</option>                          
@@ -543,15 +644,15 @@ var contractTpVals = [{key:'전체',value:'전체'},
 
                                 <th>납부방법</th>
                                 <td>
-                                    <select multiple={false} onChange={onPayMethodHandler} value={payMethod}>
+                                    <select multiple={false} onChange={onPayMethodHandler} value={payMethod} disabled = {props.cDataForm === 'I'}>
 
-                                        {valueArr[3].map(item => ( 
+                                        {valueArr[2].map(item => ( 
                                                     <option key ={item.key} value ={item.key}>{item.value}</option>                          
                                                 ))}
                                     </select>
                                 </td>
                                 <th>납부액</th>
-                                <td><input type="text" value={contractMoney} id="contractMoney" name="contractMoney" size="10"
+                                <td><input type="text" value={contractMoney} id="contractMoney" name="contractMoney" size="10" disabled = {props.cDataForm === 'I'}
                                     onChange={onContractMoneyHandler} /></td>
                             </tr>
 
@@ -560,7 +661,7 @@ var contractTpVals = [{key:'전체',value:'전체'},
                                 <td colSpan="9">
                                     계약기간 만료 또는 종료시 사업지 주소지와 전화를 7일이내 이전해야 하고,<br />
                                     계약을 해지할 경우 7일이전에 서면 또는 구두 통보해야함.<br />
-                                    <textarea value={comment} id="comment" name="comment" onChange={onCommentHandler}></textarea>
+                                    <textarea value={comment} id="comment" name="comment"  disabled ={props.cDataForm === 'I'} onChange={onCommentHandler}></textarea>
                                 </td>
                             </tr>
 
@@ -591,7 +692,7 @@ var contractTpVals = [{key:'전체',value:'전체'},
 
                                 <th>계약접근경로</th>
                                 <td>
-                                    <select multiple={false} onChange={onContractPathHandler} value={contractPath}>
+                                    <select multiple={false} onChange={onContractPathHandler} value={contractPath} disabled ={props.cDataForm === 'I'}>
 
                                         {contractPaths.map(item => ( 
                                                     <option key ={item.key} value ={item.key}>{item.value}</option>                          
@@ -600,47 +701,27 @@ var contractTpVals = [{key:'전체',value:'전체'},
                                 </td>
                             </tr>
                             
-                            <tr>
+                        
+                             <tr>   
                                 
-                                
-                                    {/* <tr>
-                                        <td colSpan="9">
-                                            -에스원비즈 삼성센터(이하 "갑")과 상기 회원(이하 "을")은 "갑"이 제공하는 서비스를 "을"이 이용함에 있어서 수반되는 사항을 본
-                                            이용계약서 약관대로 체결하고, 본 계약의 성립을 증명하기 위하여 본 이용계약서 2부를 작성하여 기명, 날인하고 각 한 부씩 보관한다.
+                                    <td colSpan="9">
+                                        -에스원비즈 삼성센터(이하 "갑")과 상기 회원(이하 "을")은 "갑"이 제공하는 서비스를 "을"이 이용함에 있어서 수반되는 사항을 본
+                                        이용계약서 약관대로 체결하고, 본 계약의 성립을 증명하기 위하여 본 이용계약서 2부를 작성하여 기명, 날인하고 각 한 부씩 보관한다.
                                     <br />-본 이용계약서로는 임대차계약서를 대신할 수 없음
                                     </td>
-                                    </tr>
-                                    <tr >
-                                        <td colSpan="9">
-                                            2020년  월    일
-                                    </td>
-                                    </tr>
-
-                                    <tr>
-                                        <td rowSpan="4">
+                             </tr>
+                             <tr>
+                                    <td colSpan="9">
+                                           <span id = ""> 2020년  월    일</span><br/>
                                             갑:
-                                    </td>
-
-                                    </tr>
-
-                                    <tr>
-                                        <td>
-                                            서울특별시 강남구 봉은사로 63길 11 명화빌딩 3, 4층(삼성동)	을 :
-                                    </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            ㈜ 에스원테크  최현수 (인)
-                                    </td>
-                                    </tr>
-                                    <tr>
-                                        <td>                                                 (인)
-                                        계좌번호 : 우리은행  1005-002-433395
-                                    </td>
-                                    </tr>                 */}
-                                
-                            </tr>
-                        </tbody>
+                                            서울특별시 강남구 봉은사로 63길 11 명화빌딩 3, 4층(삼성동)	을 : (인)<br/>
+                                   
+                                            ㈜ 에스원테크  최현수 (인)<br/>
+                                                                           
+                                        계좌번호 : 우리은행  1005-002-433395<br/>
+                                        </td>
+                              </tr>         
+                           </tbody>
                     </table>
                                 {/* 모달창 시작*/}
                                 <Dialog
@@ -649,7 +730,6 @@ var contractTpVals = [{key:'전체',value:'전체'},
                                             <DaumPostcode 
                                             onComplete={handleComplete}
                                             style={postCodeStyle}
-                                            autoClose={true}
                                             isPostOpen={false}
                                             />
                                         <DialogActions>
@@ -665,7 +745,10 @@ var contractTpVals = [{key:'전체',value:'전체'},
                                 <button>출력</button>
                                 <button>임대차 계약서</button>
                                 <button>삭제</button>
-                                <button>닫기</button>
+                                
+                                <Link to="/member">
+                                    <button>닫기</button>
+                                </Link>
                             </div>
                 </form>
 

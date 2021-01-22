@@ -2,6 +2,7 @@ import React,{ Fragment,useState,useEffect } from 'react';
 import Navbar from'./Navbar';
 import S010100010 from './S010100010';
 import S010100050 from './S010100050';
+import './css/S010100040.css';
 import axios from "axios";
 
 
@@ -150,6 +151,7 @@ function S010100040 (props) {
         num = event.target.innerHTML;
         rNum = parseInt(num);
         setNumForDetailModal(rNum);
+        
 
         setOpen(true);
     }
@@ -205,7 +207,7 @@ function S010100040 (props) {
                     <tr>
                             <td key ={tbMember.id} name ="uname" variant="outlined" color="primary" id={tbMember.MEMBER_ID}> {index+1}</td>
                             <td key ={tbMember.id} >{tbMember.MEMBER_NM}</td>
-                            <td key ={tbMember.id} onClick={onHandleDetailClickOpen} id={tbMember.REG_NO}>{tbMember.REG_NO}</td>
+                            <td key ={tbMember.id} onClick={onHandleDetailClickOpen} id={tbMember.REG_NO} >{tbMember.REG_NO}</td>
                             <td key ={tbMember.id}>{tbMember.NAME}</td>
                             <td key ={tbMember.id}>{tbMember.EMP_HP}</td>
                             <td key ={tbMember.id}>{tbMember.EMP_EMAIL}</td>
@@ -284,7 +286,7 @@ function S010100040 (props) {
                             <DialogContent>
                             <DialogTitle id="alert-dialog-title"><h1>회원상세정보</h1></DialogTitle>
                             <DialogContentText id="alert-dialog-description">
-                                <S010100050 dataNum ={numForDetailModal}/>
+                                <S010100050 dataNum ={numForDetailModal} dataForm={"U"}/>
                             </DialogContentText>
                             </DialogContent>
                             <DialogActions>
@@ -297,13 +299,16 @@ function S010100040 (props) {
                   
 
 
-                    <table id = "btn">
+                    <table class= "btn">
                         <thead>
                             <tr>
-                                <td id = "btd"> <button className='loginBtn'  onClick={onHandleClickOpen}>신규회원</button> </td>
-                                <td id = "btd"> <button className='loginBtn'  onClick={onModifyHandler}>SNS</button> </td>    
-                                <td id = "btd"> <button className='loginBtn'  onClick={onApprovalHandler}>메일전송</button> </td>                        
-                                <td id = "btd2"> <button>엑셀다운로드</button> </td>
+                                <td colSpan="5"> <button onClick={onHandleClickOpen}>신규회원</button>
+                                <button onClick={onModifyHandler}>SNS</button>
+                                <button onClick={onApprovalHandler}>메일전송</button>
+
+                                </td>
+
+                           <td id = "alignRight"> <button>엑셀다운로드</button> </td>
                             </tr>
                         </thead>
                     </table>

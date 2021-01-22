@@ -1,11 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import axios from "axios";
+import axios from 'axios';
 import './css/S010100050.css';
+import S010100010 from './S010100010';
 
+//<!--모달창 라이브러리
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import Button from '@material-ui/core/Button';
+//모달창 라이브러리 끝-->
+
+let num = '';
+let rNum = 0;
 
 function S010100050(props) {
 
     const [detailAllInfo,setDetailAllInfo] = useState([])
+    const [open, setOpen] = React.useState(false);
+    const [numForDetailCModal,setNumForDetailCModal] = useState('')
 
     //회원정보
     const [detailMemberNm, setDetailMemberNm] = useState("")
@@ -29,12 +40,14 @@ function S010100050(props) {
 
 
     const dataNum = props.dataNum;
-    console.log('dataNum',dataNum);
+    //console.log('dataNum',dataNum);
+
+
     useEffect(() => {
         axios.post(`/api/s010100050/detailMember_by_id?id=${dataNum}&type=single`)
         .then(response => {
             if(response.data.success){
-                //console.log('detailMembr',response.data);
+                console.log('detailMembr',response.data);
         
                 const modalMemberNm = response.data.rows[0].MEMBER_NM;
                 const modalRegNo = response.data.rows[0].REG_NO;
@@ -43,7 +56,7 @@ function S010100050(props) {
                 const modalEmpHp = response.data.rows[0].EMP_HP;
                 const modalEmpemail = response.data.rows[0].EMP_EMAIL;
                 const modalAddress = response.data.rows[0].ADDRESS;
-
+                //console.log(modalAddress);
                 setDetailAllInfo(response.data.rows);
 
                 setDetailMemberNm(modalMemberNm);
@@ -99,18 +112,32 @@ function S010100050(props) {
         
     }
 
+   
+    const onDetailClickOpen = (event) => {
+        num = event.target.innerHTML;
+        rNum = parseInt(num);
+        setNumForDetailCModal(rNum);
+        console.log(rNum);
+        setOpen(true);
+    }
+
+    const onDetailClickClose = (event) => {
+        setOpen(false);
+    }
+
+
     const s010100050 = detailAllInfo.map((detailAllInfo,index) => {
         return(
             <tr>
-                <td>{detailAllInfo.CONTRACT_ID}</td>
+                <td onClick={onDetailClickOpen} id={detailAllInfo.CONTRACT_ID}>{detailAllInfo.CONTRACT_ID}</td>
                 <td>{detailAllInfo.CONTRACT_DATE}</td>
                 <td>{detailAllInfo.CONTRACT_TP}</td>
-                <td>*호실</td>
+                <td>{detailAllInfo.CONTRACT_TP}</td>
                 <td>{detailAllInfo.CONTRACT_TERM}</td>
                 <td>{detailAllInfo.MEMBER_ST}</td>
                 <td>{detailAllInfo.PAY_DATE}</td>
                 <td>{detailAllInfo.CONTRACT_MONEY}</td>
-                <td>*사물함</td>
+                <td>{detailAllInfo.CONTRACT_TP}</td>
                 <td>{detailAllInfo.END_FLAG}</td>
             </tr>
         )
@@ -132,16 +159,16 @@ function S010100050(props) {
                         <tr>
                             <th>회원명</th>
                             <td><input type="text" value={detailMemberNm} id="detailMemberNm" name="detailMemberNm" size="5"
-                                    onChange={onDetailMemberNmHandler}/></td>
+                                    onChange={onDetailMemberNmHandler} disabled = {props.dataForm === 'U'}/></td>
                             <th>사업자번호</th>
                             <td> <input type="text" value={detailRegNo} id="detailRegNo" name="detailRegNo" size="5"
-                                    onChange={onDetailRegNoHandler} /></td>
+                                    onChange={onDetailRegNoHandler} disabled = {props.dataForm === 'U'}/></td>
                             <th>회원구분</th>
                             <td> <input type="text" value={detailMemberTp} id="detailMemberTp" name="detailMemberTp" size="5"
-                                    onChange={onDetailMemberTpHandler} /></td>
+                                    onChange={onDetailMemberTpHandler} disabled = {props.dataForm === 'U'}/></td>
                             <th>퇴실일자</th>
                             <td> <input type="text" value={detailCheckoutDate} id="detailCheckoutDate" name="detailCheckoutDate" size="5"
-                                    onChange={onDetailCheckoutDateHandler} /></td>
+                                    onChange={onDetailCheckoutDateHandler} disabled = {props.dataForm === 'U'}/></td>
 
                         </tr>
                       
@@ -153,24 +180,24 @@ function S010100050(props) {
                                 <th>성명</th>
                                 <td>
                                     <input type="text" value={detailName} id="detailName" name="detailName" size="5"
-                                        onChange={onDetailNameHandler} /></td>
+                                        onChange={onDetailNameHandler} disabled = {props.dataForm === 'U'}/></td>
 
                                 <th>연락처</th>
                                 <td colSpan ="2">
                                     <input type="text" value={detailEmpHp} id="detailEmpHp" name="detailEmpHp" size="3"
-                                        onChange={onDetailEmpHpHandler} />
+                                        onChange={onDetailEmpHpHandler} disabled = {props.dataForm === 'U'}/>
                                 </td>
                                 <th>E-mail</th>
                                 <td>
                                     <input type="text" value={detailEmpEmail} id="detailEmpEmail" name="detailEmpEmail" size="3"
-                                        onChange={onDetailEmpEmailHandler} />
+                                        onChange={onDetailEmpEmailHandler} disabled = {props.dataForm === 'U'}/>
                                 </td>
                             
                         </tr>
                         <th>주소</th>
                             <td colSpan = "6" >
                                 <input type="text" value={detailAddress} id="detailAddress" name="detailAddress" size="5"
-                                    onChange={onDetailAddressHandler} />
+                                    onChange={onDetailAddressHandler} disabled = {props.dataForm === 'U'}/>
                         </td>
                         <tr>
                             <th rowSpan="2">첨부파일</th>
@@ -198,7 +225,17 @@ function S010100050(props) {
                             </tr>
                                 {s010100050}
                         </table>
-
+                            <Dialog
+                            maxWidth = {"lg"}
+                            //fullWidth = {true}
+                            open={open}
+                            onClose={onDetailClickClose}>
+                                    <S010100010 dataNum ={numForDetailCModal} cDataForm={"I"}/>
+                                <DialogActions>
+                                <input type = "button" onClick={onDetailClickClose} color="primary" value = '닫기'/>
+                                </DialogActions>
+                            </Dialog>
+                  
                     <div>
                         <button id="btn-center" type = "submit">신규계약</button>
                         {/* <button>닫기</button> */}

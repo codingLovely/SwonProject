@@ -10,12 +10,31 @@ table th {border:1px solid;}
 table td {border:1px solid; text-align: center;}
 
 #btn {border: none; width: 1225px; }
-#btd {border:none; text-align: left;} 
-#btd2 {border:none; text-align: right;} 
+#btd {border:none; text-align: left;}
+#btd2 {border:none; text-align: right;}
 
+#btd .loginBtn {margin-right: 5px;}
+#btd .backBtn{margin-right: 5px;}
 #search {width: 1194px;}
 #numHover {color: dodgerblue;}
-#list{width: 1225px;}
+#list{width: 1225px; border-spacing: 0px;}
 
+#list thead tr th{background-color: #D6BCB0; padding: 10px;}
+#list tbody tr td {padding: 5px;}
+#list #chkWidth {width: 30px;}
 #alert-dialog-description{width: 1100px;}
 #numRange{width: 52px; height: 23px;}
+.dataTable #chk { width: 3px;}
+.dataTable #chkLine {margin-right: 15px;}
+.dataTable .cname {border-left: none;} /*padding-right:10px;*/
+.dataTable:nth-child(2n){
+  background-color:#EBF7FF;
+}
+.dataTable:nth-child(2n+1){
+  background-color:#C7D3ED;
+}
+div#datePickerArea {margin:10px 90px 0px 0px; position:static;}
+div#datePickerArea input {width: 110px; text-align:center; position: static;}
+div#searchArea{margin: 10px 0px 0px 18px;}
+div#searchArea input#ask_name {width: 98px;}
+/*.react-datepicker-wrapper.react-datepicker__input-container{position:static;}*/

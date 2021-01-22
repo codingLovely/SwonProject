@@ -6,12 +6,12 @@ import { addDays } from 'date-fns';
 import './css/S010100140.css';
 //datepicker 시작
 import DatePicker, { registerLocale } from "react-datepicker";
-import ko from 'date-fns/locale/ko';
+import ko from 'date-fns/locale/ko'
 registerLocale("ko", ko);
 //datepicker끝
 
-let valueArr = [[],[],[]];
-let queryArr = [['CONTRACT_TP','ASK'],['ASK_METHOD',''],['ACCESS_PATH','ASK']];
+
+
 
 
 function S010100140(props) {
@@ -20,17 +20,15 @@ function S010100140(props) {
      //console.log(props.num);
 
 
-            //console.log('140props',props);
-
             const rNum = props.num;
             //console.log('rNum',rNum);
             //const modal = props.modal;
 
             useEffect(()=>{
             //if(isNaN(rNum)){ return alert('숫자를 클릭하세요') }
-         
+
                     if (props.dataForm === 'U'){
-                        
+
                     axios.get(`/api/s010100140/tb_s10_ask010_by_id?id=${rNum}&type=single`)
                     .then(response => {
                             if(response.data.success){
@@ -70,41 +68,65 @@ function S010100140(props) {
         const[modalAskMethod, setModalAskMethod] = useState('')
         const[modalAskPath, setModalAskPath] = useState('')
 
+
+        const[modalContractTpLov, setModalContractTpLov]= useState([{key: '', value: 'waiting...'}])
+        const[modalAskMethodLov, setModalAskMethodLov] = useState( [{key: '', value: 'waiting...'}])
+        const[modalAccessPathLov, setModalAccessPathLov] = useState( [{key: '', value: 'waiting...'}])
+
         useEffect(()=>{
-        for(let i = 0; i<queryArr.length; i++){
+            getContractTpLov();
+            getAskMethodLov();
+            getAccessPathLov();
 
-            let firstVal = queryArr[i][0];
-            let secondVal = queryArr[i][1];
+    },[]);
 
-
-                axios.post('/api/s010100140/selectTest',{firstVal:firstVal,secondVal:secondVal})
-                .then(response => {
-                    if(response.data.success){
-                        //console.log('modalAskTp',response.data.rows);
-                        let arr = [{ key: '전체', value: '전체' }]
-
-                        response.data.rows.map((data) =>
-                            arr.push({
-                            value: data.CD_V_MEANING,
-                            key: data.CD_V
-                        }));
-
-
-                        valueArr[i] = arr;
-                        //console.log(valueArr[2]);
-                    }else{
-                        alert("문의구분 데이터를 불러오는데 실패하였습니다.");
-                    }
-                })
-
-        }
-    },[])    
+    const getContractTpLov = () => {
+        getLovByCdTp('CONTRACT_TP','ASK');
+    };
+    const getAskMethodLov = () => {
+        getLovByCdTp('ASK_METHOD','');
+    };
+    const getAccessPathLov = () => {
+        getLovByCdTp('ACCESS_PATH','ASK');
+    };
+    /**
+     * desc : LOV에 필요한 항목을 받아 DB조회 후 조회값을 반환하는 로직
+     * */
+    async function getLovByCdTp(cdTp, attribute2) {
+        let arr = [{ key: '선택', value: '선택' }];
+        return await axios.post('/api/s010100140/selectTest',{firstVal:cdTp,secondVal:attribute2})
+        .then(response => {
+            if(response.data.success){
+                //console.log('modalAskTp',response.data.rows);
+                response.data.rows.map((data) =>
+                    arr.push({
+                    value: data.CD_V_MEANING,
+                    key: data.CD_V
+                }));
+                //return arr;
+                switch (cdTp){
+                    case 'CONTRACT_TP' : setModalContractTpLov(arr); break;
+                    case 'ASK_METHOD' : setModalAskMethodLov(arr); break;
+                    case 'ACCESS_PATH' : setModalAccessPathLov(arr); break;
+                }
+                if(cdTp === 'CONTRACT_TP')
+                setModalAccessPathLov(arr);
+            }else{
+                alert("문의구분 데이터를 불러오는데 실패하였습니다.")
+            }
+        }).catch(() =>{
+              alert("문의구분 데이터를 불러오는데 실패하였습니다.");
+        })
+        return arr;
+        console.log('arr',arr);
+    }
 
     //<Lov끝>
 
 
     //datepicker속성 및 이벤트 시작
     const [modalAskDate, setModalAskDate] = useState(new Date());
+    const [startDate, setStartDate] = useState(new Date());
     //datepicker속성 및 이벤트 끝
 
 
@@ -140,27 +162,35 @@ function S010100140(props) {
         setModalAskContent(event.currentTarget.value);
     }
 
-    //console.log(modalAskTp,modalAskPath,modalAskMethod);
+    const onChangeHandler = (event)=> {
+        // DatePicker.value
+    }
 
     //상담등록저장버튼클릭시
     const onHandleSubmit=(event)=> {
 
         event.preventDefault();
-          //문의구분 NUll체크
-          if(modalAskTp == null || modalAskTp == ''){
+        //   //문의구분 NUll체크
+        //   if(modalAskTp == null ||modalAskTp == ''||modalAskTp == '전체'){
+        //     return alert("문의구분을 선택하세요.");
+        // }
+
+        if(modalAskTp == null ||modalAskTp == ''){
             return alert("문의구분을 선택하세요.");
         }
 
          //문의방법 NUll체크
          if(modalAskMethod == null || modalAskMethod == ''){
+            // alert('111');
+            // alert((modalAskMethod == null)+ ',' + (modalAskMethod == '' ));
             return alert("문의방법을 선택하세요.");
         }
-
+        
          //접근경로 NUll체크
          if(modalAskPath == null || modalAskPath == ''){
-            return alert("접근경로를 하세요.");
+            return alert("접근경로를 선택하세요.");
         }
-
+        
         //서버에 채운 값들을 request로 보낸다.
         const body = {
             modalAskTp: modalAskTp,
@@ -171,6 +201,7 @@ function S010100140(props) {
             modalAskInfo: modalAskInfo,
             modalAskContent: modalAskContent
         }
+             console.log('setModalAskDate',setModalAskDate);
 
 
         axios.post("/api/s010100140",body)
@@ -183,19 +214,20 @@ function S010100140(props) {
         })
 
     }
+    // console.log(startDate);
 
     return (
-
-            <form onSubmit={onHandleSubmit}>
+            <form onSubmit={onHandleSubmit} id = "formWrapper">
             {/* <h1>상담등록</h1> */}
-                <table>
+            <div id ="wrapper">
+                <table class ="buttonTable">
                     <tbody>
                     <tr>
                         <th>문의구분</th>
                             <td>
-                                <select multiple={false} onChange ={onAskTpHandler} value ={modalAskTp} disabled = {props.dataForm === 'U'}>
+                                <select multiple={false} onChange ={onAskTpHandler} value ={modalAskTp} >
 
-                                    {valueArr[0].map(item => (
+                                    {modalContractTpLov.map(item => (
                                         <option key ={item.key} value ={item.key}>{item.value}</option>
                                     ))}
                                     
@@ -205,16 +237,24 @@ function S010100140(props) {
 
                         <th>문의일자</th>
                             <td>
-                                <DatePicker
-                                    locale="ko"
-                                    selected={new Date()}
-                                    value={modalAskDate}
-                                    onChange={date => setModalAskDate(date)}
-                                    minDate={new Date()}
-                                    maxDate={addDays(new Date(), 0)}
-                                    dateFormat="yy/MM/dd (eee)"
-                                    disabled = {props.dataForm === 'U'}
-                                />
+                                {/*<DatePicker*/}
+                                {/*    locale="ko"*/}
+                                {/*    selected={new Date()}*/}
+                                {/*    value={modalAskDate}*/}
+                                {/*    onChange={date => setModalAskDate(date)}*/}
+                                {/*    minDate={new Date()}*/}
+                                {/*    maxDate={addDays(new Date(), 0)}*/}
+                                {/*    dateFormat="yy/MM/dd (eee)"*/}
+
+                                {/*/>*/}
+                                 <DatePicker
+                                     locale="ko"
+                                     selected={startDate.setHours(9, 0, 0, 0)}
+                                     value={startDate}
+                                     onChange={date => setStartDate(date)}
+                                     dateFormat="yy/MM/dd (eee)"
+                                     onClick={onChangeHandler}
+                                 />
                             </td>
 
                         <th>문의자명</th>
@@ -225,7 +265,6 @@ function S010100140(props) {
                                     name="modalAskName" 
                                     size = "7"
                                     onChange={onAskNameHandler}
-                                    disabled = {props.dataForm === 'U'}
                                 />
                             </td>
                     </tr>
@@ -233,9 +272,8 @@ function S010100140(props) {
                     <tr>
                         <th>문의방법</th>
                             <td>
-                                <select multiple={false} value={modalAskMethod} onChange={onAskMethodHandler} disabled = {props.dataForm === 'U'} >
-
-                                    {valueArr[1].map(item=>(
+                                <select multiple={false} value={modalAskMethod} onChange={onAskMethodHandler}  >
+                                    {modalAskMethodLov.map(item=>(
                                             <option key = {item.key} value = {item.key}>{item.value}</option>
                                     ))}
 
@@ -244,9 +282,8 @@ function S010100140(props) {
 
                         <th>접근경로</th>
                             <td>
-                                <select multiple={false} value={modalAskPath} onChange={onAskPathHandler} disabled = {props.dataForm === 'U'} >
-
-                                    {valueArr[2].map(item =>(
+                                <select multiple={false} value={modalAskPath} onChange={onAskPathHandler}  >
+                                    {modalAccessPathLov.map(item =>(
                                         <option key = {item.key} value = {item.key}>{item.value}</option>
                                     ))}
 
@@ -256,7 +293,7 @@ function S010100140(props) {
                         <th>문의자연락처</th>
                             <td>
                                 <input type = "text" value = {modalAskInfo}id = "modalAskInfo" name = "modalAskInfo" size = "7"
-                                onChange={onAskInfoHandler} disabled = {props.dataForm === 'U'}/>
+                                onChange={onAskInfoHandler} />
                             </td>
                     </tr>
 
@@ -265,17 +302,17 @@ function S010100140(props) {
                         <th>상담내용</th>
                             <td colSpan="5">
                                 <textarea rows ="5" cols = "100" value = {modalAskContent} id="modalAskContent" name = "modalAskContent"
-                                onChange={onAskContentHandler} disabled = {props.dataForm === 'U'}></textarea>
+                                onChange={onAskContentHandler} ></textarea>
                             </td>
                     </tr>
                     </tbody>                        
                 </table>
 
-            
-                <input id = "popbtn"type = "submit" hidden = {props.dataForm === 'U'}/> 
+            </div>
+                <input className = "popBtn" type = "submit" hidden = {props.dataForm === 'U'}/>
                 {/* <button>닫기</button> */}
-            
-                    
+                <input className = "popBtn" type = "submit" hidden = {props.dataForm !== 'U'}/>
+
             </form>
         
     );

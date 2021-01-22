@@ -35,7 +35,7 @@ import Navbar from '../Navbar';
           <Route exact path = "/registration" component = {S010100140}></Route>
           {/* 이용계약서  */}
           <Route exact path = "/useContract" component = {S010100010}></Route>
-          {/* 회원상세정보 */}
+          {/* 회원상세현황 */}
           <Route exact path = "/memberDetails" component = {S010100050}></Route>
   </Router>
   );

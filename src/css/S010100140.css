@@ -1,7 +1,13 @@
-table{width: 1055px; }
-button{margin-top: 2px;margin-right: 1px; width: 80px;}
-table td{padding:5px;}
-#popbtn{margin-left: 550px;}
-
+#formWrapper{padding-right: 60px;}
+#wrapper{ width:1020px; margin: 50px;}
+.buttonTable{width: 1055px; margin-right: 50px;}
+/*#formWrapper .buttonTable{margin-bottom: 0px;}*/
+ button{margin-top: 2px; margin-right: 1px; width: 80px;}
+.buttonTable{border: 1px solid; border-spacing: 0px;}
+.buttonTable th{border: 1px solid; background: #EBF7FF;}
+.buttonTable td{border: 1px solid;padding:5px;}
+.buttonTable td input{width: 130px; text-align: center;}
+.popBtn {margin-left: 550px;width: 100px;}
+.MuiDialogActions-root.MuiDialogActions-spacing input {width: 100px; margin: 0px 20px 10px 0px;}
 
 
