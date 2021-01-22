@@ -37,4 +37,5 @@ div#datePickerArea {margin:10px 90px 0px 0px; position:static;}
 div#datePickerArea input {width: 110px; text-align:center; position: static;}
 div#searchArea{margin: 10px 0px 0px 18px;}
 div#searchArea input#ask_name {width: 98px;}
+
 /*.react-datepicker-wrapper.react-datepicker__input-container{position:static;}*/

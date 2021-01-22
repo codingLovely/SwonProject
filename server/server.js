@@ -182,7 +182,7 @@ app.post('/api/s010100140/modify',(req,res) => {
 
 
 //<2-3.상담현황(s010100130) 조회
-app.post('/api/s010100130',(req,res) => {
+app.get('/api/s010100130',(req,res) => {
     
   let sql = 
             'SELECT '+ 
@@ -206,6 +206,7 @@ app.post('/api/s010100130',(req,res) => {
             ' ON ASK010.ASK_PATH = CODE3.CD_V'+
             ' AND CODE3.CD_TP = "ACCESS_PATH"'+
             ' AND CODE3.ATTRIBUTE2 = "ASK"'+
+            ' WHERE ASK010.LAST_DELETE_FLAG != "*"'+
             ' ORDER BY ASK_ID DESC'
 
   //상담등록(TB_S10_ASK010 에 들어있는 모든 데이터 가져오기)

@@ -4,6 +4,7 @@ import './css/S010100130.css';
 import Navbar from './Navbar';
 import axios from 'axios';
 import S010100140 from './S010100140';
+import Pagination from "./utils/Pagination";
 
 
 
@@ -39,16 +40,25 @@ function S010100130(props) {
     const [tb_s10_ask010, setTb_s10_ask010] = useState([])
     const [deleteAskOpen, setDeleteAskOpen] = React.useState(false);
 
-      useEffect(() => {
-          lookUp();
-      }, [])
+    //페이징
 
-    const lookUp=()=> {
-        axios.post('/api/s010100130')
+    const [currentPage,setCurrentPage] = useState(1);
+    const [postsPerPage,setPostsPerPage] = useState(3);
+
+
+    useEffect(() => {
+          lookUp();
+    }, [])
+
+
+    const lookUp = () => {
+      axios.get('/api/s010100130')
             .then(response => {
                 if (response.data.success) {
                     //console.log('TB_S10_ASK010 조회',response.data.rows)
+                    //let posts = (response.data.rows);
                     setTb_s10_ask010(response.data.rows);
+                    //console.log(posts);
                 } else {
                     alert("데이터 조회를 실패하였습니다.")
                 }
@@ -97,16 +107,7 @@ function S010100130(props) {
     //상담등록 닫기 할 때 새로고침해서 가져오는 것
     const onHandleClickClose = (event) => {
         setStoreOpen(false);
-         axios.post('/api/s010100130')
-            .then(response => {
-                if (response.data.success) {
-                    //console.log('상담닫기',response.data.rows)
-                    setTb_s10_ask010(response.data.rows)
-                } else {
-                    alert("상세 정보 가져오기를 실패하였습니다.")
-                }
-
-            })
+         lookUp();
     };
     //상담등록 모달 끝>
 
@@ -122,22 +123,12 @@ function S010100130(props) {
 
     const onDetailHandleClickClose = () => {
         setOpen(false);
-        axios.post('/api/s010100130')
-            .then(response => {
-                if (response.data.success) {
-                    //console.log('상담닫기',response.data.rows)
-                    setTb_s10_ask010(response.data.rows)
-                } else {
-                    alert("상세 정보 가져오기를 실패하였습니다.")
-                }
-
-            })
-        //재조회
         lookUp();
 
     };
     //상세보기 모달 끝>
     //모달창 속성 및 이벤트 끝--!>
+
 
     const [checkForDelete, setCheckForDelete] = useState(true);
 
@@ -147,12 +138,13 @@ function S010100130(props) {
 
     const onBackHandle = () => {
         setCheckForDelete(true);
+        setChecked([]);
     }
 
      const [checked, setChecked] = useState([]);
 
         const handleToggle = (tb_s10_ask010) => {
-            console.log(tb_s10_ask010);
+            console.log('event', tb_s10_ask010);
             //누른것의 index를 구하고
             const currentIndex = checked.indexOf(tb_s10_ask010);
             //전체 Checked된 State에서 현재 누를 Checkbox가 있는지 확인
@@ -163,12 +155,11 @@ function S010100130(props) {
             }else {
                 newChecked.splice(currentIndex,1)
             }
-
             setChecked(newChecked);
             //빽주고
             //state를 넣어준다
-            console.log(currentIndex);
-            console.log(checked);
+            console.log('currentIndex', currentIndex);
+            console.log('checked', checked);
 
             // handleFilters(filters,tb_s10_ask010);
 
@@ -210,8 +201,12 @@ function S010100130(props) {
             })
 
         setDeleteAskOpen(false);
+         //재조회
+        lookUp();
+        setChecked([]);
+        onBackHandle();
 
-        
+
     }
 
 
@@ -253,27 +248,32 @@ function S010100130(props) {
 //onSubmit끝-->
 
 
-
-
     const s010100130R = tb_s10_ask010.map((tb_s10_ask010, index) => {
         return (
             <tr class='dataTable'>
                 <td id="chkLine" hidden={checkForDelete}>
-                    <input type="checkbox"  onChange={()=> handleToggle(tb_s10_ask010.ASK_ID) } checked={checked.indexOf(tb_s10_ask010.ASK_ID) === -1? false : true} id={tb_s10_ask010.ASK_ID}/></td>
+                    <input type="checkbox"  onChange={()=> handleToggle(tb_s10_ask010.ASK_ID) } id={tb_s10_ask010.ASK_ID}/></td>
                 {/*<input type = "checkbox" onChange={onCheckboxHandler} id={tb_s10_ask010.ASK_ID}/>*/}
-                <td key={index + 1} className="cname" name="cname" variant="outlined" color="primary" onClick={onDetailHandleClickOpen} id={tb_s10_ask010.ASK_ID}>
+                <td className="cname" name="cname" variant="outlined" color="primary" onClick={onDetailHandleClickOpen} id={tb_s10_ask010.ASK_ID}>
                     {index + 1}</td>
-                <td key={index + 2}>{tb_s10_ask010.ASK_TP}</td>
-                <td key={index + 3}>{tb_s10_ask010.ASK_DATE}</td>
-                <td key={index + 4}>{tb_s10_ask010.ASK_METHOD}</td>
-                <td key={index + 5}>{tb_s10_ask010.ASK_NAME}</td>
-                <td key={index + 6}>{tb_s10_ask010.ASK_INFO}</td>
-                <td key={index + 7}>{tb_s10_ask010.ASK_PATH}</td>
+                <td>{tb_s10_ask010.ASK_TP}</td>
+                <td >{tb_s10_ask010.ASK_DATE}</td>
+                <td>{tb_s10_ask010.ASK_METHOD}</td>
+                <td>{tb_s10_ask010.ASK_NAME}</td>
+                <td >{tb_s10_ask010.ASK_INFO}</td>
+                <td>{tb_s10_ask010.ASK_PATH}</td>
             </tr>
         )
     });
 
+    //Get current tb_s10_ask010;
+    const indexOfLastPost = currentPage * postsPerPage;
+    const indexOfFirstPost = indexOfLastPost - postsPerPage;
+    const currentPosts = s010100130R.slice(indexOfFirstPost,indexOfLastPost);
 
+
+    //Change page
+    const paginate = pageNumber => setCurrentPage(pageNumber);
     return (
         <Fragment>
             <Navbar/>
@@ -405,10 +405,10 @@ function S010100130(props) {
                     </tr>
                     </thead>
                     <tbody>
-                    {s010100130R}
+                        {currentPosts}
                     </tbody>
-
               </table>
+                <Pagination postsPerPage={postsPerPage} totalPosts={s010100130R.length} paginate={paginate}/>
 
             </form>
 
