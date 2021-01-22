@@ -78,7 +78,7 @@ function S010100140(props) {
             getAskMethodLov();
             getAccessPathLov();
 
-    },[]);
+        },[]);
 
     const getContractTpLov = () => {
         getLovByCdTp('CONTRACT_TP','ASK');

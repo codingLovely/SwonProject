@@ -1,16 +1,24 @@
 #useContractTitle{margin-top:20px;}
 .useContractTable{width: 1200px; margin: 50px 50px 0px 50px; border-spacing: 0px;}
-.alignLeft{text-align: left; padding: 5px;}
+.alignLeft{text-align: left; padding:50px;}
 
 #borderBottom{border-bottom: none;}
 #borderTopBottom{text-align: right; border-top: none;border-bottom: none;}
 .useContractTable tr td {padding: 5px;}
 .useContractTable .memberInfo{background-color:#C7D3ED;}
 .useContractTable .info{background-color: #D6BCB0;}
-.useContractTable .basicInfoTitle{background-color: #888888;}
+.useContractTable .basicInfoTitle{background-color: #777777;}
 .useContractTable .basicInfo{background-color: #999999;}
 .useContractBtn {margin: 0px 5px 0px 5px;}
-#btn-center{margin-right: 350px}
+.useContractTable tr #infoPadding{padding: 10px;}
+.useContractTable tr #etcInfoPadding{padding: 10px;}
+.useContractTable tr #borderBottom{padding: 10px;}
+.useContractTable tr #borderTopBottom{padding: 10px;}
+.useContractTable tr #fstTextSpacing{padding: 0px 0px 15px 10px;}
+.useContractTable tr #sndTextSpacing{padding: 0px 10px 15px 0px;}
+
+.btn-center{text-align: center;}
+.btn-center #btnWidth{width: 150px;}
 .react-datepicker-wrapper input{width: 100px;}
 #fstTextSpacing.alignLeft {line-height:200%;border-top:none; border-bottom: none; border-right: none;}
 #sndTextSpacing.alignLeft {line-height:200%; border-top:none; border-bottom: none;  border-left: none;}

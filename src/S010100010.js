@@ -20,6 +20,7 @@ let queryArr = [['MEMBER_TP', ''], ['CONTRACT_TP', 'ASK'], ['PAY_METHOD', '']];
 let contractPaths = [];
 let roomLockers = [];
 let payDates = [];
+let contractTpVals = [];
 
 function S010100010(props) {
     //console.log(props.params);
@@ -43,7 +44,7 @@ function S010100010(props) {
 
     //계약정보
     const [contractTp, setContractTp] = useState('')
-    const [contractTpVal, setContractTpVal] = useState('')
+    const [contractTpVal, setContractTpVal] = useState([{key: '', value: '선택'}])
     const [roomLockerTp, setRoomLockerTp] = useState(0)
     const [contractMoney, setContractMoney] = useState('')
     const [contractTerm, setContractTerm] = useState('')
@@ -52,6 +53,7 @@ function S010100010(props) {
     const [payMethod, setPayMethod] = useState('')
     const [contractPath, setContractPath] = useState('')
 
+    //const [contractTpR1Val,setContractTpR2Val] = useState([]);
     //주소api
     const [open, setOpen] = React.useState(false);
     const [isPostOpen, setIsPostOpen] = useState(false);
@@ -61,13 +63,9 @@ function S010100010(props) {
     const [startDate, setStartDate] = useState(new Date("2014/02/08"));
     const [endDate, setEndDate] = useState(new Date("2014/02/10"));
 
-    const handleOpenPost = (event) => {
-        setOpen(true);
-    }
     const onHandleClickClose = (event) => {
         setOpen(false);
     }
-
 
     const rNum = props.dataNum;
 
@@ -149,7 +147,7 @@ function S010100010(props) {
                 .then(response => {
                     if (response.data.success) {
                         //console.log('ask_tp',response.data.rows);
-                        let arr = [{key: '전체', value: '전체'}]
+                        let arr = [{key: '선택', value: '선택'}]
 
                         response.data.rows.map((data) =>
                             arr.push({
@@ -174,7 +172,7 @@ function S010100010(props) {
             .then(response => {
                 if (response.data.success) {
                     //console.log('Lov-ask_tp',response.data);
-                    let arr = [{key: '전체', value: '전체'}]
+                    let arr = [{key: '선택', value: '선택'}]
 
                     response.data.rows.map((data) =>
                         arr.push({
@@ -210,15 +208,11 @@ function S010100010(props) {
             })
     }, [])
 
-    let contractTpVals = [{key: '전체', value: '전체'},
-        {key: 'R2_302', value: '302호'},
-        {key: 'R2_409', value: '409호'},
-        {key: 'R2_410', value: '410호'},
-        {key: 'R2_411', value: '411호'},
-        {key: 'R2_412', value: '412호'},
-    ]
 
-    let arr = [{key: '전체', value: '전체'}];
+
+
+
+    let arr = [{key: '선택', value: '선택'}];
 
     for (let i = 1; i <= 31; i++) {
         arr.push({
@@ -259,9 +253,35 @@ function S010100010(props) {
 
 //Lov끝>
 
-
+    const [contractTpVals,setContractTpVals] = useState([{key: '', value: 'waiting...'}]);
     const onContractTpHandler = (event) => {
         setContractTp(event.currentTarget.value);
+
+        let contractTpBody = event.currentTarget.value;
+
+
+        axios.post('/api/s010100010/contHier',{contractTpBody:contractTpBody})
+        .then(response => {
+            if(response.data.success){
+                console.log('ContractTpVal',response.data.rows);
+                let arr = [{key: '선택', value: '선택'}]
+
+                response.data.rows.map((data) =>
+                    arr.push({
+                    value:data.CD_V_MEANING, key:data.CD_V
+                }));
+                  switch (contractTpBody){
+                    case 'R1' : setContractTpVals(arr); break;
+                    case 'R2' : setContractTpVals(arr); break;
+                    case 'R3':  setContractTpVals(arr); break;
+                    case 'FI':  setContractTpVals(arr); break;
+                    case 'FL':  setContractTpVals(arr); break;
+                    case 'FR':  setContractTpVals(arr); break;
+                }
+            }else{
+                alert(" 데이터를 불러오는데 실패하였습니다.");
+            }
+        })
     }
 
     const onContractTpValHandler = (event) => {
@@ -455,17 +475,23 @@ function S010100010(props) {
         setEmpDetailAddress(event.currentTarget.value);
     }
 
-
+    const [postCodeDisplay, setPostCodeDisplay] = useState('none');
     const postCodeStyle = {
-        display: "block",
+        display: postCodeDisplay,
         position: "absolute",
-        top: "50%",
-        width: "400px",
-        height: "700px",
-        padding: ''
+        top: "26%",
+        right: "33%",
+        width: "350px",
+        height: "600px"
 
     }
+    const handleOpenPost = (event) => {
+        setPostCodeDisplay('block');
 
+        if(postCodeDisplay == 'block'){
+            setPostCodeDisplay('none');
+        }
+    }
     return (
 
         <form style={{
@@ -577,6 +603,13 @@ function S010100010(props) {
 
                         <button class="useContractBtn" onClick={handleOpenPost} hidden={props.cDataForm === 'I'}>우편
                         </button>
+
+                        <DaumPostcode
+                            onComplete={handleComplete}
+                            style={postCodeStyle}
+                            //isPostOpen={false}
+                            autoClose={true}
+                        />
 
                         <input type="text" value={empAddress} id="empAddress" name="empAddress" size="30"
                                onChange={onEmpAddressHandler} hidden={props.cDataForm === 'I'}/>
@@ -704,7 +737,7 @@ function S010100010(props) {
 
                 <tr>
                     <th className="info">특약사항</th>
-                    <td colSpan="9" className="alignLeft">
+                    <td colSpan="9" className="alignLeft" id="infoPadding">
                         계약기간 만료 또는 종료시 사업지 주소지와 전화를 7일이내 이전해야 하고,<br/>
                         계약을 해지할 경우 7일이전에 서면 또는 구두 통보해야함.<br/>
 
@@ -716,7 +749,7 @@ function S010100010(props) {
 
                 <tr>
                     <th className="info">이용범위</th>
-                    <td colSpan="9" className="alignLeft">
+                    <td colSpan="9" className="alignLeft" id="etcInfoPadding">
                         사무공간 제공과 부대시설(회의실,접견실,휴게실,IT기기,유무선 통신망)을 이용 가능
                     </td>
                 </tr>
@@ -760,7 +793,7 @@ function S010100010(props) {
                     </td>
                 </tr>
                 <tr>
-                    <td colSpan="9" className="alignRight" id="borderTopBottom"> 2020년 &nbsp;&nbsp; 월 &nbsp;&nbsp; 일
+                    <td colSpan="9" className="alignRight" id="borderTopBottom"> 2021년 &nbsp;&nbsp; 월 &nbsp;&nbsp; 일
                     </td>
                 </tr>
 
@@ -784,26 +817,25 @@ function S010100010(props) {
                 </tbody>
             </table>
             {/* 모달창 시작*/}
-            <Dialog
-                fullScreen={true}
-                open={open}>
-                <DaumPostcode
-                    onComplete={handleComplete}
-                    style={postCodeStyle}
-                    isPostOpen={false}
-                />
-                <DialogActions>
+            {/*<Dialog*/}
+            {/*    fullScreen={true}*/}
+            {/*    open={open}>*/}
+            {/*    <DaumPostcode*/}
+            {/*        onComplete={handleComplete}*/}
+            {/*        style={postCodeStyle}*/}
+            {/*        isPostOpen={false}*/}
+            {/*    />*/}
+            {/*    <DialogActions>*/}
+            {/*        <input type="button" color="primary" onClick={onHandleClickClose} value='닫기'/>*/}
+            {/*    </DialogActions>*/}
+            {/*</Dialog>*/}
+            {/*/!* // 모달창 끝 *!/*/}
 
-                    <input type="button" color="primary" onClick={onHandleClickClose} value='닫기'/>
-                </DialogActions>
-            </Dialog>
-            {/* // 모달창 끝 */}
-
-            <div id="btn-center">
+            <div class="btn-center">
                 <button>임시저장</button>
                 <button type="submit">저장</button>
                 <button>출력</button>
-                <button>임대차 계약서</button>
+                <button id="btnWidth">임대차 계약서</button>
                 <button>삭제</button>
 
                 <Link to="/member">

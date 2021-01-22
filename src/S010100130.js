@@ -143,21 +143,25 @@ function S010100130(props) {
 
      const [checked, setChecked] = useState([]);
 
-        const handleToggle = (tb_s10_ask010) => {
-            console.log('event', tb_s10_ask010);
-            //누른것의 index를 구하고
-            const currentIndex = checked.indexOf(tb_s10_ask010);
+        const handleToggle = (e) => {
+            console.log('event', e.target.id);
+
+
+            const currentIndex= checked.indexOf(e.target.id);
             //전체 Checked된 State에서 현재 누를 Checkbox가 있는지 확인
             const newChecked = checked;
 
             if(currentIndex === -1){
-                newChecked.push(tb_s10_ask010)
+                newChecked.push(e.target.id)
             }else {
                 newChecked.splice(currentIndex,1)
             }
             setChecked(newChecked);
             //빽주고
             //state를 넣어준다
+
+            //e.target.checked = false;
+
             console.log('currentIndex', currentIndex);
             console.log('checked', checked);
 
@@ -252,7 +256,7 @@ function S010100130(props) {
         return (
             <tr class='dataTable'>
                 <td id="chkLine" hidden={checkForDelete}>
-                    <input type="checkbox"  onChange={()=> handleToggle(tb_s10_ask010.ASK_ID) } id={tb_s10_ask010.ASK_ID}/></td>
+                    <input type="checkbox"  onChange={handleToggle} id={tb_s10_ask010.ASK_ID}/></td>
                 {/*<input type = "checkbox" onChange={onCheckboxHandler} id={tb_s10_ask010.ASK_ID}/>*/}
                 <td className="cname" name="cname" variant="outlined" color="primary" onClick={onDetailHandleClickOpen} id={tb_s10_ask010.ASK_ID}>
                     {index + 1}</td>

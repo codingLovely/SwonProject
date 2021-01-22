@@ -486,27 +486,32 @@ let error = '';
        //console.log(sql);
 
        connection.query(sql , (error, resultRows) => {//쿼리문
-
        });
     }//for
          if (error) throw error;
          res.send({success: true})
-        console.log(resultRows);
+        //console.log(resultRows);
 })
 
-//체크박스
-// app.get('/api/s010100130/checkedItems',(req,res)=>{
-//
-//     let findArgs={};
-//
-//     for(let key in req.body.filters){
-//         if(req.body.filters[key.length>0]){
-//             findArgs[key] = req.body.filters[key];
-//         }
-//     }
-//     console.log(findArgs.ASK_ID);
-// })
 
+app.post('/api/s010100010/contHier',(req,res)=>{
+    let contractTp = req.body.contractTpBody;
+
+    let sql = 'SELECT ' +
+        'CODE1.CD_V,CODE1.CD_V_MEANING ' +
+        'FROM TB_S10_CODE CODE1 ' +
+        'INNER JOIN TB_S10_CODE CODE2 ' +
+        'ON CODE1.CD_TP = CODE2.CD_V ' +
+        'WHERE CODE2.CD_V = "'+contractTp+'"'
+
+    connection.query(sql, (error, rows) => {//쿼리문
+        if(error) throw error;
+        res.send({success: true,rows})
+
+
+  });
+
+})
 
 //3. 로그인 routing
 //로그인 기능을 위한 라우터
@@ -517,15 +522,15 @@ app.post('/api/users/login',(req,res)=>{
 
   //console.log('Email',Email);
   //console.log('Password',Password);
-  connection.query('SELECT * from users where Email = "'+ Email+'" and PASSWORD = "'+Password+'"', (error, rows) => {//쿼리문
-    if(error) throw error;
-    //console.log(rows)
-    if(rows > 0){
-      return res.send({loginResult:true});
-    }else{
-      return res.send({loginResult:false});
-    }
-  })
+  // connection.query('SELECT * from users where Email="'+ Email+'" and PASSWORD = "'+Password+'"', (error, rows) => {//쿼리문
+  //   if(error) throw error;
+  //   //console.log(rows)
+  //   if(rows > 0){
+  //     return res.send({loginResult:true});
+  //   }else{
+  //     return res.send({loginResult:false});
+  //   }
+  // })
 })
 
 // app.post('api/s010100100',(req,res)=>{
