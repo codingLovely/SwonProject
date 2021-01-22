@@ -12,6 +12,8 @@ import S010100140 from './S010100140';
 //<!--모달창 라이브러리
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
+import Button from '@material-ui/core/Button';
+import DialogTitle from '@material-ui/core/DialogTitle';
 //모달창 라이브러리 끝-->
 
 //<!--켈린더 라이브러리시작
@@ -35,9 +37,13 @@ function S010100130(props) {
     const [numForDetail, setNumForDetail] = useState('')
     //TB_S10_ASK010 테이블 조회
     const [tb_s10_ask010, setTb_s10_ask010] = useState([])
+    const [deleteAskOpen, setDeleteAskOpen] = React.useState(false);
 
-    useEffect(() => {
+      useEffect(() => {
+          lookUp();
+      }, [])
 
+    const lookUp=()=> {
         axios.post('/api/s010100130')
             .then(response => {
                 if (response.data.success) {
@@ -47,8 +53,7 @@ function S010100130(props) {
                     alert("데이터 조회를 실패하였습니다.")
                 }
             })
-
-    }, []);
+    };
 
     //<Lov(List of Value)를 데이터 베이스에서 가져오기
 
@@ -91,8 +96,8 @@ function S010100130(props) {
 
     //상담등록 닫기 할 때 새로고침해서 가져오는 것
     const onHandleClickClose = (event) => {
-
-        axios.post('/api/s010100130')
+        setStoreOpen(false);
+         axios.post('/api/s010100130')
             .then(response => {
                 if (response.data.success) {
                     //console.log('상담닫기',response.data.rows)
@@ -102,7 +107,6 @@ function S010100130(props) {
                 }
 
             })
-        setStoreOpen(false);
     };
     //상담등록 모달 끝>
 
@@ -118,6 +122,19 @@ function S010100130(props) {
 
     const onDetailHandleClickClose = () => {
         setOpen(false);
+        axios.post('/api/s010100130')
+            .then(response => {
+                if (response.data.success) {
+                    //console.log('상담닫기',response.data.rows)
+                    setTb_s10_ask010(response.data.rows)
+                } else {
+                    alert("상세 정보 가져오기를 실패하였습니다.")
+                }
+
+            })
+        //재조회
+        lookUp();
+
     };
     //상세보기 모달 끝>
     //모달창 속성 및 이벤트 끝--!>
@@ -132,6 +149,30 @@ function S010100130(props) {
         setCheckForDelete(true);
     }
 
+     const [checked, setChecked] = useState([]);
+
+        const handleToggle = (tb_s10_ask010) => {
+            console.log(tb_s10_ask010);
+            //누른것의 index를 구하고
+            const currentIndex = checked.indexOf(tb_s10_ask010);
+            //전체 Checked된 State에서 현재 누를 Checkbox가 있는지 확인
+            const newChecked = checked;
+
+            if(currentIndex === -1){
+                newChecked.push(tb_s10_ask010)
+            }else {
+                newChecked.splice(currentIndex,1)
+            }
+
+            setChecked(newChecked);
+            //빽주고
+            //state를 넣어준다
+            console.log(currentIndex);
+            console.log(checked);
+
+            // handleFilters(filters,tb_s10_ask010);
+
+        }
     //문의자명 속성
     const [ask_name, setAsk_name] = useState("")
 
@@ -145,49 +186,32 @@ function S010100130(props) {
         setAsk_name(event.currentTarget.value);
     }
 
-    // IssueList 컴포넌트
-    const [checkedItems, setCheckedItems] = useState(new Set());
-
-    // IssueList 컴포넌트
-    const checkHandler = (isChecked) => {
-
-        if (isChecked) {
-            checkedItems.add(isChecked.target.id);
-            setCheckedItems(checkedItems);
-        } else if (!isChecked && checkedItems.has(isChecked.target.id)) {
-            alert('why');
-            checkedItems.delete(isChecked.target.id);
-            setCheckedItems(checkedItems);
-        }
-
-        console.log(checkedItems);
-
-        // const checkHandler = ({ target }) => {
-        //   setChecked(!bChecked);
-        //  onCheckboxHandler(target.checked);
-        // }
-
-
-    }
-
 
     const onHandleDelete = (event) => {
-        alert('삭제');
-        let items = checkedItems;
-        const itemsArray = Array.from(items);
-        for(let i = 0; itemsArray.length; i++){
-            //console.log(itemsArray[i]);
-        }
-        console.log(itemsArray);
-        // axios.get('/api/s010100130/checkedItems', /*{items: itemsArray[1].value}*/)
-        //     .then(response => {
-        //         if (response.data.success) {
-        //             console.log('TB_S10_ASK010 조회', response.data.rows)
-        //             //setTb_s10_ask010(response.data.rows);
-        //         } else {
-        //             alert("데이터 조회를 실패하였습니다.")
-        //         }
-        //     })
+        setDeleteAskOpen(true);
+    }
+
+    const handleClose=(event)=>{
+        setDeleteAskOpen(false);
+    }
+
+    const deleteHandle = (event)=>{
+        let askIdArray = checked;
+        
+         axios.post('/api/s010100130/delete',askIdArray)
+            .then(response => {
+                if (response.data.success) {
+                    // //console.log('상담닫기',response.data.rows)
+                    // setTb_s10_ask010(response.data.rows)
+                } else {
+                    alert("error")
+                }
+
+            })
+
+        setDeleteAskOpen(false);
+
+        
     }
 
 
@@ -225,31 +249,17 @@ function S010100130(props) {
 
     }
 
-    const [checked, setChecked] = useState([]);
-
-    const handleToggle = (tb_s10_ask010) => {
-        //누른것의 index를구하고
-        const currentIndex = checked.indexOf(tb_s10_ask010);
-        //전체 Checked된 State에서 현재 누를 Checkbox가 이미있ㅅ다면
-        const newChecked = [...checked]
-        if(currentIndex === -1){
-            newChecked.push(tb_s10_ask010)
-        }else {
-            newChecked.splice(currentIndex,1)
-        }
-        setChecked(newChecked);
-        //빽주고
-        //state를 넣어준다
-        console.log(currentIndex);
-        console.log(checked);
-    }
 
 //onSubmit끝-->
+
+
+
+
     const s010100130R = tb_s10_ask010.map((tb_s10_ask010, index) => {
         return (
             <tr class='dataTable'>
                 <td id="chkLine" hidden={checkForDelete}>
-                    <input type="checkbox" onChange={()=> handleToggle(tb_s10_ask010.ASK_ID) } checked={checked.indexOf(tb_s10_ask010.ASK_ID) === -1? false : true} id={tb_s10_ask010.ASK_ID}/></td>
+                    <input type="checkbox"  onChange={()=> handleToggle(tb_s10_ask010.ASK_ID) } checked={checked.indexOf(tb_s10_ask010.ASK_ID) === -1? false : true} id={tb_s10_ask010.ASK_ID}/></td>
                 {/*<input type = "checkbox" onChange={onCheckboxHandler} id={tb_s10_ask010.ASK_ID}/>*/}
                 <td key={index + 1} className="cname" name="cname" variant="outlined" color="primary" onClick={onDetailHandleClickOpen} id={tb_s10_ask010.ASK_ID}>
                     {index + 1}</td>
@@ -338,7 +348,20 @@ function S010100130(props) {
                             <input type="button" className='backBtn' hidden={checkForDelete} onClick={onBackHandle}
                                    value="되돌리기"/>
                             <input type="button" className='delete' onClick={onHandleDelete} value="삭제"
-                                   hidden={checkForDelete}/> {/*onClick={onHandleForDelete}*/}
+                                   hidden={checkForDelete}/>
+                                   <Dialog
+                                        open={deleteAskOpen}
+                                        onClose={onHandleDelete}>
+                                        <DialogTitle id="alert-dialog-title">{"체크한 행을 삭제할까요?"}</DialogTitle>
+                                        <DialogActions>
+                                          <Button onClick={deleteHandle} color="primary">
+                                           네
+                                          </Button>
+                                          <Button onClick={handleClose} color="primary" autoFocus>
+                                            아니오
+                                          </Button>
+                                        </DialogActions>
+                                      </Dialog>
                         </td>
                         <td id="btd2"><input type="button" value='엑셀다운로드'/></td>
                     </tr>
@@ -385,8 +408,7 @@ function S010100130(props) {
                     {s010100130R}
                     </tbody>
 
-
-``                </table>
+              </table>
 
             </form>
 

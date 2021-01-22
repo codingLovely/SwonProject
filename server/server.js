@@ -116,7 +116,7 @@ app.post('/api/s010100130/ask_tp',(req,res) => {
 app.post('/api/s010100140',(req,res) => {
   //상담 등록할때 필요한 정보들을 client에서 가져온것을
   //데이터베이스에 넣어준다.
-  console.log(req.body);
+  //console.log(req.body);
   let sql = 
             'INSERT INTO '+
             'TB_S10_ASK010 ( ASK_TP, ASK_DATE, ASK_METHOD, ASK_PATH, ASK_NAME, ASK_INFO, ASK_CONTENT ) '+ 
@@ -140,6 +140,45 @@ app.post('/api/s010100140',(req,res) => {
 
 //2-2.끝>
 
+//< 2-2. 상담등록수정
+//콜백 function인 (req,res)
+app.post('/api/s010100140/modify',(req,res) => {
+  //상담 등록할때 필요한 정보들을 client에서 가져온것을
+  //데이터베이스에 넣어준다.
+  console.log(req.body);
+
+  let ask_id = req.body.modalAskId;
+  let ask_tp = req.body.modalAskTp;
+  let ask_date = req.body.modalAskDate;
+  let ask_method = req.body.modalAskMethod;
+  let ask_path = req.body.modalAskPath;
+  let ask_name = req.body.modalAskName;
+  let ask_info = req.body.modalAskInfo;
+  let ask_content = req.body.modalAskContent;
+
+  let sql =
+            'UPDATE '+
+            ' TB_S10_ASK010 '+
+            'SET ASK_TP="'+ask_tp+'",'+
+            ' ASK_DATE="'+ask_date+'",'+
+            ' ASK_METHOD="'+ask_method+'",'+
+            ' ASK_PATH="'+ask_path+'",'+
+            ' ASK_NAME="'+ask_name+'",'+
+            ' ASK_INFO="'+ask_info+'",'+
+            ' ASK_CONTENT="'+ask_content+'"'+
+            ' LAST_UPDATE_DATE = sysdate()'+
+            ' WHERE ASK_ID='+ ask_id +
+            ' LIMIT 1'
+
+        connection.query(sql, (error, rows) => {  //쿼리문
+              if (error) throw error;
+              res.send({success: true,rows});
+            });
+
+ })
+
+//2-2.끝>
+
 
 
 //<2-3.상담현황(s010100130) 조회
@@ -154,6 +193,7 @@ app.post('/api/s010100130',(req,res) => {
             ', CODE3.CD_V_MEANING AS "ASK_PATH"'+
             ', ASK010.ASK_NAME'+
             ', ASK_INFO '+
+            ', LAST_DELETE_FLAG '+
             'FROM TB_S10_ASK010 ASK010'+
             ' LEFT JOIN TB_S10_CODE CODE1'+
             ' ON ASK010.ASK_TP = CODE1.CD_V'+
@@ -172,7 +212,6 @@ app.post('/api/s010100130',(req,res) => {
   connection.query(sql, (error, rows) => {
     if (error) throw error;
     res.send({success: true,rows});
-   
   });
 })
 //2-3끝>
@@ -289,7 +328,7 @@ app.get('/api/s01010010/tb_s10_contract010_by_id', (req,res) => {
   connection.query(sql , (error, rows) => {//쿼리문 
     if (error) throw error;
     res.send({success: true,rows});
-    console.log(rows);
+    //console.log(rows);
   });
 
 })
@@ -419,11 +458,53 @@ app.post('/api/s010100050/detailMember_by_id',(req,res)=>{
    //console.log(rows);
  });
 })
-
-
 //3-1.끝>
 
 
+
+
+
+app.post('/api/s010100130/delete',(req,res)=>{
+
+let askIdArray = req.body;
+let sql = '';
+let resultRows=[];
+let error = '';
+
+//배열에 담겨있는 숫자 분리해서 넣기
+    for (let i = 0; i < askIdArray.length; i++ ){
+
+          sql =
+            'UPDATE '+
+            ' TB_S10_ASK010 ' +
+            ' SET LAST_DELETE_FLAG = "*",'+
+            ' LAST_DELETE_DATE = sysdate()'+
+            ' WHERE ASK_ID='+ askIdArray[i] +
+            ' LIMIT 1';
+
+       //console.log(sql);
+
+       connection.query(sql , (error, resultRows) => {//쿼리문
+
+       });
+    }//for
+         if (error) throw error;
+         res.send({success: true})
+        console.log(resultRows);
+})
+
+//체크박스
+// app.get('/api/s010100130/checkedItems',(req,res)=>{
+//
+//     let findArgs={};
+//
+//     for(let key in req.body.filters){
+//         if(req.body.filters[key.length>0]){
+//             findArgs[key] = req.body.filters[key];
+//         }
+//     }
+//     console.log(findArgs.ASK_ID);
+// })
 
 
 //3. 로그인 routing
@@ -435,7 +516,7 @@ app.post('/api/users/login',(req,res)=>{
 
   //console.log('Email',Email);
   //console.log('Password',Password);
-  connection.query('SELECT * from users where Email = "'+Email+'" and PASSWORD = "'+Password+'"', (error, rows) => {//쿼리문 
+  connection.query('SELECT * from users where Email = "'+ Email+'" and PASSWORD = "'+Password+'"', (error, rows) => {//쿼리문
     if(error) throw error;
     //console.log(rows)
     if(rows > 0){
@@ -443,7 +524,7 @@ app.post('/api/users/login',(req,res)=>{
     }else{
       return res.send({loginResult:false});
     }
-  })      
+  })
 })
 
 // app.post('api/s010100100',(req,res)=>{
@@ -664,4 +745,4 @@ app.post('/api/s010100040/searchMember',(req,res)=>{
 const server = app.listen(app.get('port'), () => {
   server.setTimeout( 3 * 60 * 1000 );
   console.log('포트 넘버 : ' + app.get('port') + "연결됐어요");
-});
+})

@@ -166,6 +166,31 @@ function S010100140(props) {
         // DatePicker.value
     }
 
+    const onModifyHandler = ()=>{
+
+        const body = {
+            modalAskId : rNum,
+            modalAskTp: modalAskTp,
+            modalAskDate: modalAskDate,
+            modalAskName: modalAskName,
+            modalAskMethod: modalAskMethod,
+            modalAskPath: modalAskPath,
+            modalAskInfo: modalAskInfo,
+            modalAskContent: modalAskContent
+        }
+
+        axios.post('/api/s010100140/modify',body)
+        .then(response => {
+            if(response.data.success){
+                alert('정상적으로 수정되었습니다.')
+            }else{
+                alert('수정에 실패하였습니다.')
+            }
+        })
+
+
+    }
+
     //상담등록저장버튼클릭시
     const onHandleSubmit=(event)=> {
 
@@ -237,24 +262,24 @@ function S010100140(props) {
 
                         <th>문의일자</th>
                             <td>
-                                {/*<DatePicker*/}
-                                {/*    locale="ko"*/}
-                                {/*    selected={new Date()}*/}
-                                {/*    value={modalAskDate}*/}
-                                {/*    onChange={date => setModalAskDate(date)}*/}
-                                {/*    minDate={new Date()}*/}
-                                {/*    maxDate={addDays(new Date(), 0)}*/}
-                                {/*    dateFormat="yy/MM/dd (eee)"*/}
+                                <DatePicker
+                                    locale="ko"
+                                    selected={new Date()}
+                                    value={modalAskDate}
+                                    onChange={date => setModalAskDate(date)}
+                                    minDate={new Date()}
+                                    maxDate={addDays(new Date(), 0)}
+                                    dateFormat="yy/MM/dd (eee)"
 
-                                {/*/>*/}
-                                 <DatePicker
-                                     locale="ko"
-                                     selected={startDate.setHours(9, 0, 0, 0)}
-                                     value={startDate}
-                                     onChange={date => setStartDate(date)}
-                                     dateFormat="yy/MM/dd (eee)"
-                                     onClick={onChangeHandler}
-                                 />
+                                />
+                                {/* <DatePicker*/}
+                                {/*     locale="ko"*/}
+                                {/*     selected={startDate.setHours(9, 0, 0, 0)}*/}
+                                {/*     value={startDate}*/}
+                                {/*     onChange={date => setStartDate(date)}*/}
+                                {/*     dateFormat="yy/MM/dd (eee)"*/}
+                                {/*     onClick={onChangeHandler}*/}
+                                {/* />*/}
                             </td>
 
                         <th>문의자명</th>
@@ -309,9 +334,9 @@ function S010100140(props) {
                 </table>
 
             </div>
-                <input className = "popBtn" type = "submit" hidden = {props.dataForm === 'U'}/>
+                <input type ="button" className = "popBtn" value="수정하기" onClick = {onModifyHandler}hidden = {props.dataForm !== 'U'}/>
                 {/* <button>닫기</button> */}
-                <input className = "popBtn" type = "submit" hidden = {props.dataForm !== 'U'}/>
+                <input className = "popBtn" type = "submit" hidden = {props.dataForm === 'U'}/>
 
             </form>
         
