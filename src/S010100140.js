@@ -245,7 +245,7 @@ function S010100140(props) {
             <form onSubmit={onHandleSubmit} id = "formWrapper">
             {/* <h1>상담등록</h1> */}
             <div id ="wrapper">
-                <table class ="buttonTable">
+                <table className ="buttonTable">
                     <tbody>
                     <tr>
                         <th>문의구분</th>

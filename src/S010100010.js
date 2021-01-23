@@ -18,9 +18,10 @@ registerLocale("ko", ko);
 let valueArr = [[], [], [], [], []];
 let queryArr = [['MEMBER_TP', ''], ['CONTRACT_TP', 'ASK'], ['PAY_METHOD', '']];
 let contractPaths = [];
-let roomLockers = [];
 let payDates = [];
-let contractTpVals = [];
+
+
+
 
 function S010100010(props) {
     //console.log(props.params);
@@ -48,20 +49,18 @@ function S010100010(props) {
     const [roomLockerTp, setRoomLockerTp] = useState(0)
     const [contractMoney, setContractMoney] = useState('')
     const [contractTerm, setContractTerm] = useState('')
+    const [startAsk_date, setStartAsk_date] = useState(new Date());
+    const [endAsk_date, setEndAsk_date] = useState(new Date());
     const [payDate, setPayDate] = useState(1)
     const [comment, setComment] = useState('')
     const [payMethod, setPayMethod] = useState('')
     const [contractPath, setContractPath] = useState('')
 
-    //const [contractTpR1Val,setContractTpR2Val] = useState([]);
+
     //주소api
     const [open, setOpen] = React.useState(false);
     const [isPostOpen, setIsPostOpen] = useState(false);
     //hidden 이용해보기
-
-    //datepicker
-    const [startDate, setStartDate] = useState(new Date("2014/02/08"));
-    const [endDate, setEndDate] = useState(new Date("2014/02/10"));
 
     const onHandleClickClose = (event) => {
         setOpen(false);
@@ -135,6 +134,7 @@ function S010100010(props) {
         setZipcode(data.zonecode);
         setEmpAddress(fullAddress);
         alert('입력되었습니다.');
+
     }
 
 //<Lov시작>
@@ -188,30 +188,6 @@ function S010100010(props) {
     }, [])
 
 
-    useEffect(() => {
-        axios.post('/api/s010100010/roomLocker')
-            .then(response => {
-                if (response.data.success) {
-                    //console.log('roomlocker',response.data);
-                    let arr = [{key: '전체', value: '전체'}]
-
-                    response.data.rows.map((data) =>
-                        arr.push({
-                            value: data.CD_V_MEANING, key: data.CD_V
-                        }));
-
-                    roomLockers = arr;
-
-                } else {
-                    alert("데이터를 불러오는데 실패하였습니다.");
-                }
-            })
-    }, [])
-
-
-
-
-
     let arr = [{key: '선택', value: '선택'}];
 
     for (let i = 1; i <= 31; i++) {
@@ -222,67 +198,79 @@ function S010100010(props) {
         payDates = arr;
     }
 
-//console.log(payDates);
-
-// let payDates = new Array();
-//     for(let i = 0; i<31; i++){
-//         payDates.push(i+1);
-//     }
-
-
-//<하이어라키->호실
-// useEffect(()=>{
-//     axios.post('/api/s010100010/contract')
-//     .then(response => {
-//         if(response.data.success){
-//             console.log('ContractTpVal',response.data);
-//             let arr = [{key: '전체', value: '전체'}]
-
-//             response.data.rows.map((data) => 
-//                 arr.push({
-//                 value:data.CD_V_MEANING, key:data.CD_V
-//             }));
-
-//             contractTpVals=arr;
-
-//         }else{
-//             alert(" 데이터를 불러오는데 실패하였습니다.");
-//         }
-//     })
-// },[])
 
 //Lov끝>
 
-    const [contractTpVals,setContractTpVals] = useState([{key: '', value: 'waiting...'}]);
+    const [contractTpVals, setContractTpVals] = useState([{key: '', value: 'waiting...'}]);
+    const [roomLockers, setRoomLockers] = useState([{key: '', value: 'waiting...'}]);
+
     const onContractTpHandler = (event) => {
         setContractTp(event.currentTarget.value);
 
         let contractTpBody = event.currentTarget.value;
 
+        axios.post('/api/s010100010/contHier', {contractTpBody: contractTpBody})
+            .then(response => {
+                if (response.data.success) {
+                    //console.log('ContractTpVal', response.data.rows);
+                    let arr = [{key: '선택', value: '선택'}]
 
-        axios.post('/api/s010100010/contHier',{contractTpBody:contractTpBody})
-        .then(response => {
-            if(response.data.success){
-                console.log('ContractTpVal',response.data.rows);
-                let arr = [{key: '선택', value: '선택'}]
+                    response.data.rows.map((data) =>
+                        arr.push({
+                            value: data.CD_V_MEANING, key: data.CD_V
+                        }));
 
-                response.data.rows.map((data) =>
-                    arr.push({
-                    value:data.CD_V_MEANING, key:data.CD_V
-                }));
-                  switch (contractTpBody){
-                    case 'R1' : setContractTpVals(arr); break;
-                    case 'R2' : setContractTpVals(arr); break;
-                    case 'R3':  setContractTpVals(arr); break;
-                    case 'FI':  setContractTpVals(arr); break;
-                    case 'FL':  setContractTpVals(arr); break;
-                    case 'FR':  setContractTpVals(arr); break;
+                    switch (contractTpBody) {
+                        case 'R1' :
+                            setContractTpVals(arr);
+                            break;
+                        case 'R2' :
+                            setContractTpVals(arr);
+                            break;
+                        case 'R3':
+                            setContractTpVals(arr);
+                            break;
+                        case 'FI':
+                            setContractTpVals(arr);
+                            break;
+                        case 'FL':
+                            setContractTpVals(arr);
+                            break;
+                        case 'FR':
+                            setContractTpVals(arr);
+                            break;
+                    }//switch
+
+                    if (contractTpBody === 'FI' || 'FL') {
+                        axios.post('/api/s010100010/roomLockerHier')
+                            .then(response => {
+                                if (response.data.success) {
+                                    console.log('roomLocker', response.data.rows);
+                                    let arr = [{key: '선택', value: '선택'}]
+                                    response.data.rows.map((data) =>
+                                        arr.push({
+                                            value: data.CD_V_MEANING, key: data.CD_V
+                                        }));
+                                    setRoomLockers(arr);
+                                } else {
+                                    alert('사물함정보를 불러오는데 실패하였습니다.');
+                                }
+                            })//axios
+                        //초기화
+                        if (contractTpBody === 'R1' || 'R2' || 'R3' || 'FR') {
+                            setRoomLockers([{key: '', value: 'waiting...'}]);
+                        }
+
+
+                    } else {
+                        alert("호실정보를 불러오는데 실패하였습니다.");
+                    }
+                }//if문
+                else {
+                    alert('호실 정보를 불러오는데 실패하였습니다.');
                 }
-            }else{
-                alert(" 데이터를 불러오는데 실패하였습니다.");
-            }
-        })
-    }
+            })//axios,then
+    }//contractTpHandler();
 
     const onContractTpValHandler = (event) => {
         setContractTpVal(event.currentTarget.value);
@@ -320,59 +308,59 @@ function S010100010(props) {
     const onSubmitHandler = (event) => {
         event.preventDefault();
 
-        //대표자 NUll체크
-        if (empIdName == null || empIdName == '') {
-            return alert("대표자를 입력하세요.");
-        }
-
-        //연락처 NUll체크
-        if (firstEmpHp == null || firstEmpHp == '' || secondEmpHp == null || secondEmpHp == '' || thirdEmpHp == null || thirdEmpHp == '') {
-            return alert("연락처를 입력하세요.");
-        }
-
-        //E-mail NUll체크
-        if (empEmailId == null || empEmailId == '' || domainAddress == null || domainAddress == '') {
-            return alert("E-mail을 입력하세요.");
-        }
-
-        //계약구분 NUll체크
-        if (contractTp == null || contractTp == '') {
-            return alert("계약구분을 선택하세요.");
-        }
-
-        //호실 NUll체크
-        if (contractTpVal == null || contractTpVal == '') {
-            return alert("호실을 선택하세요.");
-        }
-
-        //이용기간 NUll체크
-        if (contractTerm == null || contractTerm == '') {
-            return alert("이용기간을 입력하세요.");
-        }
-
-        //입금일 NUll체크
-        if (payDate == null || payDate == '') {
-            return alert("입금일을 하세요.");
-        }
-
-        //납부방법 NUll체크
-        if (payMethod == null || payMethod == '') {
-            return alert("납부방법을 선택하세요.");
-        }
-
-        //월회비 NUll체크
-        if (contractMoney == null || contractMoney == '') {
-            return alert("월회비를 입력하세요.");
-        }
-
-        //납부액 NUll체크
-        if (contractMoney == null || contractMoney == '') {
-            return alert("납부액을 입력하세요.");
-        }
-        //계약접근경로 NUll체크
-        if (contractPath == null || contractPath == '') {
-            return alert("계약접근경로를 선택하세요.");
-        }
+        // //대표자 NUll체크
+        // if (empIdName == null || empIdName == '') {
+        //     return alert("대표자를 입력하세요.");
+        // }
+        //
+        // //연락처 NUll체크
+        // if (firstEmpHp == null || firstEmpHp == '' || secondEmpHp == null || secondEmpHp == '' || thirdEmpHp == null || thirdEmpHp == '') {
+        //     return alert("연락처를 입력하세요.");
+        // }
+        //
+        // //E-mail NUll체크
+        // if (empEmailId == null || empEmailId == '' || domainAddress == null || domainAddress == '') {
+        //     return alert("E-mail을 입력하세요.");
+        // }
+        //
+        // //계약구분 NUll체크
+        // if (contractTp == null || contractTp == '') {
+        //     return alert("계약구분을 선택하세요.");
+        // }
+        //
+        // //호실 NUll체크
+        // if (contractTpVal == null || contractTpVal == '') {
+        //     return alert("호실을 선택하세요.");
+        // }
+        //
+        // //이용기간 NUll체크
+        // if (contractTerm == null || contractTerm == '') {
+        //     return alert("이용기간을 입력하세요.");
+        // }
+        //
+        // //입금일 NUll체크
+        // if (payDate == null || payDate == '') {
+        //     return alert("입금일을 하세요.");
+        // }
+        //
+        // //납부방법 NUll체크
+        // if (payMethod == null || payMethod == '') {
+        //     return alert("납부방법을 선택하세요.");
+        // }
+        //
+        // //월회비 NUll체크
+        // if (contractMoney == null || contractMoney == '') {
+        //     return alert("월회비를 입력하세요.");
+        // }
+        //
+        // //납부액 NUll체크
+        // if (contractMoney == null || contractMoney == '') {
+        //     return alert("납부액을 입력하세요.");
+        // }
+        // //계약접근경로 NUll체크
+        // if (contractPath == null || contractPath == '') {
+        //     return alert("계약접근경로를 선택하세요.");
+        // }
 
 
         const body = {
@@ -392,12 +380,14 @@ function S010100010(props) {
             domainAddress: domainAddress,
             empAddress: empAddress,
             empDetailAddress: empDetailAddress,
+
             //계약정보
             contractTp: contractTp,
             contractTpVal: contractTpVal,
             roomLockerTp: roomLockerTp,
             contractMoney: contractMoney,
             contractTerm: contractTerm,
+            startAsk_date: startAsk_date,
             payDate: payDate,
             payMethod: payMethod,
             contractPath: contractPath
@@ -475,6 +465,83 @@ function S010100010(props) {
         setEmpDetailAddress(event.currentTarget.value);
     }
 
+    const onChange = (event) => {
+        setFile(event.target.files[0]);
+        setFilename(event.target.files[0].name);
+    };
+
+    //파일업로드
+    const [file, setFile] = useState('');
+    const [filename, setFilename] = useState('ChooseFile');
+    const [uploadedFile, setUploadedFile] = useState({});
+
+    const onFileHandler = (event) => {
+        //     event.preventDefault();
+        //     const formData = new FormData();
+        //     formData.append('file',file);
+        //
+        //     try{
+        //         const res = axios.post('/api/upload',formData,{
+        //            headers:{
+        //                'Content-Type':'multipart/form-data'
+        //            }
+        //         });
+        //
+        //         const{ fileName, filePath} = res.data;
+        //         setUploadedFile({fileName,filePath});
+        //     }catch (err){
+        //         if(err.response.status === 500){
+        //             console.log('serverProplem');
+        //         }else{
+        //             console.log(err.response.data.msg);
+        //         }
+        //     }
+    };
+    //console.log(startAsk_date);
+    //임시저장
+    const temporaryStorage = (event) => {
+        event.preventDefault();
+        const body = {
+            //회원정보
+            memberNm: memberNm,
+            firstRegNo: firstRegNo,
+            secondRegNo: secondRegNo,
+            thirdRegNo: thirdRegNo,
+            memberTp: memberTp,
+            empIdName: empIdName,
+            firstEmpHp: firstEmpHp,
+            secondEmpHp: secondEmpHp,
+            thirdEmpHp: thirdEmpHp,
+            zipcode: zipcode,
+            empEmailId: empEmailId,
+            domainAddress: domainAddress,
+            empAddress: empAddress,
+            empDetailAddress: empDetailAddress,
+            //계약정보
+            contractTp: contractTp,
+            contractTpVal: contractTpVal,
+            roomLockerTp: roomLockerTp,
+            contractMoney: contractMoney,
+            contractTerm: contractTerm,
+            startAsk_date:startAsk_date,
+            payDate: payDate,
+            payMethod: payMethod,
+            contractPath: contractPath
+        }
+
+        axios.post('/api/s010100140/tempStorage', body)
+            .then(response => {
+                if (response.data.success) {
+                    alert('임시저장 하였습니다.')
+                } else {
+                    alert('임시저장에 실패하였습니다.')
+                }
+            })
+
+
+    }
+
+
     const [postCodeDisplay, setPostCodeDisplay] = useState('none');
     const postCodeStyle = {
         display: postCodeDisplay,
@@ -488,10 +555,14 @@ function S010100010(props) {
     const handleOpenPost = (event) => {
         setPostCodeDisplay('block');
 
-        if(postCodeDisplay == 'block'){
+        if (postCodeDisplay == 'block') {
             setPostCodeDisplay('none');
         }
     }
+    const onDeleteHandler = (event) => {
+
+    }
+
     return (
 
         <form style={{
@@ -501,7 +572,8 @@ function S010100010(props) {
             alignItems: 'center',
             width: '100%'
         }}
-              onSubmit={onSubmitHandler}>
+        //onSubmit={onSubmitHandler}
+       >
             <h1 id="useContractTitle">이용계약서</h1>
             <table class="useContractTable">
                 {/* 회원정보란 */}
@@ -513,7 +585,7 @@ function S010100010(props) {
                 <tr>
                     <th className="memberInfo">회원명</th>
                     <td>
-                        <input type="text" value={memberNm} id="memberNm" name="memberNm" size="5"
+                        <input type="text" value={memberNm} id="memberNm" name="memberNm" size="10"
                                onChange={onMemberNmHandler} disabled={props.cDataForm === 'I'}/></td>
 
                     <th className="memberInfo">사업자 번호</th>
@@ -551,7 +623,7 @@ function S010100010(props) {
                 <tr>
                     <th className="memberInfo">대표자<span className="star">(*)</span></th>
                     <td>
-                        <input type="text" value={empIdName} id="empIdName" name="empIdName" size="5"
+                        <input type="text" value={empIdName} id="empIdName" name="empIdName" size="10"
                                onChange={onEmpIdNameHandler} disabled={props.cDataForm === 'I'}/></td>
 
                     <th className="memberInfo">연락처<span className="star">(*)</span></th>
@@ -600,10 +672,8 @@ function S010100010(props) {
 
                         <input type="text" value={zipcode} id="zipcode" name="zipcode" size="10"
                                onChange={onZipcodeHandler} hidden={props.cDataForm === 'I'}/>
-
-                        <button class="useContractBtn" onClick={handleOpenPost} hidden={props.cDataForm === 'I'}>우편
-                        </button>
-
+                            <input type = "button" class="useContractBtn" onClick={handleOpenPost} hidden={props.cDataForm === 'I'}value="우편"
+                            />
                         <DaumPostcode
                             onComplete={handleComplete}
                             style={postCodeStyle}
@@ -627,12 +697,19 @@ function S010100010(props) {
 
                 <tr>
                     <th className="memberInfo">첨부파일</th>
-                    <td colSpan="4"><input type="text" disabled={props.cDataForm === 'I'}/>
-                        <button class="useContractBtn" hidden={props.cDataForm === 'I'}>파일 선택</button>
+                    <td colSpan="4">
+                        <input type="file" disabled={props.cDataForm === 'I'}
+                               onChange={onChange}
+                        />
+
                     </td>
-                    <td colSpan="5"><input type="text" disabled={props.cDataForm === 'I'}/>
-                        <button class="useContractBtn" hidden={props.cDataForm === 'I'}>파일 선택</button>
+                    <td colSpan="5">
+                        <input type="file" disabled={props.cDataForm === 'I'}
+                               onChange={onChange}
+                        />
+
                     </td>
+
                 </tr>
 
 
@@ -689,21 +766,25 @@ function S010100010(props) {
                                disabled={props.cDataForm === 'I'}
                                onChange={onContractTermHandler}/>&nbsp;개월 &nbsp;
 
-                        <DatePicker
-                            selected={startDate}
-                            onChange={date => setStartDate(date)}
+                       <DatePicker
+                            locale="ko"
+                            selected={startAsk_date.setHours(9, 0, 0, 0)}//Front = 한국시 BackEnd = 표준시 9시간차이
+                            onChange={date => setStartAsk_date(date)}
                             selectsStart
-                            startDate={startDate}
-                            endDate={endDate}
+                            startDate={startAsk_date}
+                            endDate={endAsk_date}
+                            dateFormat="yyyy.MM.dd"
                         />&nbsp;
                         ~ &nbsp;
                         <DatePicker
-                            selected={endDate}
-                            onChange={date => setEndDate(date)}
+                            locale="ko"
+                            selected={endAsk_date.setHours(9, 0, 0, 0)}//Front = 한국시 BackEnd = 표준시 9시간차이
+                            onChange={date => setEndAsk_date(date)}
                             selectsEnd
-                            startDate={startDate}
-                            endDate={endDate}
-                            minDate={startDate}
+                            startDate={startAsk_date}
+                            endDate={endAsk_date}
+                            minDate={startAsk_date}
+                            dateFormat="yyyy.MM.dd"
                             disabled={true}
                         />
                     </td>
@@ -816,30 +897,14 @@ function S010100010(props) {
                 </tr>
                 </tbody>
             </table>
-            {/* 모달창 시작*/}
-            {/*<Dialog*/}
-            {/*    fullScreen={true}*/}
-            {/*    open={open}>*/}
-            {/*    <DaumPostcode*/}
-            {/*        onComplete={handleComplete}*/}
-            {/*        style={postCodeStyle}*/}
-            {/*        isPostOpen={false}*/}
-            {/*    />*/}
-            {/*    <DialogActions>*/}
-            {/*        <input type="button" color="primary" onClick={onHandleClickClose} value='닫기'/>*/}
-            {/*    </DialogActions>*/}
-            {/*</Dialog>*/}
-            {/*/!* // 모달창 끝 *!/*/}
 
             <div class="btn-center">
-                <button>임시저장</button>
-                <button type="submit">저장</button>
-                <button>출력</button>
-                <button id="btnWidth">임대차 계약서</button>
-                <button>삭제</button>
-
+                <input type = "button" onClick={temporaryStorage} value = "임시저장" />
+                <input type = "button" onClick={onSubmitHandler} value = "저장" />
+                <input type = "button"  value = "출력" />
+                <input type = "button" id = "btnWidth" value = "임대차 계약처" />
+                <input type = "button" onClick={onDeleteHandler} value = "삭제" />
                 <Link to="/member">
-                    <button>닫기</button>
                 </Link>
             </div>
         </form>
