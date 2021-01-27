@@ -196,18 +196,19 @@ function S010100140(props) {
 
         event.preventDefault();
         //   //문의구분 NUll체크
-        //   if(modalAskTp == null ||modalAskTp == ''||modalAskTp == '전체'){
+          if(modalAskTp == null ||modalAskTp == ''||modalAskTp == '선택'){
+              alert('modalAskTp: '+modalAskTp);
+              return alert("문의구분을 선택하세요.");
+         }
+
+        // if(modalAskTp == null ||modalAskTp == ''){
         //     return alert("문의구분을 선택하세요.");
         // }
 
-        if(modalAskTp == null ||modalAskTp == ''){
-            return alert("문의구분을 선택하세요.");
-        }
-
          //문의방법 NUll체크
          if(modalAskMethod == null || modalAskMethod == ''){
-            // alert('111');
-            // alert((modalAskMethod == null)+ ',' + (modalAskMethod == '' ));
+             alert('111');
+            alert((modalAskMethod == null)+ ',' + (modalAskMethod == '' ));
             return alert("문의방법을 선택하세요.");
         }
         

@@ -27,6 +27,7 @@ table td {border:1px solid; text-align: center;}
 .dataTable #chk { width: 3px;}
 .dataTable #chkLine {margin-right: 15px;}
 .dataTable .cname {border-left: none;} /*padding-right:10px;*/
+.dataTable #chkLine #underLine{text-decoration: underline;}
 .dataTable:nth-child(2n){
   background-color:#EBF7FF;
 }

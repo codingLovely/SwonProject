@@ -28,7 +28,8 @@ let queryArr = [['MEMBER_TP', '']];
 let endStatus = [{key: '전체', value: '전체'},
     {key: 'Y', value: 'Y'},
     {key: 'N', value: 'N'}]
-let contractsStatus = [{key: '전체', value: '전체'},
+let contractsStatus =
+    [{key: '전체', value: '전체'},
     {key: 'C', value: '확정'},
     {key: 'T', value: '가계약'}]
 
@@ -136,8 +137,17 @@ function S010100040(props) {
             regNo,
             name,
             memberTp,
-            contractStatus
+            contractStatus,
+            memberSt
         }
+        // alert(body.memberNm,body.regNo,body.name,body.memberTp,body.contractStatus);
+        // alert(body.regNo);
+        // alert(body.name);
+        alert(body.contractStatus);
+        alert(body.memberSt);
+
+
+
 
         axios.post('/api/s010100040/searchMember', body)
             .then(response => {
@@ -149,6 +159,7 @@ function S010100040(props) {
                 }
 
             })
+
     }
     //onSubmit끝-->
 
@@ -211,7 +222,7 @@ function S010100040(props) {
                 <td >{tbMember.EMP_EMAIL}</td>
                 <td >{tbMember.MEMBER_TP}</td>
                 <td >{tbMember.MEMBER_ST}</td>
-                <td ></td>
+                <td >{tbMember.PAYED_FLAG}</td>
             </tr>
         )
     });

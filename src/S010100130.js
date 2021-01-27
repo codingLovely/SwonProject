@@ -47,24 +47,27 @@ function S010100130(props) {
 
 
     useEffect(() => {
-          lookUp();
+        searchAsk();
     }, [])
 
 
-    const lookUp = () => {
-      axios.get('/api/s010100130')
-            .then(response => {
-                if (response.data.success) {
-                    //console.log('TB_S10_ASK010 조회',response.data.rows)
-                    //let posts = (response.data.rows);
-                    setTb_s10_ask010(response.data.rows);
-                    //console.log(posts);
-                } else {
-                    alert("데이터 조회를 실패하였습니다.")
-                }
-            })
-    };
+    const searchAsk = () => {
+        const body = {
+            startAsk_date,
+            ask_name,
+            ask_tp,
+            endAsk_date
+        }
 
+         axios.post("/api/s010100130/search", body).then(response => {
+            if (response.data.success) {
+                console.log('검색결과:'+response.data.rows);
+                setTb_s10_ask010(response.data.rows);
+            } else {
+                alert('검색에 실패하였습니다.')
+            }
+        })
+    }
     //<Lov(List of Value)를 데이터 베이스에서 가져오기
 
     //select-option
@@ -107,7 +110,7 @@ function S010100130(props) {
     //상담등록 닫기 할 때 새로고침해서 가져오는 것
     const onHandleClickClose = (event) => {
         setStoreOpen(false);
-         lookUp();
+           searchAsk();
     };
     //상담등록 모달 끝>
 
@@ -123,7 +126,7 @@ function S010100130(props) {
 
     const onDetailHandleClickClose = () => {
         setOpen(false);
-        lookUp();
+           searchAsk();
 
     };
     //상세보기 모달 끝>
@@ -192,7 +195,8 @@ function S010100130(props) {
 
     const deleteHandle = (event)=>{
         let askIdArray = checked;
-        
+        console.log(askIdArray);
+        //'/api/s010100130/delete'
          axios.post('/api/s010100130/delete',askIdArray)
             .then(response => {
                 if (response.data.success) {
@@ -205,8 +209,24 @@ function S010100130(props) {
             })
 
         setDeleteAskOpen(false);
-         //재조회
-        lookUp();
+
+         const body = {
+            startAsk_date,
+            ask_name,
+            ask_tp,
+            endAsk_date
+        }
+
+         axios.post("/api/s010100130/search", body).then(response => {
+            if (response.data.success) {
+                console.log('검색결과:'+response.data.rows);
+                setTb_s10_ask010(response.data.rows);
+            } else {
+                alert('검색에 실패하였습니다.')
+            }
+        })
+
+
         setChecked([]);
         onBackHandle();
 
@@ -222,6 +242,7 @@ function S010100130(props) {
     // 조회 <!--onSubmit
     const onHandleFormSubmit = (event) => {
         console.log('조회', event);
+
         event.preventDefault();
 
         // if(method.valueOf('전체')||!startDate||!endDate||!searchName){
@@ -234,12 +255,18 @@ function S010100130(props) {
             ask_tp,
             endAsk_date
         }
-
+        alert('ask_tp',ask_tp);
         //console.log("조회조건", body);
+        // alert('startDate day:'+startAsk_date.getDay());
+        // alert('endDate year:'+endAsk_date.getFullYear());
+        // alert('endDate day:'+endAsk_date.getDate());
+        // alert('endDate month:'+endAsk_date.getMonth()+1);
+        // alert(endAsk_date.getFullYear() + '/' + (endAsk_date.getMonth()+1) +'/'+endAsk_date.getDate());
+        // alert('startDate:'+startAsk_date.getMonth());
 
         axios.post("/api/s010100130/search", body).then(response => {
             if (response.data.success) {
-                console.log('search', response.data.rows);
+                console.log('검색결과:'+response.data.rows);
                 setTb_s10_ask010(response.data.rows);
             } else {
                 alert('검색에 실패하였습니다.')
@@ -256,7 +283,9 @@ function S010100130(props) {
         return (
             <tr class='dataTable'>
                 <td id="chkLine" hidden={checkForDelete}>
-                    <input type="checkbox"  onChange={handleToggle} id={tb_s10_ask010.ASK_ID}/></td>
+                    {/*밑줄처리*/}
+                    <span id = "underLine"><input type="checkbox"  onChange={handleToggle} id={tb_s10_ask010.ASK_ID}/></span></td>
+
                 {/*<input type = "checkbox" onChange={onCheckboxHandler} id={tb_s10_ask010.ASK_ID}/>*/}
                 <td className="cname" name="cname" variant="outlined" color="primary" onClick={onDetailHandleClickOpen} id={tb_s10_ask010.ASK_ID}>
                     {index + 1}</td>
@@ -298,17 +327,17 @@ function S010100130(props) {
                         {/* date클릭할 때 고정 */}
                         <DatePicker
                             locale="ko"
-                            selected={startAsk_date.setHours(9, 0, 0, 0)}//Front = 한국시 BackEnd = 표준시 9시간차이
+                            selected={startAsk_date}//Front = 한국시 BackEnd = 표준시 9시간차이
                             onChange={date => setStartAsk_date(date)}
                             selectsStart
                             startDate={startAsk_date}
-                            endDate={endAsk_date}
+                            endDate={endAsk_date.setHours(9, 0, 0, 0)}
                             dateFormat="yyyy.MM.dd"
                         />&nbsp;
                         ~ &nbsp;
                         <DatePicker
                             locale="ko"
-                            selected={endAsk_date.setHours(9, 0, 0, 0)}//Front = 한국시 BackEnd = 표준시 9시간차이
+                            selected={endAsk_date}//Front = 한국시 BackEnd = 표준시 9시간차이
                             onChange={date => setEndAsk_date(date)}
                             selectsEnd
                             startDate={startAsk_date}

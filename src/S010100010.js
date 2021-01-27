@@ -20,9 +20,6 @@ let queryArr = [['MEMBER_TP', ''], ['CONTRACT_TP', 'ASK'], ['PAY_METHOD', '']];
 let contractPaths = [];
 let payDates = [];
 
-
-
-
 function S010100010(props) {
     //console.log(props.params);
 
@@ -48,13 +45,15 @@ function S010100010(props) {
     const [contractTpVal, setContractTpVal] = useState([{key: '', value: '선택'}])
     const [roomLockerTp, setRoomLockerTp] = useState(0)
     const [contractMoney, setContractMoney] = useState('')
-    const [contractTerm, setContractTerm] = useState('')
+    const [contractTerm, setContractTerm] = useState('0')
     const [startAsk_date, setStartAsk_date] = useState(new Date());
     const [endAsk_date, setEndAsk_date] = useState(new Date());
     const [payDate, setPayDate] = useState(1)
     const [comment, setComment] = useState('')
     const [payMethod, setPayMethod] = useState('')
     const [contractPath, setContractPath] = useState('')
+    const [contractStart, setContractStart] = useState('')
+    const [contractEnd, setContractEnd] = useState('')
 
 
     //주소api
@@ -67,30 +66,26 @@ function S010100010(props) {
     }
 
     const rNum = props.dataNum;
+    const modalMemberId = props.dataMem;
 
     useEffect(() => {
 
-        if (props.cDataForm === 'I') {
+        if (props.newDataForm === 'N') {
 
-            axios.get(`/api/s01010010/tb_s10_contract010_by_id?id=${rNum}&type=single`)
+            axios.get(`/api/s01010010/insert/tb_s10_contract010_by_id?id=${modalMemberId}&type=single`)
                 .then(response => {
                     if (response.data.success) {
+                        //alert(response.data.rows[0]);
                         const modalCMemberNm = response.data.rows[0].MEMBER_NM;
                         const modalCRegNo = response.data.rows[0].REG_NO;
                         const modalCMemberTp = response.data.rows[0].MEMBER_TP;
-                        const modalCMemberSt = response.data.rows[0].MEMBER_ST;
                         const modalCName = response.data.rows[0].NAME;
                         const modalCEmpHp = response.data.rows[0].EMP_HP;
                         const modalCEmpemail = response.data.rows[0].EMP_EMAIL;
-                        const modalCAddress = response.data.rows[0].ADDRESS;
-                        const modalCContractDate = response.data.rows[0].CONTRACT_DATE;
-                        const modalCContractTp = response.data.rows[0].CONTRACT_TP;
-                        const modalCContractTerm = response.data.rows[0].CONTRACT_TERM;
-                        const modalCPayDate = response.data.rows[0].PAY_DATE;
-                        const modalCContractMoney = response.data.rows[0].CONTRACT_MONEY;
-                        const modalCPayMethod = response.data.rows[0].PAY_METHOD;
-                        const modalCContractPath = response.data.rows[0].CONTRACT_Path;
-                        //console.log(response.data.rows[0]);
+                        const zipCode = response.data.rows[0].ZIP_CODE;
+                        const mAddress = response.data.rows[0].ADDRESS;
+                        const mDAddress = response.data.rows[0].DETAIL_ADDRESS;
+
 
                         setMemberNm(modalCMemberNm);
                         setFisrtRegNo(modalCRegNo);
@@ -99,14 +94,74 @@ function S010100010(props) {
                         setEmpIdName(modalCName);
                         setFirstEmpHp(modalCEmpHp);
                         setEmpEmailId(modalCEmpemail);
+                        setZipcode(zipCode);
+                        setEmpAddress(mAddress);
+                        setEmpDetailAddress(mDAddress);
+
+                        //setEndFlag(modalEndFLag);
+                    } else {
+                        alert("상세 정보 가져오기를 실패하였습니다.")
+                    }
+                })
+        }
+
+    }, [])
+
+
+    useEffect(() => {
+
+        if (props.cDataForm === 'I') {
+
+            axios.get(`/api/s01010010/tb_s10_contract010_by_id?id=${rNum}&type=single`)
+                .then(response => {
+                    if (response.data.success) {
+                        //alert(response.data.rows[0]);
+                        const modalCMemberNm = response.data.rows[0].MEMBER_NM;
+                        const modalCRegNo = response.data.rows[0].REG_NO;
+                        const modalCMemberTp = response.data.rows[0].MEMBER_TP;
+                        const modalCName = response.data.rows[0].NAME;
+                        const modalCEmpHp = response.data.rows[0].EMP_HP;
+                        const modalCEmpemail = response.data.rows[0].EMP_EMAIL;
+                        let zipCode = response.data.rows[0].ZIP_CODE;
+                        let mAddress = response.data.rows[0].ADDRESS;
+                        let mDAddress = response.data.rows[0].DETAIL_ADDRESS;
+                        const modalCAddress = zipCode + ' ' + mAddress + ' ' + mDAddress;
+                        const modalCContractDate = response.data.rows[0].CONTRACT_DATE;
+                        const modalCContractTp = response.data.rows[0].CONTRACT_TP;
+                        const modalCContractTerm = response.data.rows[0].CONTRACT_TERM;
+                        const modalCPayDate = response.data.rows[0].PAY_DATE;
+                        const modalCContractMoney = response.data.rows[0].PAYED_MONEY;
+                        const modalCPayMethod = response.data.rows[0].PAY_METHOD;
+                        const modalCContractPath = response.data.rows[0].CONTRACT_PATH;
+                        const modalCEndDate = response.data.rows[0].END_DATE;
+                        const modalCContractTpVal = response.data.rows[0].CONTRACT_ROOM;
+                        const modalCRoomLockerTp = response.data.rows[0].CONTRACT_LOCKER;
+                        const modalCComment = response.data.rows[0].COMMENT;
+
+                        console.log(response.data.rows[0].COMMENT);
+
+                        setMemberNm(modalCMemberNm);
+                        setFisrtRegNo(modalCRegNo);
+                        setMemberTp(modalCMemberTp);
+                        //setMemberTpVal(modalCMemberSt);
+                        setContractTpVal(modalCContractTpVal);
+                        setEmpIdName(modalCName);
+                        setFirstEmpHp(modalCEmpHp);
+                        setEmpEmailId(modalCEmpemail);
                         setZipcode(modalCAddress);
-                        //setContractDate( modalCContractDate);
+
+                        setContractStart(modalCContractDate);
+                        setContractEnd(modalCEndDate);
+
                         setContractTp(modalCContractTp);
                         setContractTerm(modalCContractTerm);
                         setPayDate(modalCPayDate);
+
                         setContractMoney(modalCContractMoney);
                         setPayMethod(modalCPayMethod);
                         setContractPath(modalCContractPath);
+                        setRoomLockerTp(modalCRoomLockerTp);
+                        setComment(modalCComment);
                         //setEndFlag(modalEndFLag);
                     } else {
                         alert("상세 정보 가져오기를 실패하였습니다.")
@@ -219,7 +274,6 @@ function S010100010(props) {
                         arr.push({
                             value: data.CD_V_MEANING, key: data.CD_V
                         }));
-
                     switch (contractTpBody) {
                         case 'R1' :
                             setContractTpVals(arr);
@@ -241,11 +295,11 @@ function S010100010(props) {
                             break;
                     }//switch
 
-                    if (contractTpBody === 'FI' || 'FL') {
+                    if (contractTpBody === 'FI' || contractTpBody === 'FL') {
                         axios.post('/api/s010100010/roomLockerHier')
                             .then(response => {
                                 if (response.data.success) {
-                                    console.log('roomLocker', response.data.rows);
+                                    //console.log('roomLocker', response.data.rows);
                                     let arr = [{key: '선택', value: '선택'}]
                                     response.data.rows.map((data) =>
                                         arr.push({
@@ -256,19 +310,30 @@ function S010100010(props) {
                                     alert('사물함정보를 불러오는데 실패하였습니다.');
                                 }
                             })//axios
-                        //초기화
-                        if (contractTpBody === 'R1' || 'R2' || 'R3' || 'FR') {
-                            setRoomLockers([{key: '', value: 'waiting...'}]);
-                        }
-
-
                     } else {
-                        alert("호실정보를 불러오는데 실패하였습니다.");
+                        let arr = [{key: '선택', value: '선택'}];
+                        setRoomLockers(arr);
                     }
+
+                    let monthlyMoney = {
+                        contractTpBody: contractTpBody
+                    }
+                    axios.post('/api/s010100010/monthlyMoney', monthlyMoney)
+                        .then(response => {
+                            if (response.data.success) {
+                                //console.log(response.data.rows[0].ATTRIBUTE3);
+                                setContractMoney(response.data.rows[0].ATTRIBUTE3);
+
+                            } else {
+                                alert('사물함정보를 불러오는데 실패하였습니다.');
+                            }
+                        })
+
                 }//if문
                 else {
                     alert('호실 정보를 불러오는데 실패하였습니다.');
                 }
+
             })//axios,then
     }//contractTpHandler();
 
@@ -303,7 +368,11 @@ function S010100010(props) {
     const onContractPathHandler = (event) => {
         setContractPath(event.currentTarget.value);
     }
+    const onNewSubmitHandler = (event) => {
 
+    }
+    //alert(contractMoney);
+    //alert(startAsk_date);
     //<!--onSubmit
     const onSubmitHandler = (event) => {
         event.preventDefault();
@@ -362,9 +431,12 @@ function S010100010(props) {
         //     return alert("계약접근경로를 선택하세요.");
         // }
 
+        let contractTerms = parseInt(contractTerm);
+        let startDate = startAsk_date.getFullYear() + '-' + (startAsk_date.getMonth() + 1) + '-' + startAsk_date.getDate();
+        let endDate = startAsk_date.getFullYear() + '-' + ((startAsk_date.getMonth() + 1) + contractTerms) + '-' + startAsk_date.getDate();
 
-        const body = {
 
+         const body = {
             //회원정보
             memberNm: memberNm,
             firstRegNo: firstRegNo,
@@ -380,7 +452,6 @@ function S010100010(props) {
             domainAddress: domainAddress,
             empAddress: empAddress,
             empDetailAddress: empDetailAddress,
-
             //계약정보
             contractTp: contractTp,
             contractTpVal: contractTpVal,
@@ -390,9 +461,13 @@ function S010100010(props) {
             startAsk_date: startAsk_date,
             payDate: payDate,
             payMethod: payMethod,
-            contractPath: contractPath
-
+            contractPath: contractPath,
+            comment: comment
         }
+        //alert('contractMoney: '+contractMoney);
+
+        // alert('contractTpVal: '+contractTpVal);
+        // alert('roomLockerTp: '+roomLockerTp);
 
         axios.post('/api/s010100010/insertMember010', body)
             .then(response => {
@@ -404,9 +479,11 @@ function S010100010(props) {
             })
     }
     //onSubmit끝-->
-
-
-    //console.log(DaumPostcode);
+    //     console.log(memberNm);
+    //     console.log(firstRegNo);
+    //     console.log(secondEmpHp);
+    //     console.log(thirdEmpHp);
+    // //console.log(DaumPostcode);
 
     const onMemberNmHandler = (event) => {
         setMemberNm(event.currentTarget.value);
@@ -470,6 +547,7 @@ function S010100010(props) {
         setFilename(event.target.files[0].name);
     };
 
+
     //파일업로드
     const [file, setFile] = useState('');
     const [filename, setFilename] = useState('ChooseFile');
@@ -497,6 +575,7 @@ function S010100010(props) {
         //         }
         //     }
     };
+
     //console.log(startAsk_date);
     //임시저장
     const temporaryStorage = (event) => {
@@ -523,11 +602,13 @@ function S010100010(props) {
             roomLockerTp: roomLockerTp,
             contractMoney: contractMoney,
             contractTerm: contractTerm,
-            startAsk_date:startAsk_date,
+            startAsk_date: startAsk_date,
             payDate: payDate,
             payMethod: payMethod,
-            contractPath: contractPath
+            contractPath: contractPath,
+            comment: comment
         }
+
 
         axios.post('/api/s010100140/tempStorage', body)
             .then(response => {
@@ -538,7 +619,33 @@ function S010100010(props) {
                 }
             })
 
+    }
 
+    const newTemporaryStorage = (event) => {
+        alert(modalMemberId);
+        event.preventDefault();
+        const body = {
+            //계약정보
+            modalMemberId: modalMemberId,
+            contractTp: contractTp,
+            contractTpVal: contractTpVal,
+            roomLockerTp: roomLockerTp,
+            contractMoney: contractMoney,
+            contractTerm: contractTerm,
+            startAsk_date: startAsk_date,
+            payDate: payDate,
+            payMethod: payMethod,
+            contractPath: contractPath,
+            comment: comment
+        }
+        axios.post('/api/s010100140/tempStorage/memberId', body)
+            .then(response => {
+                if (response.data.success) {
+                    alert('임시저장 하였습니다.')
+                } else {
+                    alert('임시저장에 실패하였습니다.')
+                }
+            })
     }
 
 
@@ -563,6 +670,104 @@ function S010100010(props) {
 
     }
 
+    const onRegNoCheckHandler = (event) => {
+        event.preventDefault();
+        // alert(firstRegNo,secondRegNo,thirdRegNo);
+        // alert(secondRegNo);
+        // alert(thirdRegNo);
+
+        const body = {
+            //회원정보
+            firstRegNo: firstRegNo,
+            secondRegNo: secondRegNo,
+            thirdRegNo: thirdRegNo,
+        }
+
+
+        axios.post('/api/s010100140/regNoCheck', body)
+            .then(response => {
+                if (response.data.success) {
+                    if (response.data.number[0].RowNum >= 1) {
+                        alert('이미 존재하는 사업자번호입니다.');
+                    } else if (response.data.number[0].RowNum === 0) {
+                        alert('사용할 수 있는 사업자 번호입니다.')
+                    }
+                } else {
+                    alert('중복체크에 실패 하였습니다.')
+                }
+            })
+    }
+
+    const onEmpHpChkHandler = (event) => {
+        event.preventDefault();
+        // alert(firstRegNo,secondRegNo,thirdRegNo);
+        // alert(secondRegNo);
+        // alert(thirdRegNo);
+
+        const body = {
+            //회원정보
+            firstEmpHp: firstEmpHp,
+            secondEmpHp: secondEmpHp,
+            thirdEmpHp: thirdEmpHp,
+        }
+
+
+        axios.post('/api/s010100140/empHpCheck', body)
+            .then(response => {
+                if (response.data.success) {
+                    if (response.data.number[0].RowNum >= 1) {
+                        alert('이미 존재하는 전화번호입니다.');
+                    } else if (response.data.number[0].RowNum === 0) {
+                        alert('사용할 수 있는 전화번호입니다.')
+                    }
+                } else {
+                    alert('중복체크에 실패 하였습니다.')
+                }
+            })
+
+    }
+
+    const onDateHandler = (event) => {
+        event.preventDefault();
+        // alert(firstRegNo,secondRegNo,thirdRegNo);
+        // alert(secondRegNo);
+        // alert(thirdRegNo);
+        let startDate = startAsk_date.getFullYear() + '-' + (startAsk_date.getMonth() + 1) + '-' + startAsk_date.getDate();
+        let endDate = startAsk_date.getFullYear() + '-' + ((startAsk_date.getMonth() + 1) + parseInt(contractTerm)) + '-' + startAsk_date.getDate();
+
+        const body = {
+            contractTp: contractTp,
+            contractTpVal: contractTpVal,
+            roomLockerTp: roomLockerTp,
+            startDate: startDate,
+            endDate: endDate,
+        }
+
+        axios.post('/api/s010100140/dateCheck', body)
+            .then(response => {
+                if (response.data.success) {
+                    if (response.data.number[0].STARTENDDATE >= 1) {
+                        alert('이미 이용중인 날짜입니다.');
+                    } else if (response.data.number[0].STARTENDDATE === 0) {
+                        alert('사용가능한 날짜입니다.')
+                    }
+                } else {
+                    alert('중복체크에 실패 하였습니다.')
+                }
+            })
+
+    }
+
+
+    //setEndAsk_date(startAsk_date.getFullYear().getMonth()+1);
+    //console.log(startAsk_date);
+
+    //const [endDatePicker,setEndDatePicker] = useState(false);
+    const dateEnd = startAsk_date.getFullYear() + '.' + ((startAsk_date.getMonth() + 1) + parseInt(contractTerm)) + '.' + startAsk_date.getDate();
+
+
+    //alert(dateEnd);
+    //setEndDatePicker(dateEnd);
     return (
 
         <form style={{
@@ -572,8 +777,8 @@ function S010100010(props) {
             alignItems: 'center',
             width: '100%'
         }}
-        //onSubmit={onSubmitHandler}
-       >
+            //onSubmit={onSubmitHandler}
+        >
             <h1 id="useContractTitle">이용계약서</h1>
             <table class="useContractTable">
                 {/* 회원정보란 */}
@@ -586,12 +791,12 @@ function S010100010(props) {
                     <th className="memberInfo">회원명</th>
                     <td>
                         <input type="text" value={memberNm} id="memberNm" name="memberNm" size="10"
-                               onChange={onMemberNmHandler} disabled={props.cDataForm === 'I'}/></td>
+                               onChange={onMemberNmHandler}/></td>
 
                     <th className="memberInfo">사업자 번호</th>
                     <td colSpan="2">
                         <input type="text" value={firstRegNo} id="firstRegNo" name="firstRegNo" size="10"
-                               onChange={onFirstRegNoHandler} disabled={props.cDataForm === 'I'}
+                               onChange={onFirstRegNoHandler}
                                hidden={props.cDataForm !== 'I'}/>
 
                         <input type="text" value={firstRegNo} id="firstRegNo" name="firstRegNo" size="3"
@@ -607,16 +812,18 @@ function S010100010(props) {
                         <input type="text" value={thirdRegNo} id="thirdRegNo" name="thirdRegNo" size="3"
                                onChange={onThirdRegNoHandler} hidden={props.cDataForm === 'I'}/>
 
-                        <button class="useContractBtn" hidden={props.cDataForm === 'I'}>중복체크</button>
+                        <input type="button" class="useContractBtn" onClick={onRegNoCheckHandler}
+                               hidden={props.cDataForm === 'I'} value="중복체크"></input>
                     </td>
                     <th className="memberInfo">회원구분</th>
                     <td colSpan="2">
-                        <select onChange={onMemberTpHandler} value={memberTp} disabled={props.cDataForm === 'I'}>
+                        <select onChange={onMemberTpHandler} value={memberTp} hidden={props.cDataForm === 'I'}>
 
                             {valueArr[0].map(item => (
                                 <option key={item.key} value={item.key}>{item.value}</option>
                             ))}
                         </select>
+                        <input type="text" value={memberTp} hidden={props.cDataForm !== 'I'} size="5"/>
                     </td>
                 </tr>
 
@@ -624,12 +831,12 @@ function S010100010(props) {
                     <th className="memberInfo">대표자<span className="star">(*)</span></th>
                     <td>
                         <input type="text" value={empIdName} id="empIdName" name="empIdName" size="10"
-                               onChange={onEmpIdNameHandler} disabled={props.cDataForm === 'I'}/></td>
+                               onChange={onEmpIdNameHandler}/></td>
 
                     <th className="memberInfo">연락처<span className="star">(*)</span></th>
                     <td colSpan="2">
                         <input type="text" value={firstEmpHp} id="firstEmpHp" name="firstEmpHp" size="10"
-                               onChange={onFirstEmpHpHandler} disabled={props.cDataForm === 'I'}
+                               onChange={onFirstEmpHpHandler}
                                hidden={props.cDataForm !== 'I'}/>
 
                         <input type="text" value={firstEmpHp} id="firstEmpHp" name="firstEmpHp" size="5"
@@ -644,12 +851,15 @@ function S010100010(props) {
                         &nbsp;
                         <input type="text" value={thirdEmpHp} id="thirdEmpHp" name="thirdEmpHp" size="5"
                                onChange={onThirdEmpHpHandler} hidden={props.cDataForm === 'I'}/>
+                        <input type="button" className="useContractBtn" hidden={props.cDataForm === 'I'}
+                               onClick={onEmpHpChkHandler}
+                               value="중복체크"></input>
                     </td>
 
                     <th className="memberInfo">E-mail<span className="star">(*)</span></th>
                     <td colSpan="2">
                         <input type="text" value={empEmailId} id="empEmailId" name="empEmailId" size="10"
-                               onChange={onEmpEmailIdHandler} disabled={props.cDataForm === 'I'}
+                               onChange={onEmpEmailIdHandler}
                                hidden={props.cDataForm !== 'I'}/>
 
                         <input type="text" value={empEmailId} id="empEmailId" name="empEmailId" size="5"
@@ -667,13 +877,14 @@ function S010100010(props) {
                     <td colSpan="9">
 
                         <input type="text" value={zipcode} id="zipcode" name="zipcode" size="50"
-                               onChange={onZipcodeHandler} disabled={props.cDataForm === 'I'}
+                               onChange={onZipcodeHandler}
                                hidden={props.cDataForm !== 'I'}/>
 
                         <input type="text" value={zipcode} id="zipcode" name="zipcode" size="10"
                                onChange={onZipcodeHandler} hidden={props.cDataForm === 'I'}/>
-                            <input type = "button" class="useContractBtn" onClick={handleOpenPost} hidden={props.cDataForm === 'I'}value="우편"
-                            />
+                        <input type="button" class="useContractBtn" onClick={handleOpenPost}
+                               hidden={props.cDataForm === 'I'} value="우편"
+                        />
                         <DaumPostcode
                             onComplete={handleComplete}
                             style={postCodeStyle}
@@ -723,39 +934,46 @@ function S010100010(props) {
                     <th className="info">계약구분</th>
                     <td>
                         <select multiple={false} onChange={onContractTpHandler} value={contractTp}
-                                disabled={props.cDataForm === 'I'}>
+                                hidden={props.cDataForm === 'I'}>
 
                             {valueArr[1].map(item => (
                                 <option key={item.key} value={item.key}>{item.value}</option>
                             ))}
-                        </select></td>
+                        </select>
+                        <input type="text" value={contractTp} hidden={props.cDataForm !== 'I'} size="5"/>
+                    </td>
 
                     <th className="info">호실</th>
                     <td>
                         <select multiple={false} onChange={onContractTpValHandler} value={contractTpVal}
-                                disabled={props.cDataForm === 'I'}>
+                                hidden={props.cDataForm === 'I'}>
 
                             {contractTpVals.map(item => (
                                 <option key={item.key} value={item.key}>{item.value}</option>
                             ))}
                         </select>
+
+                        <input type="text" value={contractTpVal}
+                               hidden={props.cDataForm !== 'I'} size="5">
+                        </input>
+
                     </td>
 
                     <th className="info">사물함</th>
                     <td>
                         <select multiple={false} onChange={onRoomLockerTpHandler} value={roomLockerTp}
-                                disabled={props.cDataForm === 'I'}>
+                                hidden={props.cDataForm === 'I'}>
 
                             {roomLockers.map(item => (
                                 <option key={item.key} value={item.key}>{item.value}</option>
                             ))}
                         </select>
+                        <input type="text" value={roomLockerTp} size="5" hidden={props.cDataForm !== 'I'}/>
                     </td>
 
                     <th className="info">월회비</th>
                     <td>
                         <input type="text" value={contractMoney} id="contractMoney" name="contractMoney" size="5"
-                               disabled={props.cDataForm === 'I'}
                                onChange={onContractMoneyHandler}/>
                     </td>
                 </tr>
@@ -763,56 +981,72 @@ function S010100010(props) {
                 <tr>
                     <th className="info">이용기간</th>
                     <td><input type="text" value={contractTerm} id="contractTerm" name="contractTerm" size="1"
-                               disabled={props.cDataForm === 'I'}
                                onChange={onContractTermHandler}/>&nbsp;개월 &nbsp;
-
-                       <DatePicker
-                            locale="ko"
-                            selected={startAsk_date.setHours(9, 0, 0, 0)}//Front = 한국시 BackEnd = 표준시 9시간차이
-                            onChange={date => setStartAsk_date(date)}
-                            selectsStart
-                            startDate={startAsk_date}
-                            endDate={endAsk_date}
-                            dateFormat="yyyy.MM.dd"
+                        <input type="text" value={contractStart} id="contractStart" name="contractStart" size="7"
+                               hidden={props.cDataForm !== 'I'}
                         />&nbsp;
                         ~ &nbsp;
-                        <DatePicker
-                            locale="ko"
-                            selected={endAsk_date.setHours(9, 0, 0, 0)}//Front = 한국시 BackEnd = 표준시 9시간차이
-                            onChange={date => setEndAsk_date(date)}
-                            selectsEnd
-                            startDate={startAsk_date}
-                            endDate={endAsk_date}
-                            minDate={startAsk_date}
-                            dateFormat="yyyy.MM.dd"
-                            disabled={true}
+                        <input type="text" value={contractEnd} id="contractEnd" name="contractEnd" size="7"
+                               hidden={props.cDataForm !== 'I'}
                         />
+
+                        <div hidden={props.cDataForm === 'I'}>
+                            <DatePicker
+                                locale="ko"
+                                selected={startAsk_date.setHours(9, 0, 0, 0)}//Front = 한국시 BackEnd = 표준시 9시간차이
+                                onChange={date => setStartAsk_date(date)}
+                                selectsStart
+                                startDate={startAsk_date}
+                                endDate={endAsk_date}
+                                dateFormat="yyyy.MM.dd"
+
+                            />&nbsp;
+                            ~ &nbsp;
+                            <input type="text" disabled={true} value={dateEnd} size="8"/>
+
+                            {/*<DatePicker*/}
+                            {/*    locale="ko"*/}
+                            {/*    selected={startAsk_date.setHours(9, 0, 0, 0)}//Front = 한국시 BackEnd = 표준시 9시간차이*/}
+                            {/*    value = {endDatePicker}*/}
+                            {/*    selectsEnd*/}
+                            {/*    startDate={startAsk_date}*/}
+                            {/*    endDate={endAsk_date}*/}
+                            {/*    minDate={startAsk_date}*/}
+                            {/*    dateFormat="yyyy.MM.dd"*/}
+                            {/*    disabled={true}*/}
+                            {/*/>*/}
+                            <input type="button" onClick={onDateHandler} className="useContractBtn"
+                                   hidden={props.cDataForm === 'I'}
+                                   value="중복체크"></input>
+                        </div>
                     </td>
 
                     <th className="info">입금일</th>
                     <td>
                         <select multiple={false} onChange={onPayDateHandler} value={payDate}
-                                disabled={props.cDataForm === 'I'}>
+                                hidden={props.cDataForm === 'I'}>
 
                             {payDates.map(item => (
                                 <option key={item.key} value={item.key}>{item.value}</option>
                             ))}
                         </select>
+                        <input type="text" value={payDate} hidden={props.cDataForm !== 'I'} size="5"/>
                     </td>
 
                     <th className="info">납부방법</th>
                     <td>
                         <select multiple={false} onChange={onPayMethodHandler} value={payMethod}
-                                disabled={props.cDataForm === 'I'}>
+                                hidden={props.cDataForm === 'I'}>
 
                             {valueArr[2].map(item => (
                                 <option key={item.key} value={item.key}>{item.value}</option>
                             ))}
                         </select>
+                        <input type="text" value={payMethod} hidden={props.cDataForm !== 'I'} size="5"/>
                     </td>
-                    <th className="info">납부액</th>
+                    <th className="info">예치금</th>
                     <td><input type="text" value={contractMoney} id="contractMoney" name="contractMoney" size="10"
-                               disabled={props.cDataForm === 'I'}
+
                                onChange={onContractMoneyHandler}/></td>
                 </tr>
 
@@ -823,7 +1057,7 @@ function S010100010(props) {
                         계약을 해지할 경우 7일이전에 서면 또는 구두 통보해야함.<br/>
 
                         <textarea rows="5" cols="110" value={comment} id="comment" name="comment"
-                                  disabled={props.cDataForm === 'I'}
+
                                   onChange={onCommentHandler}></textarea>
                     </td>
                 </tr>
@@ -856,12 +1090,14 @@ function S010100010(props) {
                     <th className="info">계약접근경로</th>
                     <td>
                         <select multiple={false} onChange={onContractPathHandler} value={contractPath}
-                                disabled={props.cDataForm === 'I'}>
+                                hidden={props.cDataForm === 'I'}>
 
                             {contractPaths.map(item => (
                                 <option key={item.key} value={item.key}>{item.value}</option>
                             ))}
                         </select>
+                        <input type="text" value={contractPath} hidden={props.cDataForm !== 'I'} size="5"/>
+
                     </td>
                 </tr>
 
@@ -899,11 +1135,12 @@ function S010100010(props) {
             </table>
 
             <div class="btn-center">
-                <input type = "button" onClick={temporaryStorage} value = "임시저장" />
-                <input type = "button" onClick={onSubmitHandler} value = "저장" />
-                <input type = "button"  value = "출력" />
-                <input type = "button" id = "btnWidth" value = "임대차 계약처" />
-                <input type = "button" onClick={onDeleteHandler} value = "삭제" />
+                <input type="button" hidden={props.newDataForm === 'N'} onClick={temporaryStorage} value="임시저장"/>
+                <input type="button" hidden={props.newDataForm === 'N'} onClick={onSubmitHandler} value="저장"/>
+                <input type="button" hidden={props.newDataForm !== 'N'} onClick={newTemporaryStorage} value="저장"/>
+                <input type="button" value="출력"/>
+                <input type="button" id="btnWidth" value="임대차 계약처"/>
+                <input type="button" onClick={onDeleteHandler} value="삭제"/>
                 <Link to="/member">
                 </Link>
             </div>
