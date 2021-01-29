@@ -1,4 +1,4 @@
-import React, {useState, useEffect, Fragment} from 'react';
+import React, { useState, useEffect, Fragment } from 'react';
 import axios from 'axios';
 import './css/S010100050.css';
 import S010100010 from './S010100010';
@@ -8,7 +8,7 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import Button from '@material-ui/core/Button';
 import DatePicker from "react-datepicker";
-import {addDays} from "date-fns";
+import { addDays } from "date-fns";
 //모달창 라이브러리 끝-->
 
 let num = '';
@@ -41,6 +41,9 @@ function S010100050(props) {
     const [detailAddress, setDetailAddress] = useState("")
     const [detailZipcode, setDetailZipcode] = useState("")
     const [detailDetailAddress, setDetailDetailAddress] = useState("")
+
+    const [startAsk_date, setStartAsk_date] = useState(new Date());
+    const [endAsk_date, setEndAsk_date] = useState(new Date());
 
 
     // const [detailContractId, setDetailContractId] = useState("")
@@ -75,7 +78,7 @@ function S010100050(props) {
             .then(response => {
                 if (response.data.success) {
                     //console.log('ask_tp',response.data.rows);
-                    let arr = [{key: '선택', value: '선택'}]
+                    let arr = [{ key: '선택', value: '선택' }]
 
                     response.data.rows.map((data) =>
                         arr.push({
@@ -136,10 +139,24 @@ function S010100050(props) {
                     setDetailEmpEmail(modalEmpEmails[0]);
                     setDetailDomain(modalEmpEmails[1]);
 
+
+                    setStartAsk_date(new Date(modalEndDate));
+           
+                    //alert(modalEndDate);
+
+                    const endDateArr = modalEndDate.split('.');
+                    const datePickerYear = endDateArr[0]
+                    const datePickerMonth = endDateArr[1]
+                    const datePicekrDate = endDateArr[2]
+
+                    const finDate = new Date(datePickerYear, datePickerMonth+1,datePicekrDate);
+                    //alert(finDate);
+                    setModifyDate(finDate);
+
                     setDetailZipcode(modalZip);
                     setDetailAddress(modalAddr);
                     setDetailDetailAddress(modalDetailAddr);
-                    setDetailCheckoutDate(modalEndDate);
+                    //setDetailCheckoutDate(modalEndDate);
 
                 } else {
                     alert("상세정보 데이터를 불러오는데 실패하였습니다.");
@@ -242,47 +259,47 @@ function S010100050(props) {
         setConOpen(true);
 
     }
-    const onContractModifyHandler = (event) => {
-        //alert('dataEmpHp : '+dataEmpHp);
-        const body = {
-            dataName: dataName,
-            dataEmpHp: dataEmpHp,
+    // const onContractModifyHandler = (event) => {
+    //     //alert('dataEmpHp : '+dataEmpHp);
+    //     const body = {
+    //         dataName: dataName,
+    //         dataEmpHp: dataEmpHp,
 
-            detailMemberNm: detailMemberNm,
+    //         detailMemberNm: detailMemberNm,
 
-            detailFstRegNo: detailFstRegNo,
-            detailSndRegNo: detailSndRegNo,
-            detailThdRegNo: detailThdRegNo,
+    //         detailFstRegNo: detailFstRegNo,
+    //         detailSndRegNo: detailSndRegNo,
+    //         detailThdRegNo: detailThdRegNo,
 
-            detailMemberTp: detailMemberTp,
-            detailName: detailName,
+    //         detailMemberTp: detailMemberTp,
+    //         detailName: detailName,
 
-            detailFstEmpHp: detailFstEmpHp,
-            detailSndEmpHp: detailSndEmpHp,
-            detailThdEmpHp: detailThdEmpHp,
-
-
-            detailEmpEmail: detailEmpEmail,
-            detailDomain: detailDomain,
-
-            detailZipcode: detailZipcode,
-            detailAddress: detailAddress,
-            detailDetailAddress: detailDetailAddress
-        }
-        //console.log('body',body);
-
-        axios.post('/api/s010100050/modifyMember', body)
-            .then(response => {
-                if (response.data.success) {
-                    alert('수정되었습니다.');
-                } else {
-                    alert('수정에 실패하였습니다.');
-                }
-
-            })
+    //         detailFstEmpHp: detailFstEmpHp,
+    //         detailSndEmpHp: detailSndEmpHp,
+    //         detailThdEmpHp: detailThdEmpHp,
 
 
-    }
+    //         detailEmpEmail: detailEmpEmail,
+    //         detailDomain: detailDomain,
+
+    //         detailZipcode: detailZipcode,
+    //         detailAddress: detailAddress,
+    //         detailDetailAddress: detailDetailAddress
+    //     }
+    //console.log('body',body);
+
+    // axios.post('/api/s010100050/modifyMember', body)
+    //     .then(response => {
+    //         if (response.data.success) {
+    //             alert('수정되었습니다.');
+    //         } else {
+    //             alert('수정에 실패하였습니다.');
+    //         }
+
+    //     })
+
+
+    //}
     const s010100050 = detailAllInfo.map((detailAllInfo, index) => {
         return (
             <tr>
@@ -310,7 +327,7 @@ function S010100050(props) {
             alignItems: 'center',
             width: '100%'
         }}
-              onSubmit={onSubmitDetailHandler}
+            onSubmit={onSubmitDetailHandler}
         >
             <div className="memberInfoWrapper">
                 <div className="memberInfoWrap">
@@ -321,15 +338,15 @@ function S010100050(props) {
                         <tr>
                             <th>회원명</th>
                             <td><input type="text" value={detailMemberNm} id="detailMemberNm" name="detailMemberNm"
-                                       size="5"
-                                       onChange={onDetailMemberNmHandler}/></td>
+                                size="5"
+                                onChange={onDetailMemberNmHandler} /></td>
                             <th>사업자번호</th>
                             <td><input type="text" value={detailFstRegNo} id="detailRegNo" name="detailRegNo" size="3"
-                                       onChange={onDetailFstRegNoHandler}/> -&nbsp;
+                                onChange={onDetailFstRegNoHandler} /> -&nbsp;
                                 <input type="text" value={detailSndRegNo} id="detailRegNo" name="detailRegNo" size="3"
-                                       onChange={onDetailSndRegNoHandler}/> -&nbsp;
+                                    onChange={onDetailSndRegNoHandler} /> -&nbsp;
                                 <input type="text" value={detailThdRegNo} id="detailRegNo" name="detailRegNo" size="3"
-                                       onChange={onDetailThdRegNoHandler}/>
+                                    onChange={onDetailThdRegNoHandler} />
                             </td>
                             <th>회원구분</th>
                             <td>
@@ -340,19 +357,16 @@ function S010100050(props) {
                                 </select>
                             </td>
                             <th>퇴실일자</th>
-                            <td><input type="text" value={detailCheckoutDate} id="detailCheckoutDate"
-                                       name="detailCheckoutDate" size="8"
-                                       onChange={onDetailCheckoutDateHandler}/></td>
+                            <td> <DatePicker
+                                    locale="ko"
+                                    selected={startAsk_date.setHours(9, 0, 0, 0)}//Front = 한국시 BackEnd = 표준시 9시간차이
+                                    onChange={date => setStartAsk_date(date)}
+                                    selectsStart
+                                    startDate={startAsk_date.setHours(9, 0, 0, 0)}
+                                    endDate={endAsk_date}
+                                    dateFormat="yyyy.MM.dd"
 
-                            {/*<DatePicker*/}
-                            {/*    locale="ko"*/}
-                            {/*    selected={modifyDate.setHours(9, 0, 0, 0)}//Front = 한국시 BackEnd = 표준시 9시간차이*/}
-                            {/*    onChange={date => setModifyDate(date)}*/}
-                            {/*    selectsStart*/}
-                            {/*    startDate={modifyDate}*/}
-                            {/*    endDate={endModifyDate}*/}
-                            {/*    dateFormat="yyyy.MM.dd"*/}
-                            {/*/>*/}
+                                /></td>
 
                         </tr>
 
@@ -362,37 +376,37 @@ function S010100050(props) {
                             <th>성명</th>
                             <td>
                                 <input type="text" value={detailName} id="detailName" name="detailName" size="5"
-                                       onChange={onDetailNameHandler}/></td>
+                                    onChange={onDetailNameHandler} /></td>
 
                             <th>연락처</th>
                             <td colSpan="2">
                                 <input type="text" value={detailFstEmpHp} id="detailEmpHp" name="detailEmpHp" size="3"
-                                       onChange={onDetailFstEmpHpHandler}/> -&nbsp;
+                                    onChange={onDetailFstEmpHpHandler} /> -&nbsp;
                                 <input type="text" value={detailSndEmpHp} id="detailEmpHp" name="detailEmpHp" size="3"
-                                       onChange={onDetailSndEmpHpHandler}/> -&nbsp;
+                                    onChange={onDetailSndEmpHpHandler} /> -&nbsp;
                                 <input type="text" value={detailThdEmpHp} id="detailEmpHp" name="detailEmpHp" size="3"
-                                       onChange={onDetailThdEmpHpHandler}/>
+                                    onChange={onDetailThdEmpHpHandler} />
                             </td>
                             <th>E-mail</th>
                             <td>
                                 <input type="text" value={detailEmpEmail} id="detailEmpEmail" name="detailEmpEmail"
-                                       size="10"
-                                       onChange={onDetailEmpEmailHandler}/> @&nbsp;
+                                    size="10"
+                                    onChange={onDetailEmpEmailHandler} /> @&nbsp;
                                 <input type="text" value={detailDomain} id="detailEmpEmail" name="detailEmpEmail"
-                                       size="10"
-                                       onChange={onDetailDomainHandler}/>
+                                    size="10"
+                                    onChange={onDetailDomainHandler} />
                             </td>
 
                         </tr>
                         <th>주소</th>
                         <td colSpan="6">
                             <input type="text" value={detailZipcode} id="detailAddress" name="detailAddress" size="7"
-                                   onChange={onDetailZipcodeHandler}/>&nbsp;
+                                onChange={onDetailZipcodeHandler} />&nbsp;
                             <input type="text" value={detailAddress} id="detailAddress" name="detailAddress" size="40"
-                                   onChange={onDetailAddressHandler}/>
+                                onChange={onDetailAddressHandler} />
                             <input type="text" value={detailDetailAddress} id="detailAddress" name="detailAddress"
-                                   size="80"
-                                   onChange={onDetailDetailAddressHandler}/>
+                                size="80"
+                                onChange={onDetailDetailAddressHandler} />
                         </td>
                         <tr>
                             <th rowSpan="2">첨부파일</th>
@@ -421,8 +435,8 @@ function S010100050(props) {
                         {s010100050}
                     </table>
                     <div id="btnAlign">
-                        <input type="button" id="btn-centerM" onClick={onContractModifyHandler} value="수정하기"/>
-                        <input type="button" id="btn-centerN" onClick={onNewOpenContractHandler} value="신규계약"/>
+                        {/* <input type="button" id="btn-centerM" onClick={onContractModifyHandler} value="수정하기"/> */}
+                        <input type="button" id="btn-centerN" onClick={onNewOpenContractHandler} value="신규계약" />
                     </div>
 
                     {/*계약ID클릭*/}
@@ -431,9 +445,9 @@ function S010100050(props) {
                         //fullWidth = {true}
                         open={conOpen}
                         onClose={onConContractHandler}>
-                        <S010100010 dataNum={rNum} cDataForm={'I'}/>
+                        <S010100010 dataNum={rNum} cDataForm={'I'} />
                         <DialogActions>
-                            <input type="button" onClick={onConContractHandler} color="primary" value="닫기"/>
+                            <input type="button" onClick={onConContractHandler} color="primary" value="닫기" />
                         </DialogActions>
                     </Dialog>
 
@@ -443,9 +457,9 @@ function S010100050(props) {
                         //fullWidth = {true}
                         open={newOpen}
                         onClose={onNewContractHandler}>
-                        <S010100010 dataMem={detailMemberId} newDataForm={'N'}/>
+                        <S010100010 dataMem={detailMemberId} newDataForm={'N'} />
                         <DialogActions>
-                            <input type="button" onClick={onNewContractHandler} color="primary" value="닫기"/>
+                            <input type="button" onClick={onNewContractHandler} color="primary" value="닫기" />
                         </DialogActions>
                     </Dialog>
 

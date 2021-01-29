@@ -41,7 +41,7 @@ function S010100140(props) {
                                 const askInfo = (response.data.rows[0].ASK_INFO);
                                 const askContent = (response.data.rows[0].ASK_CONTENT);
 
-                                setModalAskDate(askDate);
+                                // setModalAskDate(askDate);
                                 //console.log('askDate', askDate);
                                 setModalAskTp(askTp);
                                 setModalAskName(askName);
@@ -49,6 +49,7 @@ function S010100140(props) {
                                 setModalAskPath(askPath);
                                 setModalAskInfo(askInfo);
                                 setModalAskContent(askContent);
+                                setStartDate(new Date(askDate));
                             }else{
                                 alert("상세 정보 가져오기를 실패하였습니다.")
                             }
@@ -77,7 +78,6 @@ function S010100140(props) {
             getContractTpLov();
             getAskMethodLov();
             getAccessPathLov();
-
         },[]);
 
     const getContractTpLov = () => {
@@ -171,7 +171,7 @@ function S010100140(props) {
         const body = {
             modalAskId : rNum,
             modalAskTp: modalAskTp,
-            modalAskDate: modalAskDate,
+            modalAskDate: startDate,
             modalAskName: modalAskName,
             modalAskMethod: modalAskMethod,
             modalAskPath: modalAskPath,
@@ -197,18 +197,14 @@ function S010100140(props) {
         event.preventDefault();
         //   //문의구분 NUll체크
           if(modalAskTp == null ||modalAskTp == ''||modalAskTp == '선택'){
-              alert('modalAskTp: '+modalAskTp);
+              //alert('modalAskTp: '+modalAskTp);
               return alert("문의구분을 선택하세요.");
          }
 
-        // if(modalAskTp == null ||modalAskTp == ''){
-        //     return alert("문의구분을 선택하세요.");
-        // }
-
          //문의방법 NUll체크
          if(modalAskMethod == null || modalAskMethod == ''){
-             alert('111');
-            alert((modalAskMethod == null)+ ',' + (modalAskMethod == '' ));
+             //alert('111');
+            //alert((modalAskMethod == null)+ ',' + (modalAskMethod == '' ));
             return alert("문의방법을 선택하세요.");
         }
         
@@ -217,17 +213,18 @@ function S010100140(props) {
             return alert("접근경로를 선택하세요.");
         }
         
+    
         //서버에 채운 값들을 request로 보낸다.
         const body = {
             modalAskTp: modalAskTp,
-            modalAskDate: modalAskDate,
+            modalAskDate: startDate,
             modalAskName: modalAskName,
             modalAskMethod: modalAskMethod,
             modalAskPath: modalAskPath,
             modalAskInfo: modalAskInfo,
             modalAskContent: modalAskContent
         }
-             console.log('setModalAskDate',setModalAskDate);
+             //console.log('setModalAskDate',setModalAskDate);
 
 
         axios.post("/api/s010100140",body)
@@ -263,24 +260,23 @@ function S010100140(props) {
 
                         <th>문의일자</th>
                             <td>
-                                <DatePicker
+                                {/* <DatePicker
                                     locale="ko"
                                     selected={new Date()}
                                     value={modalAskDate}
                                     onChange={date => setModalAskDate(date)}
                                     minDate={new Date()}
                                     maxDate={addDays(new Date(), 0)}
-                                    dateFormat="yy/MM/dd (eee)"
+                                    dateFormat="yy.MM.dd (eee)"
 
+                                /> */}
+                                <DatePicker
+                                    locale="ko"
+                                    selected={startDate.setHours(9, 0, 0, 0)}
+                                    onChange={date => setStartDate(date)}
+                                    dateFormat="yyyy.MM.dd (eee)"
+                                    onClick={onChangeHandler}
                                 />
-                                {/* <DatePicker*/}
-                                {/*     locale="ko"*/}
-                                {/*     selected={startDate.setHours(9, 0, 0, 0)}*/}
-                                {/*     value={startDate}*/}
-                                {/*     onChange={date => setStartDate(date)}*/}
-                                {/*     dateFormat="yy/MM/dd (eee)"*/}
-                                {/*     onClick={onChangeHandler}*/}
-                                {/* />*/}
                             </td>
 
                         <th>문의자명</th>
