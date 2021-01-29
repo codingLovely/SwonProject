@@ -7,11 +7,13 @@ import S010100010 from './S010100010';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import Button from '@material-ui/core/Button';
+import DatePicker from "react-datepicker";
+import {addDays} from "date-fns";
 //모달창 라이브러리 끝-->
 
 let num = '';
 let rNum = 0;
-
+let memberTpDetail = [];
 
 function S010100050(props) {
 
@@ -21,13 +23,25 @@ function S010100050(props) {
 
     //회원정보
     const [detailMemberNm, setDetailMemberNm] = useState("")
-    const [detailRegNo, setDetailRegNo] = useState("")
+
+    const [detailFstRegNo, setDetailFstRegNo] = useState("")
+    const [detailSndRegNo, setDetailSndRegNo] = useState("")
+    const [detailThdRegNo, setDetailThdRegNo] = useState("")
+
     const [detailMemberTp, setDetailMemberTp] = useState([])
     const [detailCheckoutDate, setDetailCheckoutDate] = useState("")
     const [detailName, setDetailName] = useState("")
-    const [detailEmpHp, setDetailEmpHp] = useState("")
+
+    const [detailFstEmpHp, setDetailFstEmpHp] = useState("")
+    const [detailSndEmpHp, setDetailSndEmpHp] = useState("")
+    const [detailThdEmpHp, setDetailThdEmpHp] = useState("")
+
     const [detailEmpEmail, setDetailEmpEmail] = useState("")
+    const [detailDomain, setDetailDomain] = useState("")
     const [detailAddress, setDetailAddress] = useState("")
+    const [detailZipcode, setDetailZipcode] = useState("")
+    const [detailDetailAddress, setDetailDetailAddress] = useState("")
+
 
     // const [detailContractId, setDetailContractId] = useState("")
     // const [detailContractDa
@@ -41,17 +55,49 @@ function S010100050(props) {
 
 
     const dataName = props.dataName;
-    //console.log('dataNum',dataNum);
+    const dataEmpHp = props.dataEmpHp;
+    //console.log('dataEmpHp',dataEmpHp);
 
     const [conOpen, setConOpen] = React.useState(false);
     const [newOpen, setNewOpen] = React.useState(false);
-    const [detailMemberId,setDetailMemberId] = useState('');
+    const [detailMemberId, setDetailMemberId] = useState('');
+
+
+    //datepicker속성 및 이벤트 시작
+    const [modifyDate, setModifyDate] = useState(new Date());
+    const [endModifyDate, setEndModifyDate] = useState(new Date());
+    //datepicker속성 및 이벤트 끝
+
+
+    useEffect(() => {
+
+        axios.get('/api/s010100150/memberTpDetail')
+            .then(response => {
+                if (response.data.success) {
+                    //console.log('ask_tp',response.data.rows);
+                    let arr = [{key: '선택', value: '선택'}]
+
+                    response.data.rows.map((data) =>
+                        arr.push({
+                            value: data.CD_V_MEANING,
+                            key: data.CD_V
+                        }));
+
+                    memberTpDetail = arr;
+                    //console.log(valueArr[2]);
+                } else {
+                    alert(" 데이터를 불러오는데 실패하였습니다.");
+                }
+            })
+
+
+    }, [])
 
     useEffect(() => {
         axios.post(`/api/s010100050/detailMember_by_id?id=${dataName}&type=single`)
             .then(response => {
                 if (response.data.success) {
-                    console.log('memberId', response.data.rows[0].MEMBER_ID);
+                    //console.log('memberId', response.data.rows[0].MEMBER_ID);
 
                     const memberId = response.data.rows[0].MEMBER_ID;
                     const modalMemberNm = response.data.rows[0].MEMBER_NM;
@@ -59,26 +105,40 @@ function S010100050(props) {
                     const modalMemberTp = response.data.rows[0].MEMBER_TP;
                     const modalName = response.data.rows[0].NAME;
                     const modalEmpHp = response.data.rows[0].EMP_HP;
-                    const modalEmpemail = response.data.rows[0].EMP_EMAIL;
-                    let zip= response.data.rows[0].ZIP_CODE;
-                    let addr = response.data.rows[0].ADDRESS;
-                    let detailAddr = response.data.rows[0].DETAIL_ADDRESS;
-                    const modalAddress = zip+' '+addr+' '+detailAddr;
+                    const modalEmpEmail = response.data.rows[0].EMP_EMAIL;
+                    const modalZip = response.data.rows[0].ZIP_CODE;
+                    const modalAddr = response.data.rows[0].ADDRESS;
+                    const modalDetailAddr = response.data.rows[0].DETAIL_ADDRESS;
+                    //const modalAddress = zip + ' ' + addr + ' ' + detailAddr;
                     const modalEndDate = response.data.rows[0].END_DATE;
 
-
+                    const modalRegNos = modalRegNo.split("-");
+                    const modalEmpHps = modalEmpHp.split("-");
+                    const modalEmpEmails = modalEmpEmail.split("@");
                     setDetailMemberId(memberId);
 
                     //console.log(modalAddress);
                     setDetailAllInfo(response.data.rows);
-                    console.log(detailAllInfo);
+                    //console.log(detailAllInfo);
                     setDetailMemberNm(modalMemberNm);
-                    setDetailRegNo(modalRegNo);
+
+                    setDetailFstRegNo(modalRegNos[0]);
+                    setDetailSndRegNo(modalRegNos[1]);
+                    setDetailThdRegNo(modalRegNos[2]);
+
                     setDetailMemberTp(modalMemberTp);
                     setDetailName(modalName);
-                    setDetailEmpHp(modalEmpHp);
-                    setDetailEmpEmail(modalEmpemail);
-                    setDetailAddress(modalAddress);
+
+                    setDetailFstEmpHp(modalEmpHps[0]);
+                    setDetailSndEmpHp(modalEmpHps[1]);
+                    setDetailThdEmpHp(modalEmpHps[2]);
+
+                    setDetailEmpEmail(modalEmpEmails[0]);
+                    setDetailDomain(modalEmpEmails[1]);
+
+                    setDetailZipcode(modalZip);
+                    setDetailAddress(modalAddr);
+                    setDetailDetailAddress(modalDetailAddr);
                     setDetailCheckoutDate(modalEndDate);
 
                 } else {
@@ -88,13 +148,19 @@ function S010100050(props) {
     }, [])
 
 
-
     const onDetailMemberNmHandler = (event) => {
         setDetailMemberNm(event.currentTarget.value);
     }
 
-    const onDetailRegNoHandler = (event) => {
-        setDetailRegNo(event.currentTarget.value);
+    const onDetailFstRegNoHandler = (event) => {
+        setDetailFstRegNo(event.currentTarget.value);
+    }
+
+    const onDetailSndRegNoHandler = (event) => {
+        setDetailSndRegNo(event.currentTarget.value);
+    }
+    const onDetailThdRegNoHandler = (event) => {
+        setDetailThdRegNo(event.currentTarget.value);
     }
 
     const onDetailMemberTpHandler = (event) => {
@@ -109,16 +175,36 @@ function S010100050(props) {
         setDetailName(event.currentTarget.value);
     }
 
-    const onDetailEmpHpHandler = (event) => {
-        setDetailEmpHp(event.currentTarget.value);
+    const onDetailFstEmpHpHandler = (event) => {
+        setDetailFstEmpHp(event.currentTarget.value);
+    }
+
+    const onDetailSndEmpHpHandler = (event) => {
+        setDetailSndEmpHp(event.currentTarget.value);
+    }
+
+    const onDetailThdEmpHpHandler = (event) => {
+        setDetailThdEmpHp(event.currentTarget.value);
     }
 
     const onDetailEmpEmailHandler = (event) => {
         setDetailEmpEmail(event.currentTarget.value);
     }
 
+    const onDetailDomainHandler = (event) => {
+        setDetailDomain(event.currentTarget.value);
+    }
+
+    const onDetailZipcodeHandler = (event) => {
+        setDetailZipcode(event.currentTarget.value);
+    }
+
     const onDetailAddressHandler = (event) => {
         setDetailAddress(event.currentTarget.value);
+    }
+
+    const onDetailDetailAddressHandler = (event) => {
+        setDetailDetailAddress(event.currentTarget.value);
     }
 
 
@@ -144,7 +230,7 @@ function S010100050(props) {
         setConOpen(false);
     }
 
-    const onNewContractHandler = (event) =>{
+    const onNewContractHandler = (event) => {
         setNewOpen(false);
     }
 
@@ -156,7 +242,47 @@ function S010100050(props) {
         setConOpen(true);
 
     }
+    const onContractModifyHandler = (event) => {
+        //alert('dataEmpHp : '+dataEmpHp);
+        const body = {
+            dataName: dataName,
+            dataEmpHp: dataEmpHp,
 
+            detailMemberNm: detailMemberNm,
+
+            detailFstRegNo: detailFstRegNo,
+            detailSndRegNo: detailSndRegNo,
+            detailThdRegNo: detailThdRegNo,
+
+            detailMemberTp: detailMemberTp,
+            detailName: detailName,
+
+            detailFstEmpHp: detailFstEmpHp,
+            detailSndEmpHp: detailSndEmpHp,
+            detailThdEmpHp: detailThdEmpHp,
+
+
+            detailEmpEmail: detailEmpEmail,
+            detailDomain: detailDomain,
+
+            detailZipcode: detailZipcode,
+            detailAddress: detailAddress,
+            detailDetailAddress: detailDetailAddress
+        }
+        //console.log('body',body);
+
+        axios.post('/api/s010100050/modifyMember', body)
+            .then(response => {
+                if (response.data.success) {
+                    alert('수정되었습니다.');
+                } else {
+                    alert('수정에 실패하였습니다.');
+                }
+
+            })
+
+
+    }
     const s010100050 = detailAllInfo.map((detailAllInfo, index) => {
         return (
             <tr>
@@ -164,12 +290,12 @@ function S010100050(props) {
                 <td>{detailAllInfo.CONTRACT_DATE}</td>
                 <td>{detailAllInfo.CONTRACT_TP}</td>
                 <td>{detailAllInfo.CONTRACT_ROOM}</td>
-                <td>{detailAllInfo.CONTRACT_TERM}개월</td>
+                <td>{detailAllInfo.CONTRACT_TERM}개월 ({detailAllInfo.START_DATE} ~ {detailAllInfo.END_DATE} )</td>
                 <td>{detailAllInfo.MEMBER_ST}</td>
                 <td>{detailAllInfo.PAY_DATE}일</td>
-                <td>{detailAllInfo.PAYED_MONEY}</td>
+                <td>{detailAllInfo.PAYED_PLAN_MONEY}</td>
                 <td>{detailAllInfo.CONTRACT_LOCKER}</td>
-                <td>{detailAllInfo.PAYED_FLAG}</td>
+                <td>{detailAllInfo.END_FLAG}</td>
             </tr>
         )
     });
@@ -184,30 +310,49 @@ function S010100050(props) {
             alignItems: 'center',
             width: '100%'
         }}
-        onSubmit={onSubmitDetailHandler}
+              onSubmit={onSubmitDetailHandler}
         >
             <div className="memberInfoWrapper">
                 <div className="memberInfoWrap">
                     {/* 회원정보란 */}
-                    <h2 id = "infoTitle">회원정보</h2>
+                    <h2 id="infoTitle">회원정보</h2>
 
                     <table>
                         <tr>
                             <th>회원명</th>
                             <td><input type="text" value={detailMemberNm} id="detailMemberNm" name="detailMemberNm"
                                        size="5"
-                                       onChange={onDetailMemberNmHandler} disabled={props.dataForm === 'U'}/></td>
+                                       onChange={onDetailMemberNmHandler}/></td>
                             <th>사업자번호</th>
-                            <td><input type="text" value={detailRegNo} id="detailRegNo" name="detailRegNo" size="10"
-                                       onChange={onDetailRegNoHandler} disabled={props.dataForm === 'U'}/></td>
+                            <td><input type="text" value={detailFstRegNo} id="detailRegNo" name="detailRegNo" size="3"
+                                       onChange={onDetailFstRegNoHandler}/> -&nbsp;
+                                <input type="text" value={detailSndRegNo} id="detailRegNo" name="detailRegNo" size="3"
+                                       onChange={onDetailSndRegNoHandler}/> -&nbsp;
+                                <input type="text" value={detailThdRegNo} id="detailRegNo" name="detailRegNo" size="3"
+                                       onChange={onDetailThdRegNoHandler}/>
+                            </td>
                             <th>회원구분</th>
-                            <td><input type="text" value={detailMemberTp} id="detailMemberTp" name="detailMemberTp"
-                                       size="5"
-                                       onChange={onDetailMemberTpHandler} disabled={props.dataForm === 'U'}/></td>
+                            <td>
+                                <select onChange={onDetailMemberTpHandler} value={detailMemberTp}>
+                                    {memberTpDetail.map(item => (
+                                        <option key={item.key} value={item.key}>{item.value}</option>
+                                    ))}
+                                </select>
+                            </td>
                             <th>퇴실일자</th>
                             <td><input type="text" value={detailCheckoutDate} id="detailCheckoutDate"
                                        name="detailCheckoutDate" size="8"
-                                       onChange={onDetailCheckoutDateHandler} disabled={props.dataForm === 'U'}/></td>
+                                       onChange={onDetailCheckoutDateHandler}/></td>
+
+                            {/*<DatePicker*/}
+                            {/*    locale="ko"*/}
+                            {/*    selected={modifyDate.setHours(9, 0, 0, 0)}//Front = 한국시 BackEnd = 표준시 9시간차이*/}
+                            {/*    onChange={date => setModifyDate(date)}*/}
+                            {/*    selectsStart*/}
+                            {/*    startDate={modifyDate}*/}
+                            {/*    endDate={endModifyDate}*/}
+                            {/*    dateFormat="yyyy.MM.dd"*/}
+                            {/*/>*/}
 
                         </tr>
 
@@ -216,26 +361,38 @@ function S010100050(props) {
 
                             <th>성명</th>
                             <td>
-                                <input type="text" value={detailName} id="detailName" name="detailName" size="10"
-                                       onChange={onDetailNameHandler} disabled={props.dataForm === 'U'}/></td>
+                                <input type="text" value={detailName} id="detailName" name="detailName" size="5"
+                                       onChange={onDetailNameHandler}/></td>
 
                             <th>연락처</th>
                             <td colSpan="2">
-                                <input type="text" value={detailEmpHp} id="detailEmpHp" name="detailEmpHp" size="12"
-                                       onChange={onDetailEmpHpHandler} disabled={props.dataForm === 'U'}/>
+                                <input type="text" value={detailFstEmpHp} id="detailEmpHp" name="detailEmpHp" size="3"
+                                       onChange={onDetailFstEmpHpHandler}/> -&nbsp;
+                                <input type="text" value={detailSndEmpHp} id="detailEmpHp" name="detailEmpHp" size="3"
+                                       onChange={onDetailSndEmpHpHandler}/> -&nbsp;
+                                <input type="text" value={detailThdEmpHp} id="detailEmpHp" name="detailEmpHp" size="3"
+                                       onChange={onDetailThdEmpHpHandler}/>
                             </td>
                             <th>E-mail</th>
                             <td>
                                 <input type="text" value={detailEmpEmail} id="detailEmpEmail" name="detailEmpEmail"
-                                       size="12"
-                                       onChange={onDetailEmpEmailHandler} disabled={props.dataForm === 'U'}/>
+                                       size="10"
+                                       onChange={onDetailEmpEmailHandler}/> @&nbsp;
+                                <input type="text" value={detailDomain} id="detailEmpEmail" name="detailEmpEmail"
+                                       size="10"
+                                       onChange={onDetailDomainHandler}/>
                             </td>
 
                         </tr>
                         <th>주소</th>
                         <td colSpan="6">
-                            <input type="text" value={detailAddress} id="detailAddress" name="detailAddress" size="80"
-                                   onChange={onDetailAddressHandler} disabled={props.dataForm === 'U'}/>
+                            <input type="text" value={detailZipcode} id="detailAddress" name="detailAddress" size="7"
+                                   onChange={onDetailZipcodeHandler}/>&nbsp;
+                            <input type="text" value={detailAddress} id="detailAddress" name="detailAddress" size="40"
+                                   onChange={onDetailAddressHandler}/>
+                            <input type="text" value={detailDetailAddress} id="detailAddress" name="detailAddress"
+                                   size="80"
+                                   onChange={onDetailDetailAddressHandler}/>
                         </td>
                         <tr>
                             <th rowSpan="2">첨부파일</th>
@@ -247,7 +404,7 @@ function S010100050(props) {
 
                     </table>
 
-                    <h6 id = "conInfoTitle">계약정보</h6>
+                    <h6 id="conInfoTitle">계약정보</h6>
                     <table>
                         <tr>
                             <th>계약ID</th>
@@ -263,6 +420,12 @@ function S010100050(props) {
                         </tr>
                         {s010100050}
                     </table>
+                    <div id="btnAlign">
+                        <input type="button" id="btn-centerM" onClick={onContractModifyHandler} value="수정하기"/>
+                        <input type="button" id="btn-centerN" onClick={onNewOpenContractHandler} value="신규계약"/>
+                    </div>
+
+                    {/*계약ID클릭*/}
                     <Dialog
                         maxWidth={"lg"}
                         //fullWidth = {true}
@@ -270,21 +433,19 @@ function S010100050(props) {
                         onClose={onConContractHandler}>
                         <S010100010 dataNum={rNum} cDataForm={'I'}/>
                         <DialogActions>
-                            <input type = "button" onClick={onConContractHandler} color="primary" value="닫기" />
+                            <input type="button" onClick={onConContractHandler} color="primary" value="닫기"/>
                         </DialogActions>
                     </Dialog>
 
-                    <div>
-                        <input type = "button" id="btn-center" onClick={onNewOpenContractHandler} value = "신규계약" />
-                    </div>
-                      <Dialog
+                    {/*신규계약 멤버ID클릭*/}
+                    <Dialog
                         maxWidth={"lg"}
                         //fullWidth = {true}
                         open={newOpen}
                         onClose={onNewContractHandler}>
-                        <S010100010 dataMem={detailMemberId} newDataForm ={'N'}/>
+                        <S010100010 dataMem={detailMemberId} newDataForm={'N'}/>
                         <DialogActions>
-                            <input type = "button" onClick={onNewContractHandler} color="primary" value="닫기" />
+                            <input type="button" onClick={onNewContractHandler} color="primary" value="닫기"/>
                         </DialogActions>
                     </Dialog>
 

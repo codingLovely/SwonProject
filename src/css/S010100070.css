@@ -1,0 +1,9 @@
+#list {margin-right: 15px; }
+#list .resultTable { width: 1215px;}
+#list .resultTable { border-spacing: 0px; padding: 10px 10px 10px 250px;}
+#list .resultTable tr { border-spacing: 0px;}
+#list .resultTable tr td { border: none; padding: 5px; text-align: left;}
+#list .resultTable tr td #commentTitle {margin-bottom: 3px;}
+
+#paymentList {width: 1215px; border-spacing: 0px; margin-left: 2px;}
+#paymentList th {background-color: #D6BCB0;}

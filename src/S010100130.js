@@ -171,6 +171,7 @@ function S010100130(props) {
             // handleFilters(filters,tb_s10_ask010);
 
         }
+
     //문의자명 속성
     const [ask_name, setAsk_name] = useState("")
 

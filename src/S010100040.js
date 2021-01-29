@@ -18,23 +18,19 @@ import Button from '@material-ui/core/Button';
 //<!--켈린더 라이브러리시작
 import DatePicker, {registerLocale} from "react-datepicker";
 import ko from 'date-fns/locale/ko';
-
 registerLocale("ko", ko);
 //켈린더 라이브러리 끝-->ghy
 
 
 let valueArr = [[]];
 let queryArr = [['MEMBER_TP', '']];
+let contractsStatus = [];
 let endStatus = [{key: '전체', value: '전체'},
     {key: 'Y', value: 'Y'},
     {key: 'N', value: 'N'}]
-let contractsStatus =
-    [{key: '전체', value: '전체'},
-    {key: 'C', value: '확정'},
-    {key: 'T', value: '가계약'}]
-
 
 let memberName = '';
+let memberEmpHp = '';
 let rNum = 0;
 
 function S010100040(props) {
@@ -46,6 +42,7 @@ function S010100040(props) {
     const [memberSt, setMemberSt] = useState('')
     const [name, setName] = useState('')
     const [numForDetailModal, setNumForDetailModal] = useState('')
+    const [empHpForDetailModal, setEmpHpForDetailModal] = useState('')
 
     //<!--모달창 속성 및 이벤트
     const [open, setOpen] = React.useState(false);
@@ -79,7 +76,31 @@ function S010100040(props) {
         }
     }, [])
 
-    //TB_S10_ASK010 테이블 조회
+    useEffect(() => {
+
+            axios.get('/api/s010100140/selectMemberSt')
+                .then(response => {
+                    if (response.data.success) {
+                        //console.log('ask_tp',response.data.rows);
+                        let arr = [{key: '전체', value: '전체'}]
+
+                        response.data.rows.map((data) =>
+                            arr.push({
+                                value: data.CD_V_MEANING,
+                                key: data.CD_V
+
+                            }));
+
+                        contractsStatus = arr;
+
+                    } else {
+                        alert("회원상테 데이터를 불러오는데 실패하였습니다.");
+                    }
+                })
+
+
+    }, [])
+
     const [tbMember, setTbMember] = useState([])
 
     const memberList = () => {
@@ -140,14 +161,6 @@ function S010100040(props) {
             contractStatus,
             memberSt
         }
-        // alert(body.memberNm,body.regNo,body.name,body.memberTp,body.contractStatus);
-        // alert(body.regNo);
-        // alert(body.name);
-        alert(body.contractStatus);
-        alert(body.memberSt);
-
-
-
 
         axios.post('/api/s010100040/searchMember', body)
             .then(response => {
@@ -180,24 +193,17 @@ function S010100040(props) {
     }
 
     const onHandleDetailClickOpen = (event) => {
+        console.log(event.target.id);
+        memberEmpHp = event.target.id;
         memberName = event.target.innerHTML;
+        setEmpHpForDetailModal(memberEmpHp);
         setNumForDetailModal(memberName);
         setOpen(true);
         //console.log('memberName',memberName);
     }
 
     const onHandleDetailClickClose = () => {
-
-        // axios.post('/api/s010100130')
-        // .then(response => {
-        //     if(response.data.success){
-        //         //console.log(response.data.rows)
-        //         setTb_s10_ask010(response.data.rows)
-        //     }else{ 
-        //         alert("상세 정보 가져오기를 실패하였습니다.")
-        //     }
-
-        // })
+        memberList();
         setOpen(false);
     };
 
@@ -217,12 +223,12 @@ function S010100040(props) {
                     id={tbMember.MEMBER_ID}> {index + 1}</td>
                 <td >{tbMember.MEMBER_NM}</td>
                 <td  id={tbMember.REG_NO}>{tbMember.REG_NO}</td>
-                <td onClick={onHandleDetailClickOpen}>{tbMember.NAME}</td>
+                <td onClick={onHandleDetailClickOpen} id = {tbMember.EMP_HP}>{tbMember.NAME}</td>
                 <td >{tbMember.EMP_HP}</td>
                 <td >{tbMember.EMP_EMAIL}</td>
                 <td >{tbMember.MEMBER_TP}</td>
                 <td >{tbMember.MEMBER_ST}</td>
-                <td >{tbMember.PAYED_FLAG}</td>
+                <td >{tbMember.END_FLAG}</td>
             </tr>
         )
     });
@@ -294,7 +300,7 @@ function S010100040(props) {
                     maxWidth={"lg"}
                     open={open}
                     onClose={onHandleDetailClickClose}>
-                    <S010100050 dataName={numForDetailModal} dataForm={"U"}/>
+                    <S010100050 dataName={numForDetailModal} dataForm={"U"} dataEmpHp = {empHpForDetailModal}/>
                     <DialogActions>
                         {/* <Button onClick={onhandleStoreClose} color="primary" autoFocus>
                                 저장
