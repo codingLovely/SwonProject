@@ -1,6 +1,7 @@
 import React, {Fragment, useEffect, useState} from 'react';
 import Navbar from './Navbar';
 import S010100070 from "./S010100070";
+import Pagination from "./utils/Pagination";
 
 //<!--켈린더 라이브러리시작
 import DatePicker, {registerLocale} from "react-datepicker";
@@ -19,9 +20,9 @@ let paymentState = [{key: '전체', value: '전체'},
 
 function S010100060(props) {
 
-
-    const [userName, setUserName] = useState('')
-    const [paymentStatus, setPaymentStatus] = useState('')
+    const [userName, setUserName] = useState('');
+    const [paymentStatus, setPaymentStatus] = useState('');
+    const [checked, setChecked] = useState([]);
 
     //<!--캘린더 속성 
     const [startDate, setStartDate] = useState(new Date('2021/02/01'));
@@ -32,6 +33,12 @@ function S010100060(props) {
     const [storeOpen, setStoreOpen] = useState(false);
     const [dataAllContract, setDataAllContract] = useState('');
 
+    //페이징
+    const [currentPage, setCurrentPage] = useState(1);
+    const [postsPerPage, setPostsPerPage] = useState(10);
+    const indexOfLastPost = currentPage * postsPerPage;
+    
+   
     useEffect(() => {
         let body = {
             startDate: startDate,
@@ -87,7 +94,6 @@ function S010100060(props) {
         setStoreOpen(false);
     }
 
-    const [checked, setChecked] = useState([]);
 
     const handleToggle = (e) => {
         console.log('event', e.target.id);
@@ -128,6 +134,7 @@ function S010100060(props) {
         }
     }
 
+
     const s010100060R = payStatusList.map((payStatusList, index) => {
         return (
             <tr class='dataTable'>
@@ -146,6 +153,11 @@ function S010100060(props) {
             </tr>
         )
     });
+
+    const indexOfFirstPost = indexOfLastPost - postsPerPage;
+    const currentPosts = s010100060R.slice(indexOfFirstPost, indexOfLastPost);
+    //Change page
+    const paginate = pageNumber => setCurrentPage(pageNumber);
 
     return (
         <Fragment>
@@ -236,11 +248,10 @@ function S010100060(props) {
                     </tr>
                     </thead>
                     <tbody>
-                    {/*<tbody>*/}
-                    {s010100060R}
-                    {/*</tbody>*/}
+                    {currentPosts}
                     </tbody>
                 </table>
+                <Pagination postsPerPage={postsPerPage} totalPosts={s010100060R.length} paginate={paginate} />
                 <Dialog
                     maxWidth={"lg"}
                     open={storeOpen}

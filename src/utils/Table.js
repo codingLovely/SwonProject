@@ -1,5 +1,6 @@
-import React from "react";
-import { useTable } from "react-table";
+import { Checkbox } from '@material-ui/core';
+import React from 'react';
+import { useTable, useRowSelect } from 'react-table';
 
 function Table({ columns, data }) {
   const {
@@ -8,9 +9,35 @@ function Table({ columns, data }) {
     headerGroups,
     rows,
     prepareRow,
-  } = useTable({ columns, data })
+    selectedFlatRows
+  } = useTable(
+    { 
+      columns,
+      data
+    }, 
+      useRowSelect,
+      (hooks) => {
+        hooks.visibleColumns.push((columns) => {
+          return [
+            {
+              id:'selection',
+              Header: ({getToggleAllRowsSelectedProps}) => (
+                <Checkbox {...getToggleAllRowsSelectedProps()}/>
+              ),
+              Cell:({row}) => (
+                <Checkbox {...row.getToggleRowSelectedProps()}/>
+              )
+            },
+            ...columns
+          ]
+        })
+      }
+    )
+
+  const firstPageRows = rows.slice(0,10);
 
   return (
+    <>
     <table {...getTableProps()}>
       <thead>
         {headerGroups.map((headerGroup) => (
@@ -22,7 +49,7 @@ function Table({ columns, data }) {
         ))}
       </thead>
       <tbody {...getTableBodyProps()}>
-        {rows.map((row) => {
+        {firstPageRows.map((row) => {
           prepareRow(row)
           return (
             <tr {...row.getRowProps()}>
@@ -34,6 +61,18 @@ function Table({ columns, data }) {
         })}
       </tbody>
     </table>
+    <pre>
+        <code>
+          {JSON.stringify(
+            {
+              selectedFlatRows:selectedFlatRows.map((row) => row.original),
+            },
+            null,
+            2
+          )}
+        </code>
+      </pre>
+  </>
   )
 }
 

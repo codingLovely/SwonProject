@@ -1,15 +1,18 @@
 import React, {Fragment, useState, useEffect, useMemo} from 'react';
 import './css/S010100070.css';
-import axios from "axios";
+import axios from 'axios';
+import Pagination from'./utils/Pagination';
 // import RowSelection from "./utils/RowSelection";
-import DatePicker, {registerLocale} from "react-datepicker";
+import DatePicker, {registerLocale} from 'react-datepicker';
 import ko from 'date-fns/locale/ko';
-import Table from "./utils/Table";
-
+import Table from './utils/Table';
 registerLocale("ko", ko);
 
 
+
+
 function S010100070(props) {
+
     const [paymentMemberNm, setPaymentMemberNm] = useState('');
     const [paymentPeriod, setPaymentPeriod] = useState('');
     const [paymentCeoNm, setPaymentCeoNm] = useState('');
@@ -21,6 +24,11 @@ function S010100070(props) {
 
     const [insertPayDate, setInsertPayDate] = useState(new (Date));
     const [endInsertPayDate, EndInsertPayDate] = useState(new (Date));
+
+    //페이징
+    const [currentPage, setCurrentPage] = useState(1);
+    const [postsPerPage, setPostsPerPage] = useState(12);
+    const indexOfLastPost = currentPage * postsPerPage;
 
     // const []
     const paymentMemberNmHandler = (event) => {
@@ -63,20 +71,19 @@ function S010100070(props) {
             modalPayPlanDate: modalPayPlanDate,
             insertPayDate: insertPayDate,
             referComment: referComment
-
         }
 
         //console.log(referComment);
-        // axios.get('api/s01010070/paymentUpdate',body)
-        //     .then(response => {
-        //         if (response.data.success) {
-        //             alert('왼료되었습니다.');
-        //
-        //         } else {
-        //             alert('실패하였습니다.');
-        //         }
-        //
-        //     })
+        axios.get('api/s01010070/paymentUpdate',body)
+            .then(response => {
+                if (response.data.success) {
+                    alert('왼료되었습니다.');
+        
+                } else {
+                    alert('실패하였습니다.');
+                }
+        
+            })
 
 
     }
@@ -96,8 +103,8 @@ function S010100070(props) {
     const [checked, setChecked] = useState([]);
 
     const toggleHandler = (e) => {
-        console.log('event', e.target.id);
-        console.log('payPlanDate', e.target.id);
+        // console.log('event', e.target.id);
+        // console.log('payPlanDate', e.target.id);
 
         const currentIndex = checked.indexOf(e.target.id);
         //전체 Checked된 State에서 현재 누를 Checkbox가 있는지 확인
@@ -109,20 +116,55 @@ function S010100070(props) {
             newChecked.splice(currentIndex, 1)
         }
         setChecked(newChecked);
-        //빽주고
-        //state를 넣어준다
-
-        //e.target.checked = false;
-
-        console.log('currentIndex', currentIndex);
-        console.log('checked', checked);
-
-        // handleFilters(filters,tb_s10_ask010);
 
     }
 
+// const [s010100070R, setS010100070R] = useState([]);
 
-// const s010100070R = paymentStatusList.map((paymentStatusList, index) => {
+const s010100070R = paymentStatusList.map((paymentStatusList, index) => {
+        return (
+            <tr className='dataTable'>
+                {/*CONTRACT_ID와 날짜를 함께 들고가야한다.*/}
+                <td name="uname" variant="outlined" color="primary">
+                    <input type="checkbox" onChange={toggleHandler} id={paymentStatusList.PAY_PLAN_DATE}/>
+                </td>
+                <td id = {paymentStatusList.CONTRACT_ID}>{index + 1}</td>
+                <td>{paymentStatusList.PAY_PLAN_DATE}</td>
+                <td>{paymentStatusList.PAYED_FLAG}</td>
+                <td key = {paymentStatusList.PAY_PLAN_DATE}  id={paymentStatusList.PAY_PLAN_DATE}>
+                    {paymentStatusList.PAYED_DATE}
+                    <DatePicker
+                        id={paymentStatusList.PAY_PLAN_DATE}
+                        locale="ko"
+                        selected={insertPayDate.setHours(9, 0, 0, 0)}
+                        onChange={
+                            date => setInsertPayDate(date)
+                        }
+                        selectsStart
+                        startDate={insertPayDate}
+                        endDate={endInsertPayDate}
+                        dateFormat="yyyy.MM.dd"
+                    />
+                </td>
+                <td>
+                    {paymentStatusList.CONTRACT_COMMENT}
+                    <textarea type="text" cols="20" rows="2" value = {referComment}
+                              size="5" id={paymentStatusList.PAY_PLAN_DATE} onChange={referCommentHandler}/>
+                </td>
+    
+    
+            </tr>
+        )
+    });
+
+    const indexOfFirstPost = indexOfLastPost - postsPerPage;
+    const currentPosts = s010100070R.slice(indexOfFirstPost, indexOfLastPost);
+    //Change page
+    const paginate = pageNumber => setCurrentPage(pageNumber);
+
+    //setS010100070R(contHi);
+
+       // const s010100070R = paymentStatusList.map((paymentStatusList, index) => {
     //     return (
     //         <tr className='dataTable'>
     //             {/*CONTRACT_ID와 날짜를 함께 들고가야한다.*/}
@@ -160,10 +202,9 @@ function S010100070(props) {
 
     useEffect(() => {
 
-        axios.get(`/api/s01010070/insert/tb_s10_contract020_by_id?id=${dataContracId}&type=single`)
+        axios.get(`/api/s01010070/insert/tb_s10_contract020_by_id?id=${dataContracId}`)
             .then(response => {
                 if (response.data.success) {
-                    console.log('detailList60', response.data.rows);
                     setPaymentStatusList(response.data.rows);
                     setPaymentMemberNm(response.data.rows[0].MEMBER_NM);
                     setPaymentPeriod(response.data.rows[0].CONTRACT_TERM + '개월 ' +
@@ -172,6 +213,8 @@ function S010100070(props) {
                     setPaymentEmpHp(response.data.rows[0].EMP_HP);
                     setPaymentEmpEmail(response.data.rows[0].EMP_EMAIL);
                     setPaymentEmpComment(response.data.rows[0].COMMENT);
+                    
+
                 } else {
                     alert("데이터 조회를 실패하였습니다.")
                 }
@@ -179,49 +222,10 @@ function S010100070(props) {
             })
     }, [])
 
-    const [valueIndex, setValueIndex] = useState(0);
-
-
-    // const s010100070R = paymentStatusList.map((paymentStatusList, index) => {
-    //     return (
-    //         <tr className='dataTable'>
-    //             {/*CONTRACT_ID와 날짜를 함께 들고가야한다.*/}
-    //             <td name="uname" variant="outlined" color="primary">
-    //                 <input type="checkbox" onChange={toggleHandler} id={paymentStatusList.PAY_PLAN_DATE}/>
-    //             </td>
-    //             <td id = {paymentStatusList.CONTRACT_ID}>{index + 1}</td>
-    //             <td>{paymentStatusList.PAY_PLAN_DATE}</td>
-    //             <td>{paymentStatusList.PAYED_FLAG}</td>
-    //             <td key = {paymentStatusList.PAY_PLAN_DATE} onClick={right} id={paymentStatusList.PAY_PLAN_DATE}>
-    //                 {paymentStatusList.PAYED_DATE}
-    //                 <DatePicker
-    //                     id={paymentStatusList.PAY_PLAN_DATE}
-    //                     locale="ko"
-    //                     selected={insertPayDate.setHours(9, 0, 0, 0)}
-    //                     onChange={
-    //                         date => setInsertPayDate(date)
-    //                     }
-    //                     selectsStart
-    //                     startDate={insertPayDate}
-    //                     endDate={endInsertPayDate}
-    //                     dateFormat="yyyy.MM.dd"
-    //                 />
-    //             </td>
-    //             <td>
-    //                 {paymentStatusList.CONTRACT_COMMENT}
-    //                 <textarea type="text" cols="20" rows="2" value = {paymentStatusList.PAY_PLAN_DATE}
-    //                           size="5" id={paymentStatusList.PAY_PLAN_DATE} onChange={referCommentHandler}/>
-    //             </td>
-    //
-    //
-    //         </tr>
-    //     )
-    // });
-    const columns = useMemo(
+    const columns = useMemo (
         () => [
             {
                 Header: '선택',
-
             },
             {
                 Header: 'No',
@@ -243,21 +247,20 @@ function S010100070(props) {
                 Header: '비고',
                 accessor: 'CONTRACT_COMMENT'
             }
-        ], []);
+        ]);
 
 
-    const data = useMemo(
-        () =>
-            paymentStatusList.map((paymentStatusList, index) => ({
-                CONTRACT_ID: paymentStatusList.CONTRACT_ID,
-                PAY_PLAN_DATE: paymentStatusList.PAY_PLAN_DATE,
-                PAYED_FLAG: paymentStatusList.PAYED_FLAG,
-                PAYED_DATE: paymentStatusList.PAYED_DATE,
-                CONTRACT_COMMENT: paymentStatusList.CONTRACT_COMMENT
-            })),
-        []
-    );
-
+    
+        const data = useMemo (
+            () =>
+            (paymentStatusList).map((paymentStatusList, index) => ({
+                    CONTRACT_ID: paymentStatusList.CONTRACT_ID,
+                    PAY_PLAN_DATE: paymentStatusList.PAY_PLAN_DATE,
+                    PAYED_FLAG: paymentStatusList.PAYED_FLAG,
+                    PAYED_DATE: paymentStatusList.PAYED_DATE,
+                    CONTRACT_COMMENT: paymentStatusList.CONTRACT_COMMENT
+                }))
+        );
 
     return (
         <div>
@@ -317,22 +320,23 @@ function S010100070(props) {
                             </tr>
                         </table>
                     </div>
-                    <Table id='paymentList' columns={columns} data={data}/>
-                    {/*<table id='paymentList'>*/}
-                    {/*    <thead>*/}
-                    {/*    <tr>*/}
-                    {/*        <th>선택</th>*/}
-                    {/*        <th>No</th>*/}
-                    {/*        <th>납부예정일</th>*/}
-                    {/*        <th>납부여부</th>*/}
-                    {/*        <th>납부일자</th>*/}
-                    {/*        <th>비고</th>*/}
-                    {/*    </tr>*/}
-                    {/*    </thead>*/}
-                    {/*    <tbody>*/}
-                    {/*    /!*{s010100070R}*!/*/}
-                    {/*    </tbody>*/}
-                    {/*</table>*/}
+                    <Table columns={columns} data={data}/>
+                    <table id='paymentList'>
+                    <thead>
+                        <tr>
+                            <th>선택</th>
+                            <th>No</th>
+                            <th>납부예정일</th>
+                            <th>납부여부</th>
+                            <th>납부일자</th>
+                            <th>비고</th>
+                        </tr>
+                        </thead>
+                     <tbody>
+                     {currentPosts}
+                    </tbody>
+                   </table>
+                   <Pagination postsPerPage={postsPerPage} totalPosts={s010100070R.length} paginate={paginate} />
                     <div>
                         <input type="button"
                                onClick={payBtnHandler} value="납부"/>

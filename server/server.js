@@ -312,7 +312,9 @@ app.post('/api/s010100040/list', (req, res) => {
         '           LEFT OUTER JOIN TB_S10_CODE code1 ON member010.MEMBER_TP = code1.CD_V   ' +
         '                AND CODE1.CD_TP = "MEMBER_TP" ' +
         '           LEFT OUTER JOIN TB_S10_CODE code2 ON member010.MEMBER_ST = code2.CD_V  ' +
-        '                AND CODE2.CD_TP = "MEMBER_ST"'
+        '                AND CODE2.CD_TP = "MEMBER_ST" ' +
+        'WHERE MEMBER_ST != "D" ' +
+        'ORDER BY MEMBER010.MEMBER_ID DESC';
 
     //MEMBER010 EMP010 JOIN 에 들어있는 모든 데이터 가져오기)
     connection.query(sql, (error, rows) => {
@@ -607,22 +609,24 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
 
         let type = req.query.type
         let contractId = req.query.id
-        console.log(contractId);
+        //console.log(contractId);
 
         let sql =
             'SELECT EMP.NAME, EMP.EMP_HP, EMP.EMP_EMAIL, EMP.ADDRESS,EMP.ZIP_CODE,EMP.DETAIL_ADDRESS,\n' +
-            '\t   MEM.MEMBER_NM, MEM.REG_NO, CODE1.CD_V AS "MEMBER_TP", CODE2.CD_V AS "MEMBER_ST",\n' +
-            '       CON.CONTRACT_ID, CON.CONTRACT_DATE, CON.CONTRACT_MONEY, CODE3.CD_V AS "CONTRACT_TP" , \n' +
-            '       CON.END_DATE,\n' +
+            '\t   MEM.MEMBER_NM, MEM.REG_NO, CODE1.CD_V AS "MEMBER_TP", CODE1.CD_V_MEANING AS "MEMBER_TP_M", CODE2.CD_V AS "MEMBER_ST",\n' +
+            '       CODE2.CD_V_MEANING AS "MEMBER_ST_M",CON.CONTRACT_ID, CON.CONTRACT_DATE, CON.CONTRACT_MONEY, CODE3.CD_V AS "CONTRACT_TP" , \n' +
+            '       CODE3.CD_V_MEANING AS "CONTRACT_TP_M" ,CON.END_DATE,\n' +
             '       CON.END_FLAG ,\n' +
             '       CON.PAY_DATE,' +
-            '       CODE6.CD_V AS"CONTRACT_ROOM",\n' +
-            '       CODE7.CD_V AS"CONTRACT_LOCKER",\n' +
+            '       CODE6.CD_V AS"CONTRACT_ROOM", CODE6.CD_V_MEANING AS"CONTRACT_ROOM_M",\n' +
+            '       CODE7.CD_V AS"CONTRACT_LOCKER", CODE7.CD_V_MEANING AS"CONTRACT_LOCKER_M",\n' +
             '       CON.COMMENT,\n' +
             '       CON.CONTRACT_TERM,\n' +
-            '       PCON.PAYED_MONEY,\n' +
+            '       PCON.PAYED_PLAN_MONEY,\n' +
             '       CON.PAY_METHOD,\n' +
-            '       CODE4.CD_V AS "PAY_METHOD",CODE5.CD_V AS "CONTRACT_PATH" \n' +
+            '       CODE4.CD_V AS "PAY_METHOD",CODE4.CD_V_MEANING AS "PAY_METHOD_M",' +
+            '       CODE5.CD_V AS "CONTRACT_PATH",' +
+            '       CODE5.CD_V_MEANING AS "CONTRACT_PATH_M" \n' +
             'FROM TB_S10_EMP010 EMP \n' +
             'INNER JOIN TB_S10_MEMBER010 MEM\n' +
             'ON EMP.EMP_ID = MEM.CEO_ID\n' +
@@ -668,7 +672,7 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
 
         let type = req.query.type
         let dataContracId = req.query.id
-        console.log(dataContracId);
+        //console.log(dataContracId);
 
         let sql =
             'SELECT EMP.NAME, EMP.EMP_HP, EMP.EMP_EMAIL, EMP.ADDRESS,EMP.ZIP_CODE,EMP.DETAIL_ADDRESS, ' +
@@ -732,7 +736,7 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
     app.post('/api/s010100130/search', (req, res) => {
 
         //console.log(req.body);
-        console.log('startDate:' + req.body.startAsk_date.toString());
+        //console.log('startDate:' + req.body.startAsk_date.toString());
         let startDate = req.body.startAsk_date.toString().substring(0, 10);
         //console.log('startDate:'+ req.body.startAsk_date.toString());
         let endDate = req.body.endAsk_date.toString().substring(0, 10);
@@ -745,7 +749,7 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
         // console.log('endDate: '+endDate);
         // // console.log('ask_tp: '+ask_tp);
         // console.log('searchName: '+searchName);
-        console.log('ask_tp:' + ask_tp);
+        //console.log('ask_tp:' + ask_tp);
 
         let sql =
             'SELECT ' +
@@ -794,8 +798,8 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
         let sql = 'SELECT   \n' +
             '                                 MEM.MEMBER_ID,MEM.MEMBER_NM,MEM.REG_NO,CODE1.CD_V "MEMBER_TP",  \n' +
             '                                 EMP.NAME,EMP.EMP_HP,EMP.EMP_EMAIL,EMP.ZIP_CODE,EMP.ADDRESS,EMP.DETAIL_ADDRESS,    \n' +
-            '                                 CON.CONTRACT_ID,CON.END_DATE,  \n' +
-            '                                  DATE_FORMAT(CON.CONTRACT_DATE,"%y.%m.%d") AS "CONTRACT_DATE", \n' +
+            '                                 CON.CONTRACT_ID,DATE_FORMAT(CON.END_DATE,"%y.%m.%d") AS "END_DATE",'+                                                                                      
+            '                                 DATE_FORMAT(CON.CONTRACT_DATE,"%y.%m.%d") AS "CONTRACT_DATE",' +
             '                                 CODE2.CD_V_MEANING AS "MEMBER_ST", \n' +
             '                                 CODE3.CD_V_MEANING AS"CONTRACT_TP",  \n' +
             '                                 CODE5.CD_V_MEANING AS "CONTRACT_LOCKER",  \n' +
@@ -803,7 +807,7 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
             '                                 CON.CONTRACT_TERM,CON.PAY_DATE,CON.CONTRACT_MONEY,     \n' +
             '                                 CON.END_FLAG,  \n' +
             '                                 PCON.PAYED_PLAN_MONEY, ' +
-            '                                 CON.START_DATE AS "START_DATE"\n' +
+            '                                 DATE_FORMAT(CON.START_DATE,"%y.%m.%d") AS "START_DATE"\n' +
             '                           FROM TB_S10_MEMBER010 MEM   \n' +
             '                                 INNER JOIN TB_S10_EMP010 EMP     \n' +
             '                                 ON MEM.CEO_ID = EMP.EMP_ID     \n' +
@@ -931,85 +935,7 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
     //    })
     // })
 
-    let regNoChkNum;
-    app.post('/api/s010100140/regNoCheck', (req, res) => {
 
-        let firstRegNo = req.body.firstRegNo;
-        let secondRegNo = req.body.secondRegNo;
-        let thirdRegNo = req.body.thirdRegNo;
-        // console.log("firstRegNo: " + firstRegNo);
-        // console.log("secondRegNo: " + secondRegNo);
-        // console.log("thirdRegNo: " + thirdRegNo);
-        // console.log(firstRegNo + secondRegNo + thirdRegNo);
-        let RegNo = firstRegNo + "-" + secondRegNo + "-" + thirdRegNo;
-
-        let regNoChkSql = 'SELECT  COUNT(REG_NO) AS RowNum  \n' +
-            '\t\tFROM TB_S10_MEMBER010 MEM010 \n' +
-            '        WHERE MEM010.REG_NO= "' + RegNo + '"';
-
-        connection.query(regNoChkSql, (error, number) => {//쿼리문
-            if (error) throw error;
-            res.send({ success: true, number })
-            regNoChkNum = number[0].RowNum;
-            //console.log(number[0].RowNum);
-            //console.log(number.RowDataPacket.RowNum);
-        });
-
-    })
-
-    let empHpChkNum;
-    app.post('/api/s010100140/empHpCheck', (req, res) => {
-
-        let firstEmpHp = req.body.firstEmpHp;
-        let secondEmpHp = req.body.secondEmpHp;
-        let thirdEmpHp = req.body.thirdEmpHp;
-
-        let EmpHp = firstEmpHp + "-" + secondEmpHp + "-" + thirdEmpHp;
-
-        let empHpChkSql =
-            'SELECT  COUNT(EMP_HP) AS RowNum  \n' +
-            '\t\tFROM TB_S10_EMP010 EMP010 \n' +
-            '        WHERE EMP010.EMP_HP= "' + EmpHp + '"';
-
-        connection.query(empHpChkSql, (error, number) => {//쿼리문
-            if (error) throw error;
-            res.send({ success: true, number })
-            empHpChkNum = number[0].RowNum;
-            //console.log(number[0].RowNum);
-            //console.log(number.RowDataPacket.RowNum);
-        });
-    })
-
-
-
-    let dateChkNum;
-
-
-
-
-
-    app.post('/api/s010100140/dateCheck', (req, res) => {
-
-        let contractTp = req.body.contractTp;
-        let contractTpVal = req.body.contractTpVal;
-        let roomLockerTp = req.body.roomLockerTp;
-        let startDate = req.body.startDate;
-        let endDate = req.body.endDate;
-
-
-        let dateChkSql =
-            'SELECT  COUNT(START_DATE) AS STARTENDDATE \n' +
-            '        FROM TB_S10_CONTRACT010 CON010 \n' +
-            '        WHERE CON010.START_DATE="' + startDate + '" AND CON010.END_DATE="' + endDate + '"';
-
-        connection.query(dateChkSql, (error, number) => {//쿼리문
-            if (error) throw error;
-            res.send({ success: true, number })
-            dateChkNum = number[0].STARTENDDATE;
-            //console.log(number[0].RowNum);
-            //console.log(number.RowDataPacket.RowNum);
-        });
-    })
 
 
     app.post('/api/s010100050/detailModifyContract_by_id', (req, res) => {
@@ -1122,6 +1048,7 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
             '    CON.CONTRACT_PATH = "' + contractPath + '",' +
             '    CON.PAY_METHOD = "' + payMethod + '",' +
             '    CON.CONTRACT_PATH = "' + contractPath + '",' +
+            '    CON.CONTRACT_DATE = "' + startDate + '",' +
             '    CON2.PAYED_PLAN_MONEY = "' + contractMoney + '"' +
             'WHERE CON.CONTRACT_ID = ' + modifyDataNum;
 
@@ -1133,10 +1060,84 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
     })
 
 
+    let regNoChkNum;
+    app.post('/api/s010100140/regNoCheck', (req, res) => {
+
+        let firstRegNo = req.body.firstRegNo;
+        let secondRegNo = req.body.secondRegNo;
+        let thirdRegNo = req.body.thirdRegNo;
+        // console.log("firstRegNo: " + firstRegNo);
+        // console.log("secondRegNo: " + secondRegNo);
+        // console.log("thirdRegNo: " + thirdRegNo);
+        // console.log(firstRegNo + secondRegNo + thirdRegNo);
+        let RegNo = firstRegNo + "-" + secondRegNo + "-" + thirdRegNo;
+
+        let regNoChkSql = 'SELECT  COUNT(REG_NO) AS RowNum  \n' +
+            '\t\tFROM TB_S10_MEMBER010 MEM010 \n' +
+            '        WHERE MEM010.REG_NO= "' + RegNo + '"';
+
+        connection.query(regNoChkSql, (error, number) => {//쿼리문
+            if (error) throw error;
+            res.send({ success: true, number })
+            regNoChkNum = number[0].RowNum;
+            //console.log(number[0].RowNum);
+            //console.log(number.RowDataPacket.RowNum);
+        });
+
+    })
+
+    let empHpChkNum;
+    app.post('/api/s010100140/empHpCheck', (req, res) => {
+
+        let firstEmpHp = req.body.firstEmpHp;
+        let secondEmpHp = req.body.secondEmpHp;
+        let thirdEmpHp = req.body.thirdEmpHp;
+
+        let EmpHp = firstEmpHp + "-" + secondEmpHp + "-" + thirdEmpHp;
+
+        let empHpChkSql =
+            'SELECT  COUNT(EMP_HP) AS RowNum  \n' +
+            '\t\tFROM TB_S10_EMP010 EMP010 \n' +
+            '        WHERE EMP010.EMP_HP= "' + EmpHp + '"';
+
+        connection.query(empHpChkSql, (error, number) => {//쿼리문
+            if (error) throw error;
+            res.send({ success: true, number })
+            empHpChkNum = number[0].RowNum;
+            //console.log(number[0].RowNum);
+            //console.log(number.RowDataPacket.RowNum);
+        });
+    })
+
+    let dateChkNum;
+
+    app.post('/api/s010100140/dateCheck', (req, res) => {
+
+        let contractTp = req.body.contractTp;
+        let contractTpVal = req.body.contractTpVal;
+        let roomLockerTp = req.body.roomLockerTp;
+        let startDate = req.body.startDate;
+        let endDate = req.body.endDate;
+
+
+        let dateChkSql =
+            'SELECT  COUNT(START_DATE) AS STARTENDDATE \n' +
+            '        FROM TB_S10_CONTRACT010 CON010 \n' +
+            '        WHERE CON010.START_DATE="' + startDate + '" AND CON010.END_DATE="' + endDate + '"';
+
+        connection.query(dateChkSql, (error, number) => {//쿼리문
+            if (error) throw error;
+            res.send({ success: true, number })
+            dateChkNum = number[0].STARTENDDATE;
+            //console.log(number[0].RowNum);
+            //console.log(number.RowDataPacket.RowNum);
+        });
+    })
+
     //<이용계약서 등록
     app.post('/api/s010100010/insertMember010', (req, res) => {
 
-        if (dateChkNum === 0 && empHpChkNum === 0 && regNoChkNum === 0) {
+      if (dateChkNum === 0 && empHpChkNum === 0 && regNoChkNum === 0) {
             connection.beginTransaction(function (error) {
                 //emp010-> 대표자 이름
                 let empIdName = req.body.empIdName;
@@ -1162,10 +1163,11 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
                 // console.log('zipcode: ' + zipcode);
                 // console.log('empAddress: ' + empAddress);
                 // console.log('empDetailAddress: ' + empDetailAddress);
+                
 
                 //insert .. from tb_s10_emp010;
                 let empSql = 'INSERT INTO TB_S10_EMP010 (CREATED_DATE, NAME, EMP_HP, EMP_EMAIL,' +
-                    'ZIP_CODE,ADDRESS,DETAIL_ADDRESS,CEO_FLAG) VALUES (SYSDATE(),?,?,?,?,?,?,"Y")';
+                    'ZIP_CODE,ADDRESS,DETAIL_ADDRESS,CEO_FLAG,LAST_UPDATE_DATE) VALUES (SYSDATE(),?,?,?,?,?,?,"Y",SYSDATE())';
 
                 let empParams = [empIdName, empHp, empEmail, zipcode, empAddress, empDetailAddress];
 
@@ -1182,11 +1184,14 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
                 let memberTp = req.body.memberTp;
                 //코멘트
                 let comments = req.body.comment;
-
+                let userStatus = req.body.userStatus;
+                
+                //console.log('userStatus '+userStatus);
+                
                 let memberSql =
                     'INSERT INTO  ' +
-                    '            TB_S10_MEMBER010 ( MEMBER_NM, REG_NO, MEMBER_TP,CREATED_DATE,MEMBER_ST,COMMENT,CEO_ID)  ' +
-                    '            VALUES (?, ?, ?, SYSDATE(),"C",?, (SELECT EMP_ID FROM TB_S10_EMP010 WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '"))'
+                    '            TB_S10_MEMBER010 ( MEMBER_NM, REG_NO, MEMBER_TP,CREATED_DATE,MEMBER_ST,COMMENT,CEO_ID,LAST_UPDATE_DATE)  ' +
+                    '            VALUES (?, ?, ?, SYSDATE(),"C", ?, (SELECT EMP_ID FROM TB_S10_EMP010 WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '"),SYSDATE())'
                 //console.log(memberSql);
                 let memberParams = [memberNm, regNo, memberTp, comments];
                 //Member_id는 -> sequence로 생성
@@ -1218,89 +1223,16 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
                 let contractSql =
                     'INSERT INTO ' +
                     'TB_S10_CONTRACT010(CONTRACT_TP,CONTRACT_ROOM,CONTRACT_LOCKER,CONTRACT_TERM,START_DATE,END_DATE,' +
-                    'PAY_DATE,PAY_METHOD,CONTRACT_PATH,CREATED_DATE,CONTRACT_DATE,COMMENT,MEMBER_ID ) ' +
+                    'PAY_DATE,PAY_METHOD,CONTRACT_PATH,CREATED_DATE,CONTRACT_DATE,COMMENT,MEMBER_ID,LAST_UPDATE_DATE) ' +
                     'VALUES (?,?,?,?,?,?,?,?,?,SYSDATE(),?,?,(SELECT MEMBER_ID FROM TB_S10_MEMBER010 WHERE CEO_ID = ' +
-                    '(SELECT EMP_ID FROM TB_S10_EMP010 WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '")))';
+                    '(SELECT EMP_ID FROM TB_S10_EMP010 WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '")),SYSDATE())';
 
                 let contractParams = [contractTp, contractTpVal, roomLockerTp, contractTerm, startDate, endDate, payDate, payMethod, contractPath, startDate, comments];
                 //contract_id는 -> sequence로 생성
 
                 //납부금액
                 let contractMoney = req.body.contractMoney;
-                // 납부년월
-                // let payPlanDate = req.body.startAsk_date;
-
-                //payDate->입금일만 보여줌(년월 없음), payed_date는 실제 납부 일자로 나중에 insert할 자리
-                //pay_plan_date 납부예정일 넣어서 for문 돌려서 insert하기
-
-                // //startDate '2021-03-01'
-                // let dateToString = startDate.toString().substring(0, 10);
-                // //날 01
-                // let contractDateDay = parseInt(dateToString.substring(8, 10));
-                // //월 03
-                // let contractMonthDay = parseInt(dateToString.substring(5, 7));
-                // //년 2021
-                // let contractYearDay = parseInt(dateToString.substring(0, 4));
-                //
-                // let finalDate = '';
-                // let dateMonth = 0;
-                // // console.log('dateToString: ' + dateToString);
-                // // console.log('contractDateDay: ' + contractDateDay);
-                // // console.log('contractMonthDay: ' + contractMonthDay);
-                // // console.log('contractYearDay: ' + contractYearDay);
-                //
-                //
-                // //계약시작일자가 납부일보다 크면 29 1
-                // if (contractDateDay > parseInt(payDate)) {
-                //     //console.log(payDate);
-                //     if (contractMonthDay >= 12) {
-                //         contractMonthDay = 1;
-                //         //console.log('contractMonthDay11: ' + contractMonthDay);
-                //         //contractMonthDay += 1;
-                //         //console.log('contractMonthDay11: ' + contractMonthDay);
-                //     } else {
-                //         contractMonthDay += 1;
-                //     }
-                //     finalDate = contractYearDay + '-' + contractMonthDay + '-' + payDate;
-                //     //계약일자가 납부일보다 작으면 1 29
-                // } else if (contractDateDay <= parseInt(payDate)) {
-                //     finalDate = contractYearDay + '-' + contractMonthDay + '-' + payDate;
-                //     //console.log('contractMonthDay22: ' + contractMonthDay);
-                // }
-                // //월만 우선 정해서 받아주는 곳 끝-------
-                // //let finalityOfDate = new Date(contractYearDay,contractMonthDay,payDate);
-                // //console.log('finality :' + finalityOfDate);
-                // let monthDay = 0;
-                // let payContractSql = '';
-                // let payContractParams = [];
-                //
-                // // payContractSql = 'INSERT INTO ' +
-                // //     'TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,PAYED_MONEY) ' +
-                // //     'VALUES((SELECT CONTRACT_ID FROM TB_S10_CONTRACT010 WHERE MEMBER_ID = (SELECT EMP_ID FROM TB_S10_EMP010 WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '") ),?,SYSDATE(),?)';
-                // // payContractParams = [finalDate, contractMoney];
-                // //console.log(payContractSql);
-                //
-                // for (let i = 1; i <= contractTerm; i++) {
-                //     //console.log('!!!!!!!!!!!!!!!!!!!contractMonthDay: ' + contractMonthDay);
-                //     //console.log('!!!!!!!!!!!!!!!!!monthDay: ' + monthDay);
-                //     finalDate = contractYearDay + '-' + contractMonthDay + '-' + payDate;
-                //     payContractSql = 'INSERT INTO ' +
-                //         'TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,PAYED_PLAN_MONEY) ' +
-                //         'VALUES((SELECT CONTRACT_ID FROM TB_S10_CONTRACT010 WHERE MEMBER_ID = (SELECT MEMBER_ID FROM TB_S10_MEMBER010 WHERE CEO_ID = (SELECT EMP_ID FROM TB_S10_EMP010 WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '"))),?,SYSDATE(),?)';
-                //
-                //     console.log(payContractSql);
-                //     console.log("--------------------------------");
-                //     console.log(finalDate);
-                //     console.log("--------------------------------");
-                //     console.log(payContractParams);
-                //     console.log("--------------------------------");
-                //     payContractParams = [finalDate, contractMoney];
-                //     console.log("--------------------------------");
-                //     console.log('finalDate: ' + finalDate);
-                //
-                //     contractMonthDay++;
-                // }
-
+    
 
                 if (error) throw error;
 
@@ -1332,72 +1264,139 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
                                 });
                             }
 
+                            
 
-                            //payDate->입금일만 보여줌(년월 없음), payed_date는 실제 납부 일자로 나중에 insert할 자리
+
+
+ //payDate->입금일만 보여줌(년월 없음), payed_date는 실제 납부 일자로 나중에 insert할 자리
                             //pay_plan_date 납부예정일 넣어서 for문 돌려서 insert하기
 
                             //startDate '2021-03-01'
                             let dateToString = startDate.toString().substring(0, 10);
-                            //날 01
-                            let contractDateDay = parseInt(dateToString.substring(8, 10));
-                            //월 03
-                            let contractMonthDay = parseInt(dateToString.substring(5, 7));
-                            //년 2021
-                            let contractYearDay = parseInt(dateToString.substring(0, 4));
+                            let wasteDateDay = dateToString.substring(7, 10);
+                            let wasteContracMonthDay = dateToString.substring(5, 7);
+                            let wasteContractYearDay = dateToString.substring(0, 4);
+
+                            let contractMonthDay;
+                            // //날 01
+                            let contractDateDay = parseInt(wasteDateDay);
+                            let wasteMonth =  parseInt(wasteContracMonthDay);
+                            let contractYearDay =  parseInt(wasteContractYearDay);
 
                             let finalDate = '';
                             let dateMonth = 0;
+
                             // console.log('dateToString: ' + dateToString);
                             // console.log('contractDateDay: ' + contractDateDay);
                             // console.log('contractMonthDay: ' + contractMonthDay);
                             // console.log('contractYearDay: ' + contractYearDay);
 
-
-                            //계약시작일자가 납부일보다 크면 29 1
+                            
+                            // //계약시작일자가 납부일보다 크면 29 1
                             if (contractDateDay > parseInt(payDate)) {
                                 //console.log(payDate);
-                                if (contractMonthDay >= 12) {
-                                    contractMonthDay = 1;
-                                    //console.log('contractMonthDay11: ' + contractMonthDay);
-                                    //contractMonthDay += 1;
-                                    //console.log('contractMonthDay11: ' + contractMonthDay);
-                                } else {
-                                    contractMonthDay += 1;
-                                }
-                                finalDate = contractYearDay + '-' + contractMonthDay + '-' + payDate;
-                                //계약일자가 납부일보다 작으면 1 29
-                            } else if (contractDateDay <= parseInt(payDate)) {
-                                finalDate = contractYearDay + '-' + contractMonthDay + '-' + payDate;
-                                //console.log('contractMonthDay22: ' + contractMonthDay);
-                            }
-                            //월만 우선 정해서 받아주는 곳 끝-------
-                            //let finalityOfDate = new Date(contractYearDay,contractMonthDay,payDate);
-                            //console.log('finality :' + finalityOfDate);
-                            let monthDay = 0;
+                    
+                             contractMonthDay = wasteMonth + 1;
+                            //         console.log(contractMonthDay);
+                            //         // console.log('납부일보다크면 contractMonthDay:' + contractMonthDay);
+                            //         // console.log('납부일보다크면typeOf contractMonthDay:' , typeof contractMonthDay);
+                            //         // console.log('납부일보다크면typeOf contractMonthDay:' , typeof 1);
+                            //         // console.log('납부일보다크면 contractMonthDay:' + contractMonthDay + 1);
+                                    
+
+                                 finalDate = contractYearDay + '-' + contractMonthDay + '-' + payDate;
+                            //     console.log('finalDate 납부일이 더 작을 때:',finalDate);
+                            //     //계약일자가 납부일보다 작으면 1 29
+                             } else if (contractDateDay <= parseInt(payDate)) {
+                             finalDate = contractYearDay + '-' + contractMonthDay + '-' + payDate;
+                             }
+                            //     //console.log('contractMonthDay22: ' + contractMonthDay);
+                            //     console.log('finalDate 납부일이 더 클 때:',finalDate);
+                            // }
+                            // //월만 우선 정해서 받아주는 곳 끝-------
+                            // //let finalityOfDate = new Date(contractYearDay,contractMonthDay,payDate);
+                            // //console.log('finality :' + finalityOfDate);
+                            //let monthDay = 0;
+                            //let payContractSql = '';
+                            //let payContractParams = [];
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+   //startDate '2021-03-01'
+   //   전체 날짜
+                        //     let dateToString = startDate.toString().substring(0, 10);
+                        //     // //날
+                        //     // let wasteDateDay = dateToString.substring(7, 10);
+                        //     // //월
+                        //     // let wasteContracMonthDay = dateToString.substring(5, 7);
+                        //     // //일
+                        //     // let wasteContractYearDay = dateToString.substring(0, 4);
+                        // ///////////////////////////////////////////////////////////////////////////////////
+
+
+                        //     let wasteMonth = parseInt(dateToString.substring(5, 7)) + contractTerm;
+                        //     let dateEnd;
+                        //     let wasteRealMonth = parseInt(dateToString.substring(5, 7));
+                        //     let wasteEtcMonth = (wasteMonth - 12);
+                        //     let wasteYear = parseInt(dateToString.substring(0, 4));
+                        //     let anotherDay = dateToString.substring(7, 10);
+                        //     let plusYear;
+                        
+                        
+                        //     //contracterm나누기 12을 년에다 더해주고,
+                        //     //contractterm % 12 월
+                        //     //월 13넘어가면 -12 하고 년에 1더하기 
+                        
+                        //     let restYear = contractTerm / 12;
+                        //     let finalYear = wasteYear + restYear;
+                        
+                        //     let restMonth = contractTerm % 12 ;
+                        //     let finalMonth = wasteRealMonth + restMonth;
+                        //     let sumMonth;
+                        
+                        
+                        //     if(finalMonth > 12) {
+                        //         sumMonth = finalMonth - 12;
+                        //         finalMonth = finalMonth + sumMonth;
+                        //     }
+                        
+                            //dateEnd = Math.floor(finalYear) + '/' + finalMonth + '/' + startAsk_date.getDate();
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                           
                             let payContractSql = '';
                             let payContractParams = [];
-
-                            // payContractSql = 'INSERT INTO ' +
-                            //     'TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,PAYED_MONEY) ' +
-                            //     'VALUES((SELECT CONTRACT_ID FROM TB_S10_CONTRACT010 WHERE MEMBER_ID = (SELECT EMP_ID FROM TB_S10_EMP010 WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '") ),?,SYSDATE(),?)';
-                            // payContractParams = [finalDate, contractMoney];
-                            //console.log(payContractSql);
 
                             for (let i = 1; i <= contractTerm; i++) {
                                 //console.log('!!!!!!!!!!!!!!!!!!!contractMonthDay: ' + contractMonthDay);
                                 //console.log('!!!!!!!!!!!!!!!!!monthDay: ' + monthDay);
+                                if(contractMonthDay > 12){
+                                    // while(){
+                                    // contractYearDay += 1;
+                                    // //contractMonthDay가 13보다 작을 때 까지 돌린다.
+                                    // }
+                                }
+
                                 finalDate = contractYearDay + '-' + contractMonthDay + '-' + payDate;
                                 payContractSql = 'INSERT INTO ' +
-                                    'TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,PAYED_PLAN_MONEY) ' +
-                                    'VALUES((SELECT CONTRACT_ID FROM TB_S10_CONTRACT010 WHERE MEMBER_ID = (SELECT MEMBER_ID FROM TB_S10_MEMBER010 WHERE CEO_ID = (SELECT EMP_ID FROM TB_S10_EMP010 WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '"))),?,SYSDATE(),?)';
+                                    'TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,PAYED_PLAN_MONEY,LAST_UPDATE_DATE) ' +
+                                    'VALUES((SELECT CONTRACT_ID FROM TB_S10_CONTRACT010 '+ 
+                                    ' WHERE MEMBER_ID = (SELECT MEMBER_ID FROM TB_S10_MEMBER010 ' +
+                                    ' WHERE CEO_ID = (SELECT EMP_ID FROM TB_S10_EMP010 '+
+                                    ' WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '")))'+
+                                    ',?,SYSDATE(),?,SYSDATE())';
 
-                                console.log(payContractSql);
+                                //console.log(empIdName);
                                 console.log("--------------------------------");
-                                console.log(finalDate);
+                                console.log('finalDate',finalDate);
                                 console.log("--------------------------------");
-                                console.log(payContractParams);
+                                console.log('payContractParams',payContractParams);
                                 console.log("--------------------------------");
+
+
                                 payContractParams = [finalDate, contractMoney];
+                                
+                                
+                                
                                 console.log("--------------------------------");
                                 console.log('finalDate: ' + finalDate);
 
@@ -1431,9 +1430,9 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
                     });//memberId
                 });//emp
             })//transaction
-        } else if (dateChkNum >= 1 || empHpChkNum >= 1 || regNoChkNum >= 1) {
-            res.send({ msg: 'chk failed because of already exists' });
-        }
+        } else if (regNoChkNum >= 1 || empHpChkNum >= 1 || dateChkNum >= 1){
+            res.send({check: false, message: "이미 존재하는 데이터 입니다."});
+         } 
     })
 
     app.post('/api/s010100140/tempStorage', (req, res) => {
@@ -1638,7 +1637,7 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
                             //pay_plan_date 납부예정일 넣어서 for문 돌려서 insert하기
 
                             //startDate '2021-03-01'
-                            let dateToString = startDate.toString().substring(0, 10);
+                             dateToString = startDate.toString().substring(0, 10);
                             //날 01
                             let contractDateDay = parseInt(dateToString.substring(8, 10));
                             //월 03
@@ -1698,7 +1697,10 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
                                 console.log("--------------------------------");
                                 console.log(payContractParams);
                                 console.log("--------------------------------");
+
                                 payContractParams = [finalDate, contractMoney];
+                                
+                                
                                 console.log("--------------------------------");
                                 console.log('finalDate: ' + finalDate);
 
@@ -1770,7 +1772,7 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
             'LEFT OUTER JOIN TB_S10_CODE code2 ' +
             'ON member010.MEMBER_ST = code2.CD_V ' +
             'AND CODE2.CD_TP = "MEMBER_ST" ' +
-            'WHERE 1=1';
+            'WHERE 1=1 AND MEMBER_ST != "D"';
 
         if (memberTp != null && memberTp != "")
             sql += ' AND member010.MEMBER_TP = "' + memberTp + '"';
@@ -1805,6 +1807,20 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
             res.send({ success: true, rows })
         })
     })
+
+
+    app.post('/api/s010100010/memberDelete_by_id',(req,res) => {
+        let contractId = req.query.id;
+
+        let sql = ' UPDATE TB_S10_MEMBER010 '+
+        ' SET MEMBER_ST = "D" '+
+        ' WHERE MEMBER_ID = (SELECT MEMBER_ID FROM TB_S10_CONTRACT010 WHERE CONTRACT_ID = '+ contractId +')';
+        connection.query(sql, (error, rows) => {
+                    if (error) throw error;
+                    res.send({ success: true })
+        })
+
+     })
 
     app.post('/api/s010100140/tempStorage/memberId', (req, res) => {
         connection.beginTransaction(function (error) {
@@ -1925,7 +1941,8 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
             '           ON CON.MEMBER_ID = MEM.MEMBER_ID ' +
             '           INNER JOIN TB_S10_CONTRACT020 CON2 ' +
             '           ON CON2.CONTRACT_ID = CON.CONTRACT_ID ' +
-            ' WHERE CON2.PAY_PLAN_DATE BETWEEN date_format("' + startDate + '","%y.%m.%d") AND date_format("' + endDate + '","%y.%m.%d")';
+            ' WHERE CON2.PAY_PLAN_DATE BETWEEN date_format("' + startDate + '","%y.%m.%d") AND date_format("' + endDate + '","%y.%m.%d") '+
+            ' ORDER BY CON2.CONTRACT_ID DESC';
 
         if (userName != null && userName != "")//null아니고 전체가 아닐때 때, null 아니고 공백이 아닐때
             sql += ' AND MEM.MEMBER_NM LIKE "%' + userName + '%" ';
@@ -1969,5 +1986,5 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
     //연결알려주기
     const server = app.listen(app.get('port'), () => {
         server.setTimeout(3 * 60 * 1000);
-        console.log('portNumber : ' + app.get('port') + " OnMyWayToFind..ForWhat 'IT'S TURN ON'");
+        console.log('portNumber : ' + app.get('port') + " OnMyWayToFind..ForWhat 'IT'S TURNS ON'");
     })

@@ -2,6 +2,7 @@ import React, { useState, useEffect, Fragment } from 'react';
 import axios from 'axios';
 import './css/S010100050.css';
 import S010100010 from './S010100010';
+import Pagination from "./utils/Pagination";
 
 //<!--모달창 라이브러리
 import Dialog from '@material-ui/core/Dialog';
@@ -17,44 +18,44 @@ let memberTpDetail = [];
 
 function S010100050(props) {
 
-    const [detailAllInfo, setDetailAllInfo] = useState([])
+    const [detailAllInfo, setDetailAllInfo] = useState([]);
     const [open, setOpen] = React.useState(false);
-    const [nameForDetailCModal, setNameForDetailCModal] = useState('')
+    const [nameForDetailCModal, setNameForDetailCModal] = useState('');
 
     //회원정보
-    const [detailMemberNm, setDetailMemberNm] = useState("")
+    const [detailMemberNm, setDetailMemberNm] = useState('');
 
-    const [detailFstRegNo, setDetailFstRegNo] = useState("")
-    const [detailSndRegNo, setDetailSndRegNo] = useState("")
-    const [detailThdRegNo, setDetailThdRegNo] = useState("")
+    const [detailFstRegNo, setDetailFstRegNo] = useState('');
+    const [detailSndRegNo, setDetailSndRegNo] = useState('');
+    const [detailThdRegNo, setDetailThdRegNo] = useState('');
 
     const [detailMemberTp, setDetailMemberTp] = useState([])
-    const [detailCheckoutDate, setDetailCheckoutDate] = useState("")
-    const [detailName, setDetailName] = useState("")
+    const [detailCheckoutDate, setDetailCheckoutDate] = useState('');
+    const [detailName, setDetailName] = useState('');
 
-    const [detailFstEmpHp, setDetailFstEmpHp] = useState("")
-    const [detailSndEmpHp, setDetailSndEmpHp] = useState("")
-    const [detailThdEmpHp, setDetailThdEmpHp] = useState("")
+    const [detailFstEmpHp, setDetailFstEmpHp] = useState('');
+    const [detailSndEmpHp, setDetailSndEmpHp] = useState('');
+    const [detailThdEmpHp, setDetailThdEmpHp] = useState('');
 
-    const [detailEmpEmail, setDetailEmpEmail] = useState("")
-    const [detailDomain, setDetailDomain] = useState("")
-    const [detailAddress, setDetailAddress] = useState("")
-    const [detailZipcode, setDetailZipcode] = useState("")
-    const [detailDetailAddress, setDetailDetailAddress] = useState("")
+    const [detailEmpEmail, setDetailEmpEmail] = useState('');
+    const [detailDomain, setDetailDomain] = useState('');
+    const [detailAddress, setDetailAddress] = useState('');
+    const [detailZipcode, setDetailZipcode] = useState('');
+    const [detailDetailAddress, setDetailDetailAddress] = useState('');
 
     const [startAsk_date, setStartAsk_date] = useState(new Date());
     const [endAsk_date, setEndAsk_date] = useState(new Date());
+    const [endDateTest, setEndDateTest] = useState('');
 
-
-    // const [detailContractId, setDetailContractId] = useState("")
+    // const [detailContractId, setDetailContractId] = useState('')
     // const [detailContractDa
-    // te, setDetailContractDate] = useState("")
-    // const [detailContractTp, setDetailContractTp] = useState("")
-    // const [detailContractTerm, setDetailContractTerm] = useState("")
-    // const [detailMemberSt, setDetailMemberSt] = useState("")
-    // const [detailPayDate, setDetailPayDate] = useState("")
-    // const [detailContractMoney, setDetailContractMoney] = useState("")
-    // const [detailContractEndFlag, setDetailContractEndFlag] = useState("")
+    // te, setDetailContractDate] = useState('')
+    // const [detailContractTp, setDetailContractTp] = useState('')
+    // const [detailContractTerm, setDetailContractTerm] = useState('')
+    // const [detailMemberSt, setDetailMemberSt] = useState('')
+    // const [detailPayDate, setDetailPayDate] = useState('')
+    // const [detailContractMoney, setDetailContractMoney] = useState('')
+    // const [detailContractEndFlag, setDetailContractEndFlag] = useState('')
 
 
     const dataName = props.dataName;
@@ -71,6 +72,11 @@ function S010100050(props) {
     const [endModifyDate, setEndModifyDate] = useState(new Date());
     //datepicker속성 및 이벤트 끝
 
+    //페이징
+    const [currentPage, setCurrentPage] = useState(1);
+    const [postsPerPage, setPostsPerPage] = useState(3);
+    const indexOfLastPost = currentPage * postsPerPage;
+    
 
     useEffect(() => {
 
@@ -115,11 +121,11 @@ function S010100050(props) {
                     //const modalAddress = zip + ' ' + addr + ' ' + detailAddr;
                     const modalEndDate = response.data.rows[0].END_DATE;
 
-                    const modalRegNos = modalRegNo.split("-");
-                    const modalEmpHps = modalEmpHp.split("-");
-                    const modalEmpEmails = modalEmpEmail.split("@");
+                    const modalRegNos = modalRegNo.split('-');
+                    const modalEmpHps = modalEmpHp.split('-');
+                    const modalEmpEmails = modalEmpEmail.split('@');
                     setDetailMemberId(memberId);
-
+                    setEndDateTest(modalEndDate);
                     //console.log(modalAddress);
                     setDetailAllInfo(response.data.rows);
                     //console.log(detailAllInfo);
@@ -139,32 +145,24 @@ function S010100050(props) {
                     setDetailEmpEmail(modalEmpEmails[0]);
                     setDetailDomain(modalEmpEmails[1]);
 
-
                     setStartAsk_date(new Date(modalEndDate));
            
                     //alert(modalEndDate);
 
-                    const endDateArr = modalEndDate.split('.');
-                    const datePickerYear = endDateArr[0]
-                    const datePickerMonth = endDateArr[1]
-                    const datePicekrDate = endDateArr[2]
-
-                    const finDate = new Date(datePickerYear, datePickerMonth+1,datePicekrDate);
                     //alert(finDate);
-                    setModifyDate(finDate);
+                   // setModifyDate(finDate);
 
                     setDetailZipcode(modalZip);
                     setDetailAddress(modalAddr);
                     setDetailDetailAddress(modalDetailAddr);
                     //setDetailCheckoutDate(modalEndDate);
-
                 } else {
-                    alert("상세정보 데이터를 불러오는데 실패하였습니다.");
+                    alert('상세정보 데이터를 불러오는데 실패하였습니다.');
                 }
             })
     }, [])
 
-
+    
     const onDetailMemberNmHandler = (event) => {
         setDetailMemberNm(event.currentTarget.value);
     }
@@ -229,7 +227,6 @@ function S010100050(props) {
 
     }
 
-
     const onDetailClickOpen = (event) => {
         num = event.target.innerHTML;
         rNum = parseInt(num);
@@ -259,55 +256,16 @@ function S010100050(props) {
         setConOpen(true);
 
     }
-    // const onContractModifyHandler = (event) => {
-    //     //alert('dataEmpHp : '+dataEmpHp);
-    //     const body = {
-    //         dataName: dataName,
-    //         dataEmpHp: dataEmpHp,
-
-    //         detailMemberNm: detailMemberNm,
-
-    //         detailFstRegNo: detailFstRegNo,
-    //         detailSndRegNo: detailSndRegNo,
-    //         detailThdRegNo: detailThdRegNo,
-
-    //         detailMemberTp: detailMemberTp,
-    //         detailName: detailName,
-
-    //         detailFstEmpHp: detailFstEmpHp,
-    //         detailSndEmpHp: detailSndEmpHp,
-    //         detailThdEmpHp: detailThdEmpHp,
 
 
-    //         detailEmpEmail: detailEmpEmail,
-    //         detailDomain: detailDomain,
-
-    //         detailZipcode: detailZipcode,
-    //         detailAddress: detailAddress,
-    //         detailDetailAddress: detailDetailAddress
-    //     }
-    //console.log('body',body);
-
-    // axios.post('/api/s010100050/modifyMember', body)
-    //     .then(response => {
-    //         if (response.data.success) {
-    //             alert('수정되었습니다.');
-    //         } else {
-    //             alert('수정에 실패하였습니다.');
-    //         }
-
-    //     })
-
-
-    //}
-    const s010100050 = detailAllInfo.map((detailAllInfo, index) => {
+    const s010100050R = detailAllInfo.map((detailAllInfo, index) => {
         return (
             <tr>
                 <td onClick={onDetailClickOpen} id={detailAllInfo.CONTRACT_ID}>{detailAllInfo.CONTRACT_ID}</td>
                 <td>{detailAllInfo.CONTRACT_DATE}</td>
                 <td>{detailAllInfo.CONTRACT_TP}</td>
                 <td>{detailAllInfo.CONTRACT_ROOM}</td>
-                <td>{detailAllInfo.CONTRACT_TERM}개월 ({detailAllInfo.START_DATE} ~ {detailAllInfo.END_DATE} )</td>
+                <td>{detailAllInfo.CONTRACT_TERM}개월 ({detailAllInfo.START_DATE} ~ {detailAllInfo.END_DATE})</td>
                 <td>{detailAllInfo.MEMBER_ST}</td>
                 <td>{detailAllInfo.PAY_DATE}일</td>
                 <td>{detailAllInfo.PAYED_PLAN_MONEY}</td>
@@ -316,6 +274,11 @@ function S010100050(props) {
             </tr>
         )
     });
+
+    const indexOfFirstPost = indexOfLastPost - postsPerPage;
+    const currentPosts = s010100050R.slice(indexOfFirstPost, indexOfLastPost);
+    //Change page
+    const paginate = pageNumber => setCurrentPage(pageNumber);
 
 
     return (
@@ -357,16 +320,9 @@ function S010100050(props) {
                                 </select>
                             </td>
                             <th>퇴실일자</th>
-                            <td> <DatePicker
-                                    locale="ko"
-                                    selected={startAsk_date.setHours(9, 0, 0, 0)}//Front = 한국시 BackEnd = 표준시 9시간차이
-                                    onChange={date => setStartAsk_date(date)}
-                                    selectsStart
-                                    startDate={startAsk_date.setHours(9, 0, 0, 0)}
-                                    endDate={endAsk_date}
-                                    dateFormat="yyyy.MM.dd"
-
-                                /></td>
+                            <td> 
+                                <input type = "text" value = {endDateTest} size = "6"></input>
+                            </td>
 
                         </tr>
 
@@ -432,10 +388,13 @@ function S010100050(props) {
                             <th>사물함</th>
                             <th>종료여부</th>
                         </tr>
-                        {s010100050}
+                        <tbody>
+                        {currentPosts}
+                        </tbody>
                     </table>
+                    <Pagination postsPerPage={postsPerPage} totalPosts={s010100050R.length} paginate={paginate} />
+
                     <div id="btnAlign">
-                        {/* <input type="button" id="btn-centerM" onClick={onContractModifyHandler} value="수정하기"/> */}
                         <input type="button" id="btn-centerN" onClick={onNewOpenContractHandler} value="신규계약" />
                     </div>
 

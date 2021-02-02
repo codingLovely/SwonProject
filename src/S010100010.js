@@ -1,4 +1,4 @@
-import React, { Fragment, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import DaumPostcode from 'react-daum-postcode';
 import axios from 'axios';
 import './css/S010100010.css'
@@ -17,7 +17,6 @@ registerLocale("ko", ko);
 
 let valueArr = [[], [], [], [], []];
 let queryArr = [['MEMBER_TP', ''], ['CONTRACT_TP', 'ASK'], ['PAY_METHOD', '']];
-let contractPaths = [];
 let payDates = [];
 
 function S010100010(props) {
@@ -54,7 +53,12 @@ function S010100010(props) {
     const [contractPath, setContractPath] = useState('')
     const [contractStart, setContractStart] = useState('')
     const [contractEnd, setContractEnd] = useState('')
+    const [userStatus,setUserStatus] = useState('')
 
+    
+    const [regNoCheckBtn,setRegNoCheckBtn] = useState('');
+    const [empHpCheckBtn,setEmpHpCheckBtn] = useState('');
+    const [dateCheckBtn,setDateCheckBtn] = useState('');
 
     //주소api
     const [open, setOpen] = React.useState(false);
@@ -67,6 +71,7 @@ function S010100010(props) {
 
     const rNum = props.dataNum;
     const modalMemberId = props.dataMem;
+
 
     useEffect(() => {
 
@@ -137,18 +142,28 @@ function S010100010(props) {
                         const modalCContractTp = response.data.rows[0].CONTRACT_TP;
                         const modalCContractTerm = response.data.rows[0].CONTRACT_TERM;
                         const modalCPayDate = response.data.rows[0].PAY_DATE;
-                        const modalCContractMoney = response.data.rows[0].PAYED_MONEY;
+                        const modalCContractMoney = response.data.rows[0].PAYED_PLAN_MONEY;
                         const modalCPayMethod = response.data.rows[0].PAY_METHOD;
+
                         const modalCContractPath = response.data.rows[0].CONTRACT_PATH;
+                        const modalCContractPathM =response.data.rows[0].CONTRACT_PATH_M;
+                        
+                        
                         const modalCEndDate = response.data.rows[0].END_DATE;
+
                         const modalCContractTpVal = response.data.rows[0].CONTRACT_ROOM;
                         const modalCRoomLockerTp = response.data.rows[0].CONTRACT_LOCKER;
+                        const modalCContractTpValM = response.data.rows[0].CONTRACT_ROOM_M;
+                        const modalCRoomLockerTpM = response.data.rows[0].CONTRACT_LOCKER_M;
+                        const modalCMemberSt = response.data.rows[0].MEMBER_ST;
+
                         const modalCComment = response.data.rows[0].COMMENT;
 
                         const modalCRegNos = modalCRegNo.split("-");
                         const modalCEmpHps = modalCEmpHp.split("-");
                         const modalCEmpEmails = modalCEmpEmail.split("@");
 
+                        setUserStatus(modalCMemberSt);
                         setMemberNm(modalCMemberNm);
                         setFisrtRegNo(modalCRegNos[0]);
                         setSecondRegNo(modalCRegNos[1]);
@@ -178,15 +193,21 @@ function S010100010(props) {
                         setPayDate(modalCPayDate);
                         setContractMoney(modalCContractMoney);
                         setPayMethod(modalCPayMethod);
-                        setContractPath(modalCContractPath);
+                        //setContractPath(modalCContractPath);
                         setRoomLockerTp(modalCRoomLockerTp);
                         setComment(modalCComment);
                         
                         setStartAsk_date(new Date(modalCContractDate));
+
+
                         setContractTpVal(modalCContractTpVal);
                         setRoomLockerTp(modalCRoomLockerTp);
+                        setContractPath(modalCContractPath);
 
-                        setContractTpVals([{ key: '', value: modalCContractTpVal }])
+                        setContractTpVals([{ key: modalCContractTpVal, value: modalCContractTpValM }]);
+                        setRoomLockers([{ key: modalCRoomLockerTp, value: modalCRoomLockerTpM }]);
+                        
+                        setContractPaths([{ key: modalCContractPath, value: modalCContractPathM}]);
                         //setEndFlag(modalEndFLag);
                     } else {
                         alert("상세 정보 가져오기를 실패하였습니다.")
@@ -251,15 +272,15 @@ function S010100010(props) {
         axios.post('/api/s010100010/accessPath')
             .then(response => {
                 if (response.data.success) {
-                    //console.log('Lov-ask_tp',response.data);
+                    let conAccessPath = response.data.rows.CD_V;
                     let arr = [{ key: '선택', value: '선택' }]
-
+                    
                     response.data.rows.map((data) =>
                         arr.push({
                             value: data.CD_V_MEANING, key: data.CD_V
                         }));
 
-                    contractPaths = arr;
+                        setContractPaths(arr);
 
                 } else {
                     alert("데이터를 불러오는데 실패하였습니다.");
@@ -281,9 +302,9 @@ function S010100010(props) {
 
     //Lov끝>
 
-    const [contractTpVals, setContractTpVals] = useState([{ key: '', value: 'waiting...' }]);
-    const [roomLockers, setRoomLockers] = useState([{ key: '', value: 'waiting...' }]);
-
+    const [contractTpVals, setContractTpVals] = useState([{ key: '', value: '선택' }]);
+    const [roomLockers, setRoomLockers] = useState([{ key: '', value: '선택' }]);
+    const [contractpaths,setContractPaths] = useState([{ key: '', value: '선택' }]);
 
     const onContractTpHandler = (event) => {
      
@@ -402,6 +423,17 @@ function S010100010(props) {
     }
 
 
+    useEffect(() => {
+        return () => setRegNoCheckBtn('');   
+      }, []);
+      useEffect(() => {
+        return () => setEmpHpCheckBtn('');  
+      }, []);
+      useEffect(() => {
+        return () =>  setDateCheckBtn('');
+  
+      }, []);
+
     //<!--onSubmit
     const onSubmitHandler = (event) => {
         event.preventDefault();
@@ -462,9 +494,73 @@ function S010100010(props) {
 
         let contractTerms = parseInt(contractTerm);
         let startDate = startAsk_date.getFullYear() + '-' + (startAsk_date.getMonth() + 1) + '-' + startAsk_date.getDate();
-        let endDate = startAsk_date.getFullYear() + '-' + ((startAsk_date.getMonth() + 1) + contractTerms) + '-' + startAsk_date.getDate();
+        let endDate = startAsk_date.getFullYear() + '-' + ((startAsk_date.getMonth() + 1) + contractTerms) + '-' + startAsk_date.getDate(); 
+        
+        const body = {
+            //회원정보
+            memberNm: memberNm,
+            firstRegNo: firstRegNo,
+            secondRegNo: secondRegNo,
+            thirdRegNo: thirdRegNo,
+            memberTp: memberTp,
+            empIdName: empIdName,
+            firstEmpHp: firstEmpHp,
+            secondEmpHp: secondEmpHp,
+            thirdEmpHp: thirdEmpHp,
+            zipcode: zipcode,
+            empEmailId: empEmailId,
+            domainAddress: domainAddress,
+            empAddress: empAddress,
+            empDetailAddress: empDetailAddress,
+            //계약정보
+            contractTp: contractTp,
+            contractTpVal: contractTpVal,
+            roomLockerTp: roomLockerTp,
+            contractMoney: contractMoney,
+            contractTerm: contractTerm,
+            startAsk_date: startDate,
+            endDate: dateEnd,
+            payDate: payDate,
+            payMethod: payMethod,
+            contractPath: contractPath,
+            comment: comment
+        }
+     
+        console.log('regNoCheckBtn1.',regNoCheckBtn);
 
+        if(regNoCheckBtn == ''){
+            alert('사업자 번호 중복확인 하세요.');
+            console.log('regNoCheckBtn4.',regNoCheckBtn);
+        }else if(empHpCheckBtn == ''){
+            alert('전화번호 중복확인 하세요.');
+        }else if(dateCheckBtn == ''){
+            alert('이용날짜 중복확인 하세요.');
+        }else if(regNoCheckBtn == 'check' && empHpCheckBtn == 'check' && dateCheckBtn == 'check'){
+            axios.post('/api/s010100010/insertMember010', body)
+            .then(response => { 
+                    if (response.data.success) {
+                        alert('정상적으로 등록 되었습니다.')
+                        setRegNoCheckBtn('');
+                        setEmpHpCheckBtn('');
+                        setDateCheckBtn('');   
+                    }else {
+                        alert('등록에 실패하였습니다.')
+                    }
+    
+                })
+        }
+           
+    }
+    //onSubmit끝-->
+    //alert(regNoCheckBtn);
 
+     //임시저장
+     const temporaryStorage = (event) => {
+      
+        event.preventDefault();
+      
+        let startDate = startAsk_date.getFullYear() + '-' + (startAsk_date.getMonth() + 1) + '-' + startAsk_date.getDate();
+        
         const body = {
             //회원정보
             memberNm: memberNm,
@@ -495,17 +591,29 @@ function S010100010(props) {
             comment: comment
         }
 
-
-        axios.post('/api/s010100010/insertMember010', body)
-            .then(response => {
-                if (response.data.success) {
-                    alert('정상적으로 등록되었습니다.')
-                } else {
-                    alert(response.data.msg);
-                }
+        if(regNoCheckBtn == ''){
+            alert('사업자 번호 중복확인 하세요.');
+        }else if(empHpCheckBtn == ''){
+            alert('전화번호 중복확인 하세요.');
+        }else if(dateCheckBtn == ''){
+            alert('이용날짜 중복확인 하세요.');
+        }else if(regNoCheckBtn == 'check' && empHpCheckBtn == 'check' && dateCheckBtn == 'check'){
+            axios.post('/api/s010100140/tempStorage', body)
+            .then(response => {      
+                    if (response.data.success) {
+                        alert('임시저장 하였습니다.')
+                        setRegNoCheckBtn('');
+                        setEmpHpCheckBtn('');
+                        setDateCheckBtn(''); 
+                    }else {
+                        alert('임시저장에 실패하였습니다.')  
+                    }
             })
+        }  
+
     }
-    //onSubmit끝-->
+
+
 
     const onMemberNmHandler = (event) => {
         setMemberNm(event.currentTarget.value);
@@ -656,7 +764,9 @@ function S010100010(props) {
 
     }
     const newMemberIdModifyStorage = (event) => {
+
         setEmpDetailAddress(event.currentTarget.value);
+        
         let startDate = startAsk_date.getFullYear() + '-' + (startAsk_date.getMonth() + 1) + '-' + startAsk_date.getDate();
         let modifyDataNum = props.dataNum;
 
@@ -740,52 +850,8 @@ function S010100010(props) {
         //     }
     };
 
-    //console.log(startAsk_date);
-    //임시저장
-    const temporaryStorage = (event) => {
-        event.preventDefault();
-        let startDate = startAsk_date.getFullYear() + '-' + (startAsk_date.getMonth() + 1) + '-' + startAsk_date.getDate();
-        const body = {
-            //회원정보
-            memberNm: memberNm,
-            firstRegNo: firstRegNo,
-            secondRegNo: secondRegNo,
-            thirdRegNo: thirdRegNo,
-            memberTp: memberTp,
-            empIdName: empIdName,
-            firstEmpHp: firstEmpHp,
-            secondEmpHp: secondEmpHp,
-            thirdEmpHp: thirdEmpHp,
-            zipcode: zipcode,
-            empEmailId: empEmailId,
-            domainAddress: domainAddress,
-            empAddress: empAddress,
-            empDetailAddress: empDetailAddress,
-            //계약정보
-            contractTp: contractTp,
-            contractTpVal: contractTpVal,
-            roomLockerTp: roomLockerTp,
-            contractMoney: contractMoney,
-            contractTerm: contractTerm,
-            startAsk_date: startDate,
-            endDate: dateEnd,
-            payDate: payDate,
-            payMethod: payMethod,
-            contractPath: contractPath,
-            comment: comment
-        }
 
-
-        axios.post('/api/s010100140/tempStorage', body)
-            .then(response => {
-                if (response.data.success) {
-                    alert('임시저장 하였습니다.')
-                } else {
-                    alert('임시저장에 실패하였습니다.')
-                }
-            })
-
-    }
+   
 
     const newTemporaryStorage = (event) => {
         alert(modalMemberId);
@@ -805,18 +871,19 @@ function S010100010(props) {
             contractPath: contractPath,
             comment: comment
         }
-        axios.post('/api/s010100140/tempStorage/memberId', body)
-            .then(response => {
-                if (response.data.success) {
-                    alert('임시저장 하였습니다.')
-                } else {
-                    alert('임시저장에 실패하였습니다.')
-                }
-            })
+        // axios.post('/api/s010100140/tempStorage/memberId', body)
+        //     .then(response => {
+        //         if (response.data.success) {
+        //             alert('임시저장 하였습니다.')
+        //         } else {
+        //             alert('임시저장에 실패하였습니다.')
+        //         }
+        //     })
     }
 
 
     const [postCodeDisplay, setPostCodeDisplay] = useState('none');
+    
     const postCodeStyle = {
         display: postCodeDisplay,
         position: "absolute",
@@ -826,6 +893,7 @@ function S010100010(props) {
         height: "600px"
 
     }
+
     const handleOpenPost = (event) => {
         setPostCodeDisplay('block');
 
@@ -833,15 +901,33 @@ function S010100010(props) {
             setPostCodeDisplay('none');
         }
     }
+
     const onDeleteHandler = (event) => {
 
+        setUserStatus('');
+        //alert(rNum);
+        
+        axios.post(`/api/s010100010/memberDelete_by_id?id=${rNum}`)
+        .then(response => {
+            if (response.data.success) {
+                alert('삭제 하였습니다.')
+            } else {
+                alert('삭제에 실패하였습니다.')
+            }
+        })
+    
     }
 
     const onRegNoCheckHandler = (event) => {
+  
         event.preventDefault();
         // alert(firstRegNo,secondRegNo,thirdRegNo);
         // alert(secondRegNo);
         // alert(thirdRegNo);
+
+        setRegNoCheckBtn('check');
+
+        console.log('regNoCheckBtn2.',regNoCheckBtn);
 
         const body = {
             //회원정보
@@ -863,6 +949,8 @@ function S010100010(props) {
                     alert('중복체크에 실패 하였습니다.')
                 }
             })
+
+            console.log('regNoCheckBtn3.',regNoCheckBtn);
     }
 
     const onEmpHpChkHandler = (event) => {
@@ -870,6 +958,8 @@ function S010100010(props) {
         // alert(firstRegNo,secondRegNo,thirdRegNo);
         // alert(secondRegNo);
         // alert(thirdRegNo);
+
+        setEmpHpCheckBtn('check');
 
         const body = {
             //회원정보
@@ -894,20 +984,53 @@ function S010100010(props) {
 
     }
 
+    let contractTerms = parseInt(contractTerm);
+    let wasteEndDate = startAsk_date.getFullYear() + '-' + ((startAsk_date.getMonth() + 1) + contractTerms) + '-' + startAsk_date.getDate(); 
+    //let endDate = startAsk_date.getFullYear() + '-' + ((startAsk_date.getMonth() + 1) + contractTerms) + '-' + startAsk_date.getDate(); 
+    
+    let wasteMonth = parseInt((startAsk_date.getMonth() + 1)) + contractTerms;
+    let dateEnd;
+    let wasteRealMonth =  (startAsk_date.getMonth() + 1);
+    let wasteEtcMonth = (wasteMonth - 12);
+    let wasteYear = parseInt(startAsk_date.getFullYear());
+    let plusMonth;
+    let plusYear;
+
+
+    //contracterm나누기 12을 년에다 더해주고,
+    //contractterm % 12 월
+    //월 13넘어가면 -12 하고 년에 1더하기 
+
+    let restYear = contractTerm / 12;
+    let finalYear = wasteYear + restYear;
+
+    let restMonth = contractTerm % 12 ;
+    let finalMonth = wasteRealMonth + restMonth;
+    let sumMonth;
+
+
+    if(finalMonth > 12) {
+        sumMonth = finalMonth - 12;
+        finalMonth = finalMonth + sumMonth;
+    }
+
+    dateEnd = Math.floor(finalYear) + '/' + finalMonth + '/' + startAsk_date.getDate();
+
+
     const onDateHandler = (event) => {
+        
         event.preventDefault();
-        // alert(firstRegNo,secondRegNo,thirdRegNo);
-        // alert(secondRegNo);
-        // alert(thirdRegNo);
-        let startDate = startAsk_date.getFullYear() + '-' + (startAsk_date.getMonth() + 1) + '-' + startAsk_date.getDate();
-        let endDate = startAsk_date.getFullYear() + '-' + ((startAsk_date.getMonth() + 1) + parseInt(contractTerm)) + '-' + startAsk_date.getDate();
+        
+        setDateCheckBtn('check');
+
+        let startDate = startAsk_date.getFullYear() + '.' + (startAsk_date.getMonth() + 1) + '.' + startAsk_date.getDate();
 
         const body = {
             contractTp: contractTp,
             contractTpVal: contractTpVal,
             roomLockerTp: roomLockerTp,
             startDate: startDate,
-            endDate: endDate,
+            endDate: dateEnd
         }
 
         axios.post('/api/s010100140/dateCheck', body)
@@ -926,15 +1049,6 @@ function S010100010(props) {
     }
 
 
-    //setEndAsk_date(startAsk_date.getFullYear().getMonth()+1);
-    //console.log(startAsk_date);
-
-    //const [endDatePicker,setEndDatePicker] = useState(false);
-    const dateEnd = startAsk_date.getFullYear() + '.' + ((startAsk_date.getMonth() + 1) + parseInt(contractTerm)) + '.' + startAsk_date.getDate();
-
-
-    //alert(dateEnd);
-    //setEndDatePicker(dateEnd);
     return (
 
         <form style={{
@@ -1201,7 +1315,7 @@ function S010100010(props) {
                         <th className="info">계약접근경로</th>
                         <td>
                             <select multiple={false} onChange={onContractPathHandler} value={contractPath}>
-                                {contractPaths.map(item => (
+                                {contractpaths.map(item => (
                                     <option key={item.key} value={item.key}>{item.value}</option>
                                 ))}
                             </select>
@@ -1235,8 +1349,9 @@ function S010100010(props) {
 
                         </td>
                         <td colSpan="4" className="alignLeft" id="sndTextSpacing">
-                            을 :<br />
-                        (인)<br />
+                            을 :&nbsp; &nbsp; &nbsp; 
+                            {zipcode} {empAddress} {empDetailAddress}<br />
+                            &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; {memberNm} {empIdName} (인)<br />
                             <span id="hidden">spacing</span>
                         </td>
                     </tr>
@@ -1270,7 +1385,7 @@ function S010100010(props) {
                     onClick={newTemporaryStorage} value="종료" />
                 <input type="button" className="contractId" hidden={props.cDataForm !== 'I'}
                     onClick={newTemporaryStorage} value="종료" />
-                <input type="button" hidden={props.newDataForm === 'N' || props.cDataForm === 'I'}
+                <input type="button" hidden={ userStatus !== 'T'}
                     onClick={onDeleteHandler} value="삭제" />
                 <Link to="/member">
                 </Link>

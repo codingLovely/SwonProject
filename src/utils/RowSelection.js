@@ -10,6 +10,8 @@ function RowSelection({ columns, data }) {
     prepareRow,
   } = useTable({ columns, data })
 
+  const firstPageRows = rows.slice(0,1);
+
   return (
     <table {...getTableProps()}>
       <thead>
@@ -22,7 +24,7 @@ function RowSelection({ columns, data }) {
         ))}
       </thead>
       <tbody {...getTableBodyProps()}>
-        {rows.map((row) => {
+        {firstPageRows.map((row) => {
           prepareRow(row)
           return (
             <tr {...row.getRowProps()}>
