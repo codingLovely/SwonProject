@@ -6,6 +6,7 @@ import Pagination from'./utils/Pagination';
 import DatePicker, {registerLocale} from 'react-datepicker';
 import ko from 'date-fns/locale/ko';
 import Table from './utils/Table';
+import { useForkRef } from '@material-ui/core';
 registerLocale("ko", ko);
 
 
@@ -62,30 +63,32 @@ function S010100070(props) {
     const payBtnHandler = (event) => {
 
 
-        let modalContractId = dataContracId;
+        let modalContractId = props.dataContracId;
         let modalPayPlanDate = checked;
-        console.log(checked);
-        console.log(modalContractId);
+        //console.log(checked);
+        //console.log('modalContractId',modalContractId);
 
         let body = {
             //id -> date
             modalContractId: modalContractId,
-                        modalPayPlanDate: modalPayPlanDate,
+            modalPayPlanDate: modalPayPlanDate,
+            payMethodM:payMethodM
             //insertPayDate: insertPayDate,
-            referComment: referComment
+            //referComment: referComment
         }
+        console.log(payMethodM);
 
         //console.log(referComment);
-        // axios.get('api/s01010070/paymentUpdate',body)
-        //     .then(response => {
-        //         if (response.data.success) {
-        //             alert('왼료되었습니다.');
+        axios.post('api/s01010070/paymentUpdate',body)
+            .then(response => {
+                if (response.data.success) {
+                    alert('왼료되었습니다.');
         
-        //         } else {
-        //             alert('실패하였습니다.');
-        //         }
+                } else {
+                    alert('실패하였습니다.');
+                }
         
-        //     })
+            })
 
 
     }
@@ -121,9 +124,29 @@ function S010100070(props) {
     }
 
 // const [s010100070R, setS010100070R] = useState([]);
+const makeYYMMDD = (value) => {
+    let year = (value.getFullYear()+'').substring(2);
+    console.log('year',year);
+    let month = value.getMonth() + 1;
+    let date = value.getDate();
+    month = month < 10 ? '0' + month : month;
+    date = date < 10 ? '0' + date : date;
+    return year+'.'+month+'.'+date;
+}
+
+const setPaymentStatusPayedDate = (rows) => {
+    //초기 setPaymentStatusList 설정 (납부일자세팅)
+    setPaymentStatusList(
+        rows.map(row => 
+            row.PAYED_DATE === null ?
+            {...row, PAYED_DATE : makeYYMMDD(new Date())}
+            : row
+            )
+    )
+}
+
 
 const s010100070R = paymentStatusList.map((paymentStatus, index) => {
-        let insertPayDate = new Date('20' + (paymentStatus.PAYED_DATE ? paymentStatus.PAYED_DATE : paymentStatus.PAY_PLAN_DATE));
         return (
             <tr className='dataTable'>
                 {/*CONTRACT_ID와 날짜를 함께 들고가야한다.*/}
@@ -137,7 +160,7 @@ const s010100070R = paymentStatusList.map((paymentStatus, index) => {
                     <DatePicker
                         id={paymentStatus.PAY_PLAN_DATE}
                         locale="ko"
-                        selected={insertPayDate.setHours(9, 0, 0, 0)}
+                        //selected={paymentStatus.PAYED_DATE? paymentStatus.PAYED_DATE.setHours(9, 0, 0, 0) : null}
                         onChange={
                             // date => {console.log('date',makeYYMMDD(date))}
                             date => {setPaymentStatusList(
@@ -148,7 +171,7 @@ const s010100070R = paymentStatusList.map((paymentStatus, index) => {
                             ))}
                         }
                         selectsStart
-                        startDate={insertPayDate}
+                        startDate={paymentStatus.PAYED_DATE}
                         dateFormat="yyyy.MM.dd"
                     />
                 </td>
@@ -164,16 +187,7 @@ const s010100070R = paymentStatusList.map((paymentStatus, index) => {
     });
 
 
-    const makeYYMMDD = (value) => {
-        let year = (value.getFullYear()+'').substring(2);
-        console.log('year',year);
-        let month = value.getMonth() + 1;
-        let date = value.getDate();
-        month = month < 10 ? '0' + month : month;
-        date = date < 10 ? '0' + date : date;
-        return year+'.'+month+'.'+date;
-    }
-
+   
 
     const indexOfFirstPost = indexOfLastPost - postsPerPage;
     const currentPosts = s010100070R.slice(indexOfFirstPost, indexOfLastPost);
@@ -217,13 +231,14 @@ const s010100070R = paymentStatusList.map((paymentStatus, index) => {
     //         </tr>
     //     )
     // });
+    const[payMethodM,setPayMethodM] = useState('');
 
     useEffect(() => {
         axios.get(`/api/s01010070/insert/tb_s10_contract020_by_id?id=${dataContracId}`)
             .then(response => {
                 if (response.data.success) {
-                    setPaymentStatusList(response.data.rows);
-                    console.log('paymentStatusList',paymentStatusList);
+                    //setPaymentStatusList(response.data.rows);
+                    setPaymentStatusPayedDate(response.data.rows);
                     setPaymentMemberNm(response.data.rows[0].MEMBER_NM);
                     setPaymentPeriod(response.data.rows[0].CONTRACT_TERM + '개월 ' +
                         '(' + response.data.rows[0].START_DATE + ' ~ ' + response.data.rows[0].END_DATE + ')');
@@ -231,6 +246,8 @@ const s010100070R = paymentStatusList.map((paymentStatus, index) => {
                     setPaymentEmpHp(response.data.rows[0].EMP_HP);
                     setPaymentEmpEmail(response.data.rows[0].EMP_EMAIL);
                     setPaymentEmpComment(response.data.rows[0].COMMENT);
+                    setPayMethodM(response.data.rows[0].PAY_METHOD);
+                    
                     
 
                 } else {
@@ -340,7 +357,6 @@ const s010100070R = paymentStatusList.map((paymentStatus, index) => {
                             </tr>
                         </table>
                     </div>
-                    <Table columns={columns} data={data}/>
                     <table id='paymentList'>
                     <thead>
                         <tr>

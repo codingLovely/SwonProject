@@ -714,6 +714,26 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
         });
 
     })
+    
+    app.post('api/s01010070/paymentUpdate',(req,res) =>{
+
+        let modalContractId = req.body.modalContractId;
+        let modalPayPlanDate = req.body.modalPayPlanDate;
+        let payMethodM = req.body.payMethodM;
+
+        let sql = 'UPDATE TB_S10_CONTRACT020 '+
+                  'SET PAYED_DATE = "' + modalPayPlanDate + '"' +
+                  'WHERE ';
+        
+        connection.query(sql, (error, rows) => {//쿼리문
+            //console.log(rows);
+            if (error) throw error;
+            //console.log(rows);
+            res.send({ success: true, rows });
+
+        });
+    })
+
 
 
     //<2-5.검색하기
