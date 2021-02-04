@@ -134,19 +134,8 @@ const makeYYMMDD = (value) => {
     return year+'.'+month+'.'+date;
 }
 
-const setPaymentStatusPayedDate = (rows) => {
-    //초기 setPaymentStatusList 설정 (납부일자세팅)
-    setPaymentStatusList(
-        rows.map(row => 
-            row.PAYED_DATE === null ?
-            {...row, PAYED_DATE : makeYYMMDD(new Date())}
-            : row
-            )
-    )
-}
-
-
 const s010100070R = paymentStatusList.map((paymentStatus, index) => {
+    let insertPayDate = new Date('20' + (paymentStatus.PAYED_DATE ? paymentStatus.PAYED_DATE : paymentStatus.PAY_PLAN_DATE));
         return (
             <tr className='dataTable'>
                 {/*CONTRACT_ID와 날짜를 함께 들고가야한다.*/}
@@ -160,7 +149,7 @@ const s010100070R = paymentStatusList.map((paymentStatus, index) => {
                     <DatePicker
                         id={paymentStatus.PAY_PLAN_DATE}
                         locale="ko"
-                        //selected={paymentStatus.PAYED_DATE? paymentStatus.PAYED_DATE.setHours(9, 0, 0, 0) : null}
+                        selected={insertPayDate.setHours(9, 0, 0, 0)}
                         onChange={
                             // date => {console.log('date',makeYYMMDD(date))}
                             date => {setPaymentStatusList(
@@ -171,7 +160,7 @@ const s010100070R = paymentStatusList.map((paymentStatus, index) => {
                             ))}
                         }
                         selectsStart
-                        startDate={paymentStatus.PAYED_DATE}
+                        startDate={insertPayDate}
                         dateFormat="yyyy.MM.dd"
                     />
                 </td>
@@ -237,8 +226,7 @@ const s010100070R = paymentStatusList.map((paymentStatus, index) => {
         axios.get(`/api/s01010070/insert/tb_s10_contract020_by_id?id=${dataContracId}`)
             .then(response => {
                 if (response.data.success) {
-                    //setPaymentStatusList(response.data.rows);
-                    setPaymentStatusPayedDate(response.data.rows);
+                    setPaymentStatusList(response.data.rows);
                     setPaymentMemberNm(response.data.rows[0].MEMBER_NM);
                     setPaymentPeriod(response.data.rows[0].CONTRACT_TERM + '개월 ' +
                         '(' + response.data.rows[0].START_DATE + ' ~ ' + response.data.rows[0].END_DATE + ')');
