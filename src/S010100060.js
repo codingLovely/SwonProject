@@ -2,6 +2,8 @@ import React, {Fragment, useEffect, useState} from 'react';
 import Navbar from './Navbar';
 import S010100070 from "./S010100070";
 import Pagination from "./utils/Pagination";
+//엑셀다운로드
+import xlsx from 'xlsx';
 
 //<!--켈린더 라이브러리시작
 import DatePicker, {registerLocale} from "react-datepicker";
@@ -10,8 +12,10 @@ import axios from "axios";
 import Dialog from "@material-ui/core/Dialog";
 import S010100010 from "./S010100010";
 import DialogActions from "@material-ui/core/DialogActions";
-
 registerLocale("ko", ko);
+
+
+
 
 //켈린더 라이브러리 끝-->
 let paymentState = [{key: '전체', value: '전체'},
@@ -134,6 +138,31 @@ function S010100060(props) {
         }
     }
 
+    const excelHandler = (event) => {
+
+        event.preventDefault();
+
+        const ws = xlsx.utils.json_to_sheet(payStatusList);
+        console.log(payStatusList);
+
+        ['회원명','납부예정일','납부여부','납부일자','계약기간','계약기간','대표자 성명','대표자 연락처','대표자 E-mail','계약ID']
+        .forEach((x,idx) => {
+            const cellAdd = xlsx.utils.encode_cell({c:idx,r:0});
+            ws[cellAdd].v = x;
+            
+        })
+
+        ws['!cols'] = [];
+        ws['!cols'][9] = {hidden:true};
+        
+
+        const wb = xlsx.utils.book_new();
+
+        xlsx.utils.book_append_sheet(wb,ws,"Sheet1");
+        xlsx.writeFile(wb,"고객납부현황.xlsx");
+
+    }
+
 
     const s010100060R = payStatusList.map((payStatusList, index) => {
         return (
@@ -223,7 +252,7 @@ function S010100060(props) {
                             <button className='loginBtn' onClick={onPaymenthandler}> 납부</button>
                         </td>
                         <td id="btd2">
-                            <button>엑셀다운로드</button>
+                            <input type ="button" onClick ={excelHandler} value = "엑셀다운로드"></input>
                         </td>
                     </tr>
                     </thead>

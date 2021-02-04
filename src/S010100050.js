@@ -47,6 +47,8 @@ function S010100050(props) {
     const [endAsk_date, setEndAsk_date] = useState(new Date());
     const [endDateTest, setEndDateTest] = useState('');
 
+    
+
     // const [detailContractId, setDetailContractId] = useState('')
     // const [detailContractDa
     // te, setDetailContractDate] = useState('')
@@ -60,7 +62,9 @@ function S010100050(props) {
 
     const dataName = props.dataName;
     const dataEmpHp = props.dataEmpHp;
-    //console.log('dataEmpHp',dataEmpHp);
+    //console.log('dataEmpHp',dataEmpHp); dataMemId = {memberIdModal}
+    const dataMemId = props.dataMemId;
+    console.log('dataName',props.dataMemId);
 
     const [conOpen, setConOpen] = React.useState(false);
     const [newOpen, setNewOpen] = React.useState(false);
@@ -76,7 +80,7 @@ function S010100050(props) {
     const [currentPage, setCurrentPage] = useState(1);
     const [postsPerPage, setPostsPerPage] = useState(3);
     const indexOfLastPost = currentPage * postsPerPage;
-    
+    //let modalRegistImg;
 
     useEffect(() => {
 
@@ -101,9 +105,16 @@ function S010100050(props) {
 
 
     }, [])
+  
 
     useEffect(() => {
-        axios.post(`/api/s010100050/detailMember_by_id?id=${dataName}&type=single`)
+
+        let body = {
+            dataName:dataName,
+            dataEmpHp:dataEmpHp
+        }
+
+        axios.post('/api/s010100050/detailMember_by_id',body)
             .then(response => {
                 if (response.data.success) {
                     //console.log('memberId', response.data.rows[0].MEMBER_ID);
@@ -120,13 +131,14 @@ function S010100050(props) {
                     const modalDetailAddr = response.data.rows[0].DETAIL_ADDRESS;
                     //const modalAddress = zip + ' ' + addr + ' ' + detailAddr;
                     const modalEndDate = response.data.rows[0].END_DATE;
-
+                    const modalIdImg = response.data.rows[0].CEO_IMAGE_ID;
+                    //modalRegistImg = response.data.rows[0].CEO_IMAGE_REGISTER;
                     const modalRegNos = modalRegNo.split('-');
                     const modalEmpHps = modalEmpHp.split('-');
                     const modalEmpEmails = modalEmpEmail.split('@');
                     setDetailMemberId(memberId);
                     setEndDateTest(modalEndDate);
-                    //console.log(modalAddress);
+                    //console.log(modalRegistImg);
                     setDetailAllInfo(response.data.rows);
                     //console.log(detailAllInfo);
                     setDetailMemberNm(modalMemberNm);
@@ -137,6 +149,9 @@ function S010100050(props) {
 
                     setDetailMemberTp(modalMemberTp);
                     setDetailName(modalName);
+                    
+                    //setIdCar(modalIdImg);
+                    //setRegistCar(modalRegistImg);
 
                     setDetailFstEmpHp(modalEmpHps[0]);
                     setDetailSndEmpHp(modalEmpHps[1]);
@@ -256,6 +271,41 @@ function S010100050(props) {
         setConOpen(true);
 
     }
+    
+    const onIdDownloadHandler = (event) => {
+        event.preventDefault();
+        console.log('dataMemId',dataMemId);
+
+        axios.get(`/api/s01010050/download/tb_s10_member010_by_id?id=${dataMemId}&type=single`)
+            .then(response => {
+                if (response) {
+                    alert('so');
+                    // let wasteIdPath =response.data.rows[0].CEO_IMAGE_ID_PATH;
+                    // let wasteId =response.data.rows[0].CEO_IMAGE_ID;
+                    // console.log(typeof wasteIdPath);
+                    // let test = wasteIdPath;
+                    // let testId = wasteId;
+                    // console.log(typeof test);
+                    // let path = {
+                    //     test:test,
+                    //     testId:testId
+                    // }
+                    // console.log(path);
+                   
+          } else {
+                    alert("다운로드에 실패하였습니다.");
+                }
+            })
+    }
+
+    const onRegDownloadHandler = (event) => {
+        event.preventDefault();
+
+        axios.get('/api/s010100150/regDownload')
+            .then(response => {
+                console.log('response',response);
+            })
+    }
 
 
     const s010100050R = detailAllInfo.map((detailAllInfo, index) => {
@@ -366,10 +416,11 @@ function S010100050(props) {
                         </td>
                         <tr>
                             <th rowSpan="2">첨부파일</th>
-                            <td colSpan="7">대표자신분증</td>
+                            <td colSpan="7"><a href = '#' onClick={onIdDownloadHandler}>대표자신분증</a></td>
+                            {/* onClick={onIdDownloadHandler} */}
                         </tr>
                         <tr>
-                            <td colSpan="7">사업자등록증</td>
+                            <td colSpan="7"><a href = '#' onClick={onRegDownloadHandler}>사업자등록증</a></td>
                         </tr>
 
                     </table>

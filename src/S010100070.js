@@ -22,13 +22,12 @@ function S010100070(props) {
     const [referComment, setReferComment] = useState('');
     const [paymentStatusList, setPaymentStatusList] = useState([]);
 
-    const [insertPayDate, setInsertPayDate] = useState(new (Date));
-    const [endInsertPayDate, EndInsertPayDate] = useState(new (Date));
-
     //페이징
     const [currentPage, setCurrentPage] = useState(1);
     const [postsPerPage, setPostsPerPage] = useState(12);
     const indexOfLastPost = currentPage * postsPerPage;
+
+    const [checked, setChecked] = useState([]);
 
     // const []
     const paymentMemberNmHandler = (event) => {
@@ -65,25 +64,28 @@ function S010100070(props) {
 
         let modalContractId = dataContracId;
         let modalPayPlanDate = checked;
+        console.log(checked);
+        console.log(modalContractId);
 
         let body = {
+            //id -> date
             modalContractId: modalContractId,
-            modalPayPlanDate: modalPayPlanDate,
-            insertPayDate: insertPayDate,
+                        modalPayPlanDate: modalPayPlanDate,
+            //insertPayDate: insertPayDate,
             referComment: referComment
         }
 
         //console.log(referComment);
-        axios.get('api/s01010070/paymentUpdate',body)
-            .then(response => {
-                if (response.data.success) {
-                    alert('왼료되었습니다.');
+        // axios.get('api/s01010070/paymentUpdate',body)
+        //     .then(response => {
+        //         if (response.data.success) {
+        //             alert('왼료되었습니다.');
         
-                } else {
-                    alert('실패하였습니다.');
-                }
+        //         } else {
+        //             alert('실패하였습니다.');
+        //         }
         
-            })
+        //     })
 
 
     }
@@ -100,12 +102,9 @@ function S010100070(props) {
 
     let dataContracId = props.dataContracId;
 
-    const [checked, setChecked] = useState([]);
+    
 
     const toggleHandler = (e) => {
-        // console.log('event', e.target.id);
-        // console.log('payPlanDate', e.target.id);
-
         const currentIndex = checked.indexOf(e.target.id);
         //전체 Checked된 State에서 현재 누를 Checkbox가 있는지 확인
         const newChecked = checked;
@@ -116,46 +115,65 @@ function S010100070(props) {
             newChecked.splice(currentIndex, 1)
         }
         setChecked(newChecked);
+        
+        console.log(newChecked);
 
     }
 
 // const [s010100070R, setS010100070R] = useState([]);
 
-const s010100070R = paymentStatusList.map((paymentStatusList, index) => {
+const s010100070R = paymentStatusList.map((paymentStatus, index) => {
+        let insertPayDate = new Date('20' + (paymentStatus.PAYED_DATE ? paymentStatus.PAYED_DATE : paymentStatus.PAY_PLAN_DATE));
         return (
             <tr className='dataTable'>
                 {/*CONTRACT_ID와 날짜를 함께 들고가야한다.*/}
                 <td name="uname" variant="outlined" color="primary">
-                    <input type="checkbox" onChange={toggleHandler} id={paymentStatusList.PAY_PLAN_DATE}/>
+                    <input type="checkbox" onChange={toggleHandler} id={paymentStatus.PAY_PLAN_DATE}/>
                 </td>
-                <td id = {paymentStatusList.CONTRACT_ID}>{index + 1}</td>
-                <td>{paymentStatusList.PAY_PLAN_DATE}</td>
-                <td>{paymentStatusList.PAYED_FLAG}</td>
-                <td key = {paymentStatusList.PAY_PLAN_DATE}  id={paymentStatusList.PAY_PLAN_DATE}>
-                    {paymentStatusList.PAYED_DATE}
+                <td id = {paymentStatus.CONTRACT_ID}>{index + 1}</td>
+                <td>{paymentStatus.PAY_PLAN_DATE}</td>
+                <td>{paymentStatus.PAYED_FLAG}</td>
+                <td key = {paymentStatus.PAY_PLAN_DATE}  id={paymentStatus.PAY_PLAN_DATE}>
                     <DatePicker
-                        id={paymentStatusList.PAY_PLAN_DATE}
+                        id={paymentStatus.PAY_PLAN_DATE}
                         locale="ko"
                         selected={insertPayDate.setHours(9, 0, 0, 0)}
                         onChange={
-                            date => setInsertPayDate(date)
+                            // date => {console.log('date',makeYYMMDD(date))}
+                            date => {setPaymentStatusList(
+                                paymentStatusList.map(changePaymentStatus =>
+                                    changePaymentStatus.PAY_PLAN_DATE === paymentStatus.PAY_PLAN_DATE ?
+                                    {...changePaymentStatus, PAYED_DATE : makeYYMMDD(date)}
+                                    : changePaymentStatus
+                            ))}
                         }
                         selectsStart
                         startDate={insertPayDate}
-                        endDate={endInsertPayDate}
                         dateFormat="yyyy.MM.dd"
                     />
                 </td>
                 <td>
-                    {paymentStatusList.CONTRACT_COMMENT}
+                    {paymentStatus.CONTRACT_COMMENT}
                     <textarea type="text" cols="20" rows="2" value = {referComment}
-                              size="5" id={paymentStatusList.PAY_PLAN_DATE} onChange={referCommentHandler}/>
+                              size="5" id={paymentStatus.PAY_PLAN_DATE} onChange={referCommentHandler}/>
                 </td>
     
     
             </tr>
         )
     });
+
+
+    const makeYYMMDD = (value) => {
+        let year = (value.getFullYear()+'').substring(2);
+        console.log('year',year);
+        let month = value.getMonth() + 1;
+        let date = value.getDate();
+        month = month < 10 ? '0' + month : month;
+        date = date < 10 ? '0' + date : date;
+        return year+'.'+month+'.'+date;
+    }
+
 
     const indexOfFirstPost = indexOfLastPost - postsPerPage;
     const currentPosts = s010100070R.slice(indexOfFirstPost, indexOfLastPost);
@@ -201,11 +219,11 @@ const s010100070R = paymentStatusList.map((paymentStatusList, index) => {
     // });
 
     useEffect(() => {
-
         axios.get(`/api/s01010070/insert/tb_s10_contract020_by_id?id=${dataContracId}`)
             .then(response => {
                 if (response.data.success) {
                     setPaymentStatusList(response.data.rows);
+                    console.log('paymentStatusList',paymentStatusList);
                     setPaymentMemberNm(response.data.rows[0].MEMBER_NM);
                     setPaymentPeriod(response.data.rows[0].CONTRACT_TERM + '개월 ' +
                         '(' + response.data.rows[0].START_DATE + ' ~ ' + response.data.rows[0].END_DATE + ')');
@@ -253,14 +271,16 @@ const s010100070R = paymentStatusList.map((paymentStatusList, index) => {
     
         const data = useMemo (
             () =>
-            (paymentStatusList).map((paymentStatusList, index) => ({
-                    CONTRACT_ID: paymentStatusList.CONTRACT_ID,
-                    PAY_PLAN_DATE: paymentStatusList.PAY_PLAN_DATE,
-                    PAYED_FLAG: paymentStatusList.PAYED_FLAG,
-                    PAYED_DATE: paymentStatusList.PAYED_DATE,
-                    CONTRACT_COMMENT: paymentStatusList.CONTRACT_COMMENT
+            (paymentStatusList).map((paymentStatus, index) => ({
+                    CONTRACT_ID: paymentStatus.CONTRACT_ID,
+                    PAY_PLAN_DATE: paymentStatus.PAY_PLAN_DATE,
+                    PAYED_FLAG: paymentStatus.PAYED_FLAG,
+                    PAYED_DATE: paymentStatus.PAYED_DATE ? paymentStatus.PAYED_DATE : paymentStatus.PAY_PLAN_DATE,
+                    CONTRACT_COMMENT: paymentStatus.CONTRACT_COMMENT
                 }))
         );
+
+   
 
     return (
         <div>

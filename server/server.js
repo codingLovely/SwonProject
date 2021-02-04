@@ -1,42 +1,26 @@
 const express = require('express');
-const fileUpload = require('express-fileupload');
 const dbconfig = require('./config/database.js')(); // 위에서 생성한 MySQL에 연결을 위한 코드(모듈)
 const connection = dbconfig.init(); // node express 와 MySQL의 연동
 const bodyParser = require('body-parser');
+const multer = require('multer');
 const { configure } = require('@testing-library/react');
 const bcrypt = require('bcrypt');
 //const { request } = require('express');
-
 const app = express();
+
+let upload = multer({dest: './src/uploads'})
+let mime = require('mime');
+let fs = require('fs');
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 // app.use(fileUpload);
+app.use('/image', express.static('./src/uploads'));
 
 
 // 1. configuration 
 app.set('port', process.env.PORT || 4001);
-//
-// //첨부파일
-// app.post('/api/upload',(req,res)=>{
-//     if(req.files === null){
-//         return res.status(400).json({msg:'No file uploaded'});
-//     }
-//
-//     const file = req.files.file;
-//     console.log(`${__dirname}/client/public/uploads/${file.name}`);
-//     file.mv(`${__dirname}/client/public/uploads/${file.name}`, err => {
-//
-//         if (err) {
-//             console.log(err);
-//             return res.status(500).send(err);
-//         }
-//
-//         res.json({fileName: file.name, filePath: `/uploads/${file.name}`});
-//
-//     }).then(res => 'mv is ignored');
-//
-// });
+
 
 
 // 2. 상담등록 routing
@@ -792,11 +776,12 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
     //<3-1.회원정보 상세정보
     app.post('/api/s010100050/detailMember_by_id', (req, res) => {
 
-        let type = req.query.type
-        let name = req.query.id
+        let empHp= req.body.dataEmpHp
+        let name = req.body.dataName
 
         let sql = 'SELECT   \n' +
             '                                 MEM.MEMBER_ID,MEM.MEMBER_NM,MEM.REG_NO,CODE1.CD_V "MEMBER_TP",  \n' +
+            '                                 MEM.CEO_IMAGE_ID,MEM.CEO_IMAGE_ID_SERVER,MEM.CEO_IMAGE_REGISTER,MEM.CEO_IMAGE_REGISTER_SERVER,  \n' +
             '                                 EMP.NAME,EMP.EMP_HP,EMP.EMP_EMAIL,EMP.ZIP_CODE,EMP.ADDRESS,EMP.DETAIL_ADDRESS,    \n' +
             '                                 CON.CONTRACT_ID,DATE_FORMAT(CON.END_DATE,"%y.%m.%d") AS "END_DATE",'+                                                                                      
             '                                 DATE_FORMAT(CON.CONTRACT_DATE,"%y.%m.%d") AS "CONTRACT_DATE",' +
@@ -825,7 +810,7 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
             '                                 LEFT OUTER JOIN TB_S10_CODE code4 ON CON.CONTRACT_ROOM = CODE4.CD_V     \n' +
             '                                 LEFT OUTER JOIN TB_S10_CODE code5 ON CON.CONTRACT_LOCKER = CODE5.CD_V     \n' +
             '                                 AND CODE5.CD_TP = "L"  \n' +
-            '                                 WHERE EMP.NAME = "' + name + '"';
+            '                                 WHERE EMP.NAME = "' + name + '" AND EMP.EMP_HP ="' + empHp + '"';
 
 
         connection.query(sql, (error, rows) => {//쿼리문
@@ -1123,7 +1108,8 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
         let dateChkSql =
             'SELECT  COUNT(START_DATE) AS STARTENDDATE \n' +
             '        FROM TB_S10_CONTRACT010 CON010 \n' +
-            '        WHERE CON010.START_DATE="' + startDate + '" AND CON010.END_DATE="' + endDate + '"';
+            '        WHERE CON010.START_DATE="' + startDate + '" AND CON010.END_DATE="' + endDate + '" '+
+            ' AND CON010.CONTRACT_ROOM';
 
         connection.query(dateChkSql, (error, number) => {//쿼리문
             if (error) throw error;
@@ -1135,22 +1121,24 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
     })
 
     //<이용계약서 등록
-    app.post('/api/s010100010/insertMember010', (req, res) => {
-
+    app.post('/api/s010100010/insertMember010',upload.fields([{name:'idCardFile',maxCount:3},{name:'registCardFile',maxCount:5}]), (req, res) => {
+        //console.log('dataCheck',req,res);
       if (dateChkNum === 0 && empHpChkNum === 0 && regNoChkNum === 0) {
             connection.beginTransaction(function (error) {
                 //emp010-> 대표자 이름
                 let empIdName = req.body.empIdName;
-                // console.log('empIdName: ' + empIdName);
+                console.log('empIdName: ' + empIdName);
                 //emp010-> 대표자 연락처
                 let firstEmpHp = req.body.firstEmpHp;
                 let secondEmpHp = req.body.secondEmpHp;
                 let thirdEmpHp = req.body.thirdEmpHp;
                 let empHp = firstEmpHp + "-" + secondEmpHp + "-" + thirdEmpHp;
-                // console.log('firstEmpHp: ' + firstEmpHp);
-                // console.log('secondEmpHp: ' + secondEmpHp);
-                // console.log('thirdEmpHp: ' + thirdEmpHp);
-                // console.log('empHp: ' + empHp);
+
+                console.log('firstEmpHp: ' + firstEmpHp);
+                console.log('secondEmpHp: ' + secondEmpHp);
+                console.log('thirdEmpHp: ' + thirdEmpHp);
+                console.log('empHp: ' + empHp);
+
                 //emp010-> 대표자 이메일
                 let empEmailId = req.body.empEmailId;
                 let domainAddress = req.body.domainAddress;
@@ -1185,15 +1173,37 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
                 //코멘트
                 let comments = req.body.comment;
                 let userStatus = req.body.userStatus;
+
+                //let image = '/image/' + req.body.idCardFileName;
+                //console.log('filename',req.body.idCardFileName);
+                //let filename = (req.body.idCardFileName).split('\\').reverse()[0];
+                //console.log('filename!!',filename);
+                //let image = '/image/' + req.file.filename;
+                console.log('testIdCardFile',req.files['idCardFile'][0]);
+                //console.log('testRegistCardFile',req.files['registCardFile'][0].filename);
+               
+                let idCardimageAddr = './image/'+ req.files['idCardFile'][0].filename;
+                let idCardFilename = req.files['idCardFile'][0].originalname;
+                let idCardFilePath = req.files['idCardFile'][0].path;
+                let testFilePath = idCardFilePath + ".jpg";
                 
-                //console.log('userStatus '+userStatus);
                 
+                let registCardimageAddr = './image/'+ req.files['registCardFile'][0].filename;
+                let registCardFilename = req.files['registCardFile'][0].originalname;
+                let registCardFilePath = req.files['registCardFile'][0].path;
+                
+                // console.log('image',image);
+                // console.log('idCardFilename',idCardFilename);
+                
+
                 let memberSql =
                     'INSERT INTO  ' +
-                    '            TB_S10_MEMBER010 ( MEMBER_NM, REG_NO, MEMBER_TP,CREATED_DATE,MEMBER_ST,COMMENT,CEO_ID,LAST_UPDATE_DATE)  ' +
-                    '            VALUES (?, ?, ?, SYSDATE(),"C", ?, (SELECT EMP_ID FROM TB_S10_EMP010 WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '"),SYSDATE())'
+                    '            TB_S10_MEMBER010 ( MEMBER_NM, REG_NO, MEMBER_TP,CREATED_DATE,MEMBER_ST,COMMENT,CEO_ID,LAST_UPDATE_DATE,'+
+                    'CEO_IMAGE_ID,CEO_IMAGE_REGISTER_SERVER,CEO_IMAGE_REGISTER,CEO_IMAGE_ID_SERVER,CEO_IMAGE_ID_PATH,CEO_IMAGE_REGIST_PATH )  ' +
+                    '            VALUES (?, ?, ?, SYSDATE(),"C", ?, (SELECT EMP_ID FROM TB_S10_EMP010 WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '"),'+
+                    'SYSDATE(),?,?,?,?,?,?)'
                 //console.log(memberSql);
-                let memberParams = [memberNm, regNo, memberTp, comments];
+                let memberParams = [memberNm, regNo, memberTp, comments, idCardFilename, idCardimageAddr, registCardFilename,registCardimageAddr,testFilePath,registCardFilePath];
                 //Member_id는 -> sequence로 생성
 
                 //tb_s10_contract010
@@ -1218,6 +1228,7 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
                 let payMethod = req.body.payMethod;
                 //계약접근경로
                 let contractPath = req.body.contractPath;
+            
 
 
                 let contractSql =
@@ -1264,11 +1275,7 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
                                 });
                             }
 
-                            
-
-
-
- //payDate->입금일만 보여줌(년월 없음), payed_date는 실제 납부 일자로 나중에 insert할 자리
+                            //payDate->입금일만 보여줌(년월 없음), payed_date는 실제 납부 일자로 나중에 insert할 자리
                             //pay_plan_date 납부예정일 넣어서 for문 돌려서 insert하기
 
                             //startDate '2021-03-01'
@@ -1297,14 +1304,14 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
                                 //console.log(payDate);
                     
                              contractMonthDay = wasteMonth + 1;
-                            //         console.log(contractMonthDay);
-                            //         // console.log('납부일보다크면 contractMonthDay:' + contractMonthDay);
-                            //         // console.log('납부일보다크면typeOf contractMonthDay:' , typeof contractMonthDay);
-                            //         // console.log('납부일보다크면typeOf contractMonthDay:' , typeof 1);
-                            //         // console.log('납부일보다크면 contractMonthDay:' + contractMonthDay + 1);
+                            //console.log(contractMonthDay);
+                            //// console.log('납부일보다크면 contractMonthDay:' + contractMonthDay);
+                            //// console.log('납부일보다크면typeOf contractMonthDay:' , typeof contractMonthDay);
+                            //// console.log('납부일보다크면typeOf contractMonthDay:' , typeof 1);
+                            //// console.log('납부일보다크면 contractMonthDay:' + contractMonthDay + 1);
                                     
 
-                                 finalDate = contractYearDay + '-' + contractMonthDay + '-' + payDate;
+                             finalDate = contractYearDay + '-' + contractMonthDay + '-' + payDate;
                             //     console.log('finalDate 납부일이 더 작을 때:',finalDate);
                             //     //계약일자가 납부일보다 작으면 1 29
                              } else if (contractDateDay <= parseInt(payDate)) {
@@ -1361,21 +1368,21 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
                         
                             //dateEnd = Math.floor(finalYear) + '/' + finalMonth + '/' + startAsk_date.getDate();
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                            
                             let payContractSql = '';
                             let payContractParams = [];
+                             
+                            
 
                             for (let i = 1; i <= contractTerm; i++) {
+
+                                while(contractMonthDay > 12){
+                                    contractYearDay  += 1;
+                                    contractMonthDay -= 12;
+                                }
                                 //console.log('!!!!!!!!!!!!!!!!!!!contractMonthDay: ' + contractMonthDay);
                                 //console.log('!!!!!!!!!!!!!!!!!monthDay: ' + monthDay);
-                                if(contractMonthDay > 12){
-                                    // while(){
-                                    // contractYearDay += 1;
-                                    // //contractMonthDay가 13보다 작을 때 까지 돌린다.
-                                    // }
-                                }
-
+                                
                                 finalDate = contractYearDay + '-' + contractMonthDay + '-' + payDate;
                                 payContractSql = 'INSERT INTO ' +
                                     'TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,PAYED_PLAN_MONEY,LAST_UPDATE_DATE) ' +
@@ -1385,20 +1392,11 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
                                     ' WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '")))'+
                                     ',?,SYSDATE(),?,SYSDATE())';
 
-                                //console.log(empIdName);
-                                console.log("--------------------------------");
-                                console.log('finalDate',finalDate);
+                                payContractParams = [finalDate, contractMoney];
+                                
                                 console.log("--------------------------------");
                                 console.log('payContractParams',payContractParams);
                                 console.log("--------------------------------");
-
-
-                                payContractParams = [finalDate, contractMoney];
-                                
-                                
-                                
-                                console.log("--------------------------------");
-                                console.log('finalDate: ' + finalDate);
 
                                 contractMonthDay++;
 
@@ -1432,7 +1430,7 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
             })//transaction
         } else if (regNoChkNum >= 1 || empHpChkNum >= 1 || dateChkNum >= 1){
             res.send({check: false, message: "이미 존재하는 데이터 입니다."});
-         } 
+        } 
     })
 
     app.post('/api/s010100140/tempStorage', (req, res) => {
@@ -1981,6 +1979,87 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
         });
 
     })
+   
+
+    app.get('/api/s01010050/download/tb_s10_member010_by_id',function(req,res){
+      let type = req.query.type;
+      let memberIdForDown = req.query.id;
+        
+      let dataName = req.body.dataName;
+      let dataEmpHp = req.body.dataEmpHp;
+       
+
+        let sql = 'SELECT CEO_IMAGE_ID_SERVER,CEO_IMAGE_ID,CEO_IMAGE_ID_PATH FROM TB_S10_MEMBER010 '+
+        ' WHERE MEMBER_ID = ' + memberIdForDown;
+        
+        connection.query(sql, (error, rows) => {
+            if (error) throw error;
+            //res.send({ success: true, rows });
+            console.log('전체조회rows:' + rows[0].CEO_IMAGE_ID_PATH);
+            savedFileNm =  rows[0].CEO_IMAGE_ID_PATH;
+            mimetype = mime.getType(rows[0].CEO_IMAGE_ID);
+            console.log('mimetype',mimetype);
+            res.setHeader('Content-disposition','attachment; filename = "' + rows[0].CEO_IMAGE_ID + '"');
+
+            res.setHeader('Content-type',mimetype);
+            let filestream = fs.createReadStream(savedFileNm);
+            console.log('filestream:' + filestream);
+            filestream.pipe(res);
+
+        });
+
+        // app.post('/api/s010100150/idDownloadPath',function(req,res){
+        //     let origFileNm,savedFileNm;
+        //     // let wasteIdPath = req.path.wasteIdPath;
+        //     let test = req.body.test;
+        //     // let wasteId = req.path.wasteId;
+        //     let testId = req.body.testId;
+        //     //console.log('wasteIdPath',wasteIdPath);
+        //          // console.log('전체조회rows:' + rows[0].CEO_IMAGE_ID);
+        //           //let a = rows[0].CEO_IMAGE_ID_SERVER.PATH;
+        //           savedFileNm = test;
+        //           mimetype = mime.getType(testId);
+        //           res.setHeader('Content-disposition','attachment; filename = "' + testId + '"');
+      
+        //           res.setHeader('Content-type',mimetype);
+        //           console.log('typeof savedFileNm~~~~~~~~~~~~~~~~~~~~~',typeof req.body.test);
+        //           let filestream = fs.createReadStream(savedFileNm);
+        //           filestream.pipe(res);
+      
+        //       });
+
+        // res.setHeader('Content-disposition','attachment; filename=' + );
+
+        // res.setHeader('Content-type',MimeType);
+        // let filestream = fs.createReadStream(file);
+        // filestream.pipe(res);
+        //console.log(imageRows);
+        
+        
+
+    })
+    
+    app.get('/api/s010100150/regDownload',function(req,res){
+      //let origFileNm,savedFileNm;
+      //임시코드 테스트
+      origFileNm = '1ie11_test.jpg';
+      savedFileNm = '1eaab3d9fe3a98059a581fc0d1a4d029.jpg';
+      savedPath = 'C:/Users/team_/Desktop/mysqltestCopy/src/uploads'
+      fileSize = '6209';
+
+      var file = savedPath + '/' + savedFileNm; //예) '/temp/filename.zip'
+      /*test*/console.log('file : ', file);
+      //만약 var file 이 저장경로+원본파일명으로 이루져 있다면, 'filename = path.basename(file)' 문법으로 파일명을 읽어올 수도 있다.
+      
+      res.setHeader('Content-disposition', 'attachment; filename=' + origFileNm ); //origFileNm으로 로컬PC에 파일 저장
+      res.setHeader('Content-type', 'jpg');
+   
+      var filestream = fs.createReadStream(file);
+      filestream.pipe(res);
+   });
+   
+   
+
 
 
     //연결알려주기

@@ -7,7 +7,8 @@ import S010100140 from './S010100140';
 import Pagination from "./utils/Pagination";
 
 
-
+//엑셀다운로드
+import xlsx from 'xlsx';
 
 //모달창 따로 분리해서 태그로 쓸 것
 //<!--모달창 라이브러리
@@ -20,9 +21,11 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 //<!--켈린더 라이브러리시작
 import DatePicker, {registerLocale} from "react-datepicker";
 import ko from 'date-fns/locale/ko';
-
 registerLocale("ko", ko);
 //켈린더 라이브러리 끝-->
+
+
+
 
 
 let num = '';
@@ -43,7 +46,7 @@ function S010100130(props) {
     //페이징
 
     const [currentPage,setCurrentPage] = useState(1);
-    const [postsPerPage,setPostsPerPage] = useState(3);
+    const [postsPerPage,setPostsPerPage] = useState(10);
 
 
     useEffect(() => {
@@ -61,7 +64,7 @@ function S010100130(props) {
 
          axios.post("/api/s010100130/search", body).then(response => {
             if (response.data.success) {
-                console.log('검색결과:'+response.data.rows);
+                //console.log('검색결과:'+response.data.rows);
                 setTb_s10_ask010(response.data.rows);
             } else {
                 alert('검색에 실패하였습니다.')
@@ -126,7 +129,7 @@ function S010100130(props) {
 
     const onDetailHandleClickClose = () => {
         setOpen(false);
-           searchAsk();
+        searchAsk();
 
     };
     //상세보기 모달 끝>
@@ -147,7 +150,7 @@ function S010100130(props) {
      const [checked, setChecked] = useState([]);
 
         const handleToggle = (e) => {
-            console.log('event', e.target.id);
+            //console.log('event', e.target.id);
 
 
             const currentIndex= checked.indexOf(e.target.id);
@@ -165,8 +168,8 @@ function S010100130(props) {
 
             //e.target.checked = false;
 
-            console.log('currentIndex', currentIndex);
-            console.log('checked', checked);
+            // console.log('currentIndex', currentIndex);
+            // console.log('checked', checked);
 
             // handleFilters(filters,tb_s10_ask010);
 
@@ -196,7 +199,7 @@ function S010100130(props) {
 
     const deleteHandle = (event)=>{
         let askIdArray = checked;
-        console.log(askIdArray);
+        //console.log(askIdArray);
         //'/api/s010100130/delete'
          axios.post('/api/s010100130/delete',askIdArray)
             .then(response => {
@@ -220,7 +223,7 @@ function S010100130(props) {
 
          axios.post("/api/s010100130/search", body).then(response => {
             if (response.data.success) {
-                console.log('검색결과:'+response.data.rows);
+                //console.log('검색결과:'+response.data.rows);
                 setTb_s10_ask010(response.data.rows);
             } else {
                 alert('검색에 실패하였습니다.')
@@ -242,7 +245,7 @@ function S010100130(props) {
 
     // 조회 <!--onSubmit
     const onHandleFormSubmit = (event) => {
-        console.log('조회', event);
+        //console.log('조회', event);
 
         event.preventDefault();
 
@@ -256,7 +259,7 @@ function S010100130(props) {
             ask_tp,
             endAsk_date
         }
-        alert('ask_tp',ask_tp);
+        //alert('ask_tp',ask_tp);
         //console.log("조회조건", body);
         // alert('startDate day:'+startAsk_date.getDay());
         // alert('endDate year:'+endAsk_date.getFullYear());
@@ -267,12 +270,37 @@ function S010100130(props) {
 
         axios.post("/api/s010100130/search", body).then(response => {
             if (response.data.success) {
-                console.log('검색결과:'+response.data.rows);
+                //console.log('검색결과:'+response.data.rows);
                 setTb_s10_ask010(response.data.rows);
             } else {
                 alert('검색에 실패하였습니다.')
             }
         })
+
+    }
+
+    const excelHandler = (event) => {
+
+        event.preventDefault();
+
+        const ws = xlsx.utils.json_to_sheet(tb_s10_ask010);
+        console.log(tb_s10_ask010);
+
+        ['NO','문의구분','문의일자','문의방법','접근경로','문의자명','연락처']
+        .forEach((x,idx) => {
+            const cellAdd = xlsx.utils.encode_cell({c:idx,r:0});
+            ws[cellAdd].v = x;
+            
+        })
+
+        ws['!cols'] = [];
+        ws['!cols'][0] = {hidden:true};
+        
+
+        const wb = xlsx.utils.book_new();
+
+        xlsx.utils.book_append_sheet(wb,ws,"Sheet1");
+        xlsx.writeFile(wb,"상담현황.xlsx");
 
     }
 
@@ -397,7 +425,7 @@ function S010100130(props) {
                                         </DialogActions>
                                       </Dialog>
                         </td>
-                        <td id="btd2"><input type="button" value='엑셀다운로드'/></td>
+                        <td id="btd2"><input type="button" onClick={excelHandler} value='엑셀다운로드'/></td>
                     </tr>
                     </thead>
                 </table>

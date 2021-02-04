@@ -6,6 +6,8 @@ import './css/S010100040.css';
 import axios from "axios";
 import Pagination from "./utils/Pagination";
 
+//엑셀다운로드
+import xlsx from 'xlsx';
 
 //<!--모달창 라이브러리
 import Dialog from '@material-ui/core/Dialog';
@@ -32,6 +34,7 @@ let endStatus = [{ key: '전체', value: '전체' },
 
 let memberName = '';
 let memberEmpHp = '';
+let memberIdM = '';
 let rNum = 0;
 
 function S010100040(props) {
@@ -54,6 +57,8 @@ function S010100040(props) {
     const [currentPage, setCurrentPage] = useState(1);
     const [postsPerPage, setPostsPerPage] = useState(10);
     const indexOfLastPost = currentPage * postsPerPage;
+
+    const [memberIdModal,setMemberIdModal] = useState(0);
 
 
     const memberList = () => {
@@ -196,8 +201,12 @@ function S010100040(props) {
         //console.log(event.target.id);
         memberEmpHp = event.target.id;
         memberName = event.target.innerHTML;
+        memberIdM = event.target.className;
+        //console.log('memberIdM :',memberIdM);
+        //console.log('memberName :',memberName);
         setEmpHpForDetailModal(memberEmpHp);
         setNumForDetailModal(memberName);
+        setMemberIdModal(memberIdM);
         setOpen(true);
         //console.log('memberName',memberName);
     }
@@ -215,15 +224,39 @@ function S010100040(props) {
 
     }
 
+    const excelHandler = (event) => {
+
+        event.preventDefault();
+
+        const ws = xlsx.utils.json_to_sheet(tbMember);
+        console.log(tbMember);
+
+        ['NO','사업자번호','회원명','회원구분','상태','대표자 성명','대표자 연락처','대표자 E-mail','종료여부']
+        .forEach((x,idx) => {
+            const cellAdd = xlsx.utils.encode_cell({c:idx,r:0});
+            ws[cellAdd].v = x;
+            
+        })
+
+        ws['!cols'] = [];
+        ws['!cols'][0] = {hidden:true};
+        
+
+        const wb = xlsx.utils.book_new();
+
+        xlsx.utils.book_append_sheet(wb,ws,"Sheet1");
+        xlsx.writeFile(wb,"회원현황.xlsx");
+
+    }
 
     const s010100040R = tbMember.map((tbMember, index) => {
         return (
-            <tr class='dataTable'>
+            <tr className='dataTable'>
                 <td name="uname" variant="outlined" color="primary"
                     id={tbMember.MEMBER_ID}> {index + 1}</td>
                 <td >{tbMember.MEMBER_NM}</td>
                 <td id={tbMember.REG_NO}>{tbMember.REG_NO}</td>
-                <td onClick={onHandleDetailClickOpen} id={tbMember.EMP_HP}>{tbMember.NAME}</td>
+                <td onClick={onHandleDetailClickOpen} className={tbMember.MEMBER_ID} id={tbMember.EMP_HP}>{tbMember.NAME}</td>
                 <td >{tbMember.EMP_HP}</td>
                 <td >{tbMember.EMP_EMAIL}</td>
                 <td >{tbMember.MEMBER_TP}</td>
@@ -237,7 +270,7 @@ function S010100040(props) {
     const currentPosts = s010100040R.slice(indexOfFirstPost, indexOfLastPost);
     //Change page
     const paginate = pageNumber => setCurrentPage(pageNumber);
-    
+
     return (
 
         <Fragment>
@@ -305,7 +338,7 @@ function S010100040(props) {
                     maxWidth={"lg"}
                     open={open}
                     onClose={onHandleDetailClickClose}>
-                    <S010100050 dataName={numForDetailModal} dataForm={"U"} dataEmpHp={empHpForDetailModal} />
+                    <S010100050 dataMemId = {memberIdModal} dataName={numForDetailModal} dataForm={"U"} dataEmpHp={empHpForDetailModal} />
                     <DialogActions>
                         {/* <Button onClick={onhandleStoreClose} color="primary" autoFocus>
                                 저장
@@ -325,7 +358,7 @@ function S010100040(props) {
                                 <input type="button" onClick={onApprovalHandler} value="메일전송" />
                             </td>
                             <td id="alignRight">
-                                <input type="button" value="엑셀다운로드"></input>
+                                <input type="button" onClick = {excelHandler} value="엑셀다운로드"></input>
                             </td>
                         </tr>
                     </thead>

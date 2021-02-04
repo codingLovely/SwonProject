@@ -1,18 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import DaumPostcode from 'react-daum-postcode';
 import axios from 'axios';
+import { post } from 'axios';
 import './css/S010100010.css'
 import { Link } from 'react-router-dom';
-//<!--모달창 라이브러리
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-//모달창 라이브러리 끝-->
+
 
 //<!--켈린더 라이브러리시작
 import DatePicker, { registerLocale } from 'react-datepicker';
 import ko from 'date-fns/locale/ko';
-
-registerLocale("ko", ko);
+registerLocale('ko', ko);
 //켈린더 라이브러리 끝-->
 
 let valueArr = [[], [], [], [], []];
@@ -23,37 +20,37 @@ function S010100010(props) {
     //console.log(props.params);
 
     //회원정보
-    const [memberNm, setMemberNm] = useState('')
-    const [firstRegNo, setFisrtRegNo] = useState('')
-    const [secondRegNo, setSecondRegNo] = useState('')
-    const [thirdRegNo, setThirdRegNo] = useState('')
-    const [memberTp, setMemberTp] = useState('')
-    const [empIdName, setEmpIdName] = useState('')
-    const [firstEmpHp, setFirstEmpHp] = useState('')
-    const [secondEmpHp, setSecondEmpHp] = useState('')
-    const [thirdEmpHp, setThirdEmpHp] = useState('')
-    const [empEmailId, setEmpEmailId] = useState('')
-    const [domainAddress, setDomainAddress] = useState('')
-    const [zipcode, setZipcode] = useState('')
-    const [empAddress, setEmpAddress] = useState('')
-    const [empDetailAddress, setEmpDetailAddress] = useState('')
+    const [memberNm, setMemberNm] = useState('');
+    const [firstRegNo, setFisrtRegNo] = useState('');
+    const [secondRegNo, setSecondRegNo] = useState('');
+    const [thirdRegNo, setThirdRegNo] = useState('');
+    const [memberTp, setMemberTp] = useState('');
+    const [empIdName, setEmpIdName] = useState('');
+    const [firstEmpHp, setFirstEmpHp] = useState('');
+    const [secondEmpHp, setSecondEmpHp] = useState('');
+    const [thirdEmpHp, setThirdEmpHp] = useState('');
+    const [empEmailId, setEmpEmailId] = useState('');
+    const [domainAddress, setDomainAddress] = useState('');
+    const [zipcode, setZipcode] = useState('');
+    const [empAddress, setEmpAddress] = useState('');
+    const [empDetailAddress, setEmpDetailAddress] = useState('');
 
 
     //계약정보
-    const [contractTp, setContractTp] = useState('')
-    const [contractTpVal, setContractTpVal] = useState([{ key: '', value: '선택' }])
-    const [roomLockerTp, setRoomLockerTp] = useState(0)
-    const [contractMoney, setContractMoney] = useState('')
-    const [contractTerm, setContractTerm] = useState('0')
+    const [contractTp, setContractTp] = useState('');
+    const [contractTpVal, setContractTpVal] = useState([{ key: '', value: '선택' }]);
+    const [roomLockerTp, setRoomLockerTp] = useState(0);
+    const [contractMoney, setContractMoney] = useState('');
+    const [contractTerm, setContractTerm] = useState('0');
     const [startAsk_date, setStartAsk_date] = useState(new Date());
     const [endAsk_date, setEndAsk_date] = useState(new Date());
-    const [payDate, setPayDate] = useState(1)
-    const [comment, setComment] = useState('')
-    const [payMethod, setPayMethod] = useState('')
-    const [contractPath, setContractPath] = useState('')
-    const [contractStart, setContractStart] = useState('')
-    const [contractEnd, setContractEnd] = useState('')
-    const [userStatus,setUserStatus] = useState('')
+    const [payDate, setPayDate] = useState(1);
+    const [comment, setComment] = useState('');
+    const [payMethod, setPayMethod] = useState('');
+    const [contractPath, setContractPath] = useState('');
+    const [contractStart, setContractStart] = useState('');
+    const [contractEnd, setContractEnd] = useState('');
+    const [userStatus,setUserStatus] = useState('');
 
     
     const [regNoCheckBtn,setRegNoCheckBtn] = useState('');
@@ -64,7 +61,13 @@ function S010100010(props) {
     const [open, setOpen] = React.useState(false);
     const [isPostOpen, setIsPostOpen] = useState(false);
     //hidden 이용해보기
+    
+    //첨부파일업로드
+    const[idCardFile,setIdCardFile] = useState(null);
+    const[idCardFileName,setIdCardFileName] = useState('');
 
+    const[registCardFile,setRegistCardFile] = useState(null);
+    const[registCardFileName,setRegistCardFileName] = useState('');
     const onHandleClickClose = (event) => {
         setOpen(false);
     }
@@ -431,128 +434,126 @@ function S010100010(props) {
       }, []);
       useEffect(() => {
         return () =>  setDateCheckBtn('');
-  
       }, []);
 
     //<!--onSubmit
-    const onSubmitHandler = (event) => {
-        event.preventDefault();
+    // const onSubmitHandler = (event) => {
+    //     event.preventDefault();
 
-        // //대표자 NUll체크
-        // if (empIdName == null || empIdName == '') {
-        //     return alert("대표자를 입력하세요.");
-        // }
-        //
-        // //연락처 NUll체크
-        // if (firstEmpHp == null || firstEmpHp == '' || secondEmpHp == null || secondEmpHp == '' || thirdEmpHp == null || thirdEmpHp == '') {
-        //     return alert("연락처를 입력하세요.");
-        // }
-        //
-        // //E-mail NUll체크
-        // if (empEmailId == null || empEmailId == '' || domainAddress == null || domainAddress == '') {
-        //     return alert("E-mail을 입력하세요.");
-        // }
-        //
-        // //계약구분 NUll체크
-        // if (contractTp == null || contractTp == '') {
-        //     return alert("계약구분을 선택하세요.");
-        // }
-        //
-        // //호실 NUll체크
-        // if (contractTpVal == null || contractTpVal == '') {
-        //     return alert("호실을 선택하세요.");
-        // }
-        //
-        // //이용기간 NUll체크
-        // if (contractTerm == null || contractTerm == '') {
-        //     return alert("이용기간을 입력하세요.");
-        // }
-        //
-        // //입금일 NUll체크
-        // if (payDate == null || payDate == '') {
-        //     return alert("입금일을 하세요.");
-        // }
-        //
-        // //납부방법 NUll체크
-        // if (payMethod == null || payMethod == '') {
-        //     return alert("납부방법을 선택하세요.");
-        // }
-        //
-        // //월회비 NUll체크
-        // if (contractMoney == null || contractMoney == '') {
-        //     return alert("월회비를 입력하세요.");
-        // }
-        //
-        // //납부액 NUll체크
-        // if (contractMoney == null || contractMoney == '') {
-        //     return alert("납부액을 입력하세요.");
-        // }
-        // //계약접근경로 NUll체크
-        // if (contractPath == null || contractPath == '') {
-        //     return alert("계약접근경로를 선택하세요.");
-        // }
+    //     // //대표자 NUll체크
+    //     // if (empIdName == null || empIdName == '') {
+    //     //     return alert("대표자를 입력하세요.");
+    //     // }
+    //     //
+    //     // //연락처 NUll체크
+    //     // if (firstEmpHp == null || firstEmpHp == '' || secondEmpHp == null || secondEmpHp == '' || thirdEmpHp == null || thirdEmpHp == '') {
+    //     //     return alert("연락처를 입력하세요.");
+    //     // }
+    //     //
+    //     // //E-mail NUll체크
+    //     // if (empEmailId == null || empEmailId == '' || domainAddress == null || domainAddress == '') {
+    //     //     return alert("E-mail을 입력하세요.");
+    //     // }
+    //     //
+    //     // //계약구분 NUll체크
+    //     // if (contractTp == null || contractTp == '') {
+    //     //     return alert("계약구분을 선택하세요.");
+    //     // }
+    //     //
+    //     // //호실 NUll체크
+    //     // if (contractTpVal == null || contractTpVal == '') {
+    //     //     return alert("호실을 선택하세요.");
+    //     // }
+    //     //
+    //     // //이용기간 NUll체크
+    //     // if (contractTerm == null || contractTerm == '') {
+    //     //     return alert("이용기간을 입력하세요.");
+    //     // }
+    //     //
+    //     // //입금일 NUll체크
+    //     // if (payDate == null || payDate == '') {
+    //     //     return alert("입금일을 하세요.");
+    //     // }
+    //     //
+    //     // //납부방법 NUll체크
+    //     // if (payMethod == null || payMethod == '') {
+    //     //     return alert("납부방법을 선택하세요.");
+    //     // }
+    //     //
+    //     // //월회비 NUll체크
+    //     // if (contractMoney == null || contractMoney == '') {
+    //     //     return alert("월회비를 입력하세요.");
+    //     // }
+    //     //
+    //     // //납부액 NUll체크
+    //     // if (contractMoney == null || contractMoney == '') {
+    //     //     return alert("납부액을 입력하세요.");
+    //     // }
+    //     // //계약접근경로 NUll체크
+    //     // if (contractPath == null || contractPath == '') {
+    //     //     return alert("계약접근경로를 선택하세요.");
+    //     // }
 
-        let contractTerms = parseInt(contractTerm);
-        let startDate = startAsk_date.getFullYear() + '-' + (startAsk_date.getMonth() + 1) + '-' + startAsk_date.getDate();
-        let endDate = startAsk_date.getFullYear() + '-' + ((startAsk_date.getMonth() + 1) + contractTerms) + '-' + startAsk_date.getDate(); 
+    //     //let contractTerms = parseInt(contractTerm);
+    //     let startDate = startAsk_date.getFullYear() + '-' + (startAsk_date.getMonth() + 1) + '-' + startAsk_date.getDate();
+    //     //let endDate = startAsk_date.getFullYear() + '-' + ((startAsk_date.getMonth() + 1) + contractTerms) + '-' + startAsk_date.getDate(); 
         
-        const body = {
-            //회원정보
-            memberNm: memberNm,
-            firstRegNo: firstRegNo,
-            secondRegNo: secondRegNo,
-            thirdRegNo: thirdRegNo,
-            memberTp: memberTp,
-            empIdName: empIdName,
-            firstEmpHp: firstEmpHp,
-            secondEmpHp: secondEmpHp,
-            thirdEmpHp: thirdEmpHp,
-            zipcode: zipcode,
-            empEmailId: empEmailId,
-            domainAddress: domainAddress,
-            empAddress: empAddress,
-            empDetailAddress: empDetailAddress,
-            //계약정보
-            contractTp: contractTp,
-            contractTpVal: contractTpVal,
-            roomLockerTp: roomLockerTp,
-            contractMoney: contractMoney,
-            contractTerm: contractTerm,
-            startAsk_date: startDate,
-            endDate: dateEnd,
-            payDate: payDate,
-            payMethod: payMethod,
-            contractPath: contractPath,
-            comment: comment
-        }
+    //     const body = {
+    //         //회원정보
+    //         memberNm: memberNm,
+    //         firstRegNo: firstRegNo,
+    //         secondRegNo: secondRegNo,
+    //         thirdRegNo: thirdRegNo,
+    //         memberTp: memberTp,
+    //         empIdName: empIdName,
+    //         firstEmpHp: firstEmpHp,
+    //         secondEmpHp: secondEmpHp,
+    //         thirdEmpHp: thirdEmpHp,
+    //         zipcode: zipcode,
+    //         empEmailId: empEmailId,
+    //         domainAddress: domainAddress,
+    //         empAddress: empAddress,
+    //         empDetailAddress: empDetailAddress,
+    //         //계약정보
+    //         contractTp: contractTp,
+    //         contractTpVal: contractTpVal,
+    //         roomLockerTp: roomLockerTp,
+    //         contractMoney: contractMoney,
+    //         contractTerm: contractTerm,
+    //         startAsk_date: startDate,
+    //         endDate: dateEnd,
+    //         payDate: payDate,
+    //         payMethod: payMethod,
+    //         contractPath: contractPath,
+    //         comment: comment
+    //     }
      
-        console.log('regNoCheckBtn1.',regNoCheckBtn);
-
-        if(regNoCheckBtn == ''){
-            alert('사업자 번호 중복확인 하세요.');
-            console.log('regNoCheckBtn4.',regNoCheckBtn);
-        }else if(empHpCheckBtn == ''){
-            alert('전화번호 중복확인 하세요.');
-        }else if(dateCheckBtn == ''){
-            alert('이용날짜 중복확인 하세요.');
-        }else if(regNoCheckBtn == 'check' && empHpCheckBtn == 'check' && dateCheckBtn == 'check'){
-            axios.post('/api/s010100010/insertMember010', body)
-            .then(response => { 
-                    if (response.data.success) {
-                        alert('정상적으로 등록 되었습니다.')
-                        setRegNoCheckBtn('');
-                        setEmpHpCheckBtn('');
-                        setDateCheckBtn('');   
-                    }else {
-                        alert('등록에 실패하였습니다.')
-                    }
+    //     //console.log('regNoCheckBtn1.',regNoCheckBtn);
+    //     if(regNoCheckBtn == ''){
+    //         alert('사업자 번호 중복확인 하세요.');
+    //         console.log('regNoCheckBtn4.',regNoCheckBtn);
+    //     }else if(empHpCheckBtn == ''){
+    //         alert('전화번호 중복확인 하세요.');
+    //     }else if(dateCheckBtn == ''){
+    //         alert('이용날짜 중복확인 하세요.');
+    //     }else if(regNoCheckBtn == 'check' && empHpCheckBtn == 'check' && dateCheckBtn == 'check'){
+    //         axios.post('/api/s010100010/insertMember010', body)
+    //         .then(response => { 
+    //                 if (response.data.success) {
+    //                     alert('정상적으로 등록 되었습니다.')
+    //                     setRegNoCheckBtn('');
+    //                     setEmpHpCheckBtn('');
+    //                     setDateCheckBtn('');   
+    //                 }else {
+    //                     alert('등록에 실패하였습니다.')
+    //                 }
     
-                })
-        }
+    //             })
+    //     }
            
-    }
-    //onSubmit끝-->
-    //alert(regNoCheckBtn);
+    // }
+    // //onSubmit끝-->
+
 
      //임시저장
      const temporaryStorage = (event) => {
@@ -815,43 +816,8 @@ function S010100010(props) {
     const onEmpDetailAddressHandler = (event) => {
         setEmpDetailAddress(event.currentTarget.value);
     }
+    
 
-    const onChange = (event) => {
-        setFile(event.target.files[0]);
-        setFilename(event.target.files[0].name);
-    };
-
-
-    //파일업로드
-    const [file, setFile] = useState('');
-    const [filename, setFilename] = useState('ChooseFile');
-    const [uploadedFile, setUploadedFile] = useState({});
-
-    const onFileHandler = (event) => {
-        //     event.preventDefault();
-        //     const formData = new FormData();
-        //     formData.append('file',file);
-        //
-        //     try{
-        //         const res = axios.post('/api/upload',formData,{
-        //            headers:{
-        //                'Content-Type':'multipart/form-data'
-        //            }
-        //         });
-        //
-        //         const{ fileName, filePath} = res.data;
-        //         setUploadedFile({fileName,filePath});
-        //     }catch (err){
-        //         if(err.response.status === 500){
-        //             console.log('serverProplem');
-        //         }else{
-        //             console.log(err.response.data.msg);
-        //         }
-        //     }
-    };
-
-
-   
 
     const newTemporaryStorage = (event) => {
         alert(modalMemberId);
@@ -921,9 +887,6 @@ function S010100010(props) {
     const onRegNoCheckHandler = (event) => {
   
         event.preventDefault();
-        // alert(firstRegNo,secondRegNo,thirdRegNo);
-        // alert(secondRegNo);
-        // alert(thirdRegNo);
 
         setRegNoCheckBtn('check');
 
@@ -955,9 +918,7 @@ function S010100010(props) {
 
     const onEmpHpChkHandler = (event) => {
         event.preventDefault();
-        // alert(firstRegNo,secondRegNo,thirdRegNo);
-        // alert(secondRegNo);
-        // alert(thirdRegNo);
+
 
         setEmpHpCheckBtn('check');
 
@@ -985,36 +946,16 @@ function S010100010(props) {
     }
 
     let contractTerms = parseInt(contractTerm);
-    let wasteEndDate = startAsk_date.getFullYear() + '-' + ((startAsk_date.getMonth() + 1) + contractTerms) + '-' + startAsk_date.getDate(); 
+    //let wasteEndDate = startAsk_date.getFullYear() + '-' + ((startAsk_date.getMonth() + 1) + contractTerms) + '-' + startAsk_date.getDate(); 
     //let endDate = startAsk_date.getFullYear() + '-' + ((startAsk_date.getMonth() + 1) + contractTerms) + '-' + startAsk_date.getDate(); 
     
-    let wasteMonth = parseInt((startAsk_date.getMonth() + 1)) + contractTerms;
-    let dateEnd;
-    let wasteRealMonth =  (startAsk_date.getMonth() + 1);
-    let wasteEtcMonth = (wasteMonth - 12);
-    let wasteYear = parseInt(startAsk_date.getFullYear());
-    let plusMonth;
-    let plusYear;
+    
+
+    let finalMonth = ((startAsk_date.getMonth()*1 + contractTerm*1 ) % 12 ) + 1 ;
+    let finalYear  = ((startAsk_date.getMonth()*1 + contractTerm*1 ) / 12 ) + startAsk_date.getFullYear();
 
 
-    //contracterm나누기 12을 년에다 더해주고,
-    //contractterm % 12 월
-    //월 13넘어가면 -12 하고 년에 1더하기 
-
-    let restYear = contractTerm / 12;
-    let finalYear = wasteYear + restYear;
-
-    let restMonth = contractTerm % 12 ;
-    let finalMonth = wasteRealMonth + restMonth;
-    let sumMonth;
-
-
-    if(finalMonth > 12) {
-        sumMonth = finalMonth - 12;
-        finalMonth = finalMonth + sumMonth;
-    }
-
-    dateEnd = Math.floor(finalYear) + '/' + finalMonth + '/' + startAsk_date.getDate();
+    let dateEnd = Math.floor(finalYear) + '.' + finalMonth + '.' + startAsk_date.getDate();
 
 
     const onDateHandler = (event) => {
@@ -1030,7 +971,7 @@ function S010100010(props) {
             contractTpVal: contractTpVal,
             roomLockerTp: roomLockerTp,
             startDate: startDate,
-            endDate: dateEnd
+            endDate: dateEnd,
         }
 
         axios.post('/api/s010100140/dateCheck', body)
@@ -1049,6 +990,203 @@ function S010100010(props) {
     }
 
 
+    const addMember = () => {
+        const url = '/api/s010100010/insertMember010';
+        const formData = new FormData();
+
+        let startDate = startAsk_date.getFullYear() + '-' + (startAsk_date.getMonth() + 1) + '-' + startAsk_date.getDate();
+
+        formData.append('idCardFile',idCardFile);
+        formData.append('registCardFile',registCardFile);
+        formData.append('idCardFileName',idCardFileName);
+        formData.append('registCardFileName',registCardFileName);
+
+        formData.append('memberNm',memberNm);
+        formData.append('firstRegNo',firstRegNo);
+        formData.append('secondRegNo',secondRegNo);
+        formData.append('thirdRegNo',thirdRegNo);
+        formData.append('memberTp',memberTp);
+        formData.append('empIdName',empIdName);
+        formData.append('firstEmpHp',firstEmpHp);
+        formData.append('secondEmpHp',secondEmpHp);
+        formData.append('thirdEmpHp',thirdEmpHp);
+
+        formData.append('zipcode', zipcode);
+        formData.append('empEmailId', empEmailId);
+        formData.append('domainAddress', domainAddress);
+        formData.append('empAddress', empAddress);
+        formData.append('empDetailAddress', empDetailAddress);
+        //계약정보
+        formData.append('contractTp', contractTp);
+        formData.append('contractTpVal', contractTpVal);
+        formData.append('roomLockerTp', roomLockerTp);
+        formData.append('contractMoney', contractMoney);
+        formData.append('contractTerm', contractTerm);
+        formData.append('startAsk_date', startDate);
+        formData.append('endDate', dateEnd);
+        formData.append('payDate', payDate);
+        formData.append('payMethod', payMethod);
+        formData.append('contractPath', contractPath);
+        formData.append('comment', comment);
+        
+        console.log(formData);
+
+        const config = {
+            headers : {
+                'content-type':'multipart/form-data'
+            }
+        }
+        return post(url, formData, config);
+    }
+
+
+
+    //<!--onSubmit
+    const onSubmitHandler = (event) => {
+        event.preventDefault();
+
+        // //대표자 NUll체크
+        // if (empIdName == null || empIdName == '') {
+        //     return alert("대표자를 입력하세요.");
+        // }
+        //
+        // //연락처 NUll체크
+        // if (firstEmpHp == null || firstEmpHp == '' || secondEmpHp == null || secondEmpHp == '' || thirdEmpHp == null || thirdEmpHp == '') {
+        //     return alert("연락처를 입력하세요.");
+        // }
+        //
+        // //E-mail NUll체크
+        // if (empEmailId == null || empEmailId == '' || domainAddress == null || domainAddress == '') {
+        //     return alert("E-mail을 입력하세요.");
+        // }
+        //
+        // //계약구분 NUll체크
+        // if (contractTp == null || contractTp == '') {
+        //     return alert("계약구분을 선택하세요.");
+        // }
+        //
+        // //호실 NUll체크
+        // if (contractTpVal == null || contractTpVal == '') {
+        //     return alert("호실을 선택하세요.");
+        // }
+        //
+        // //이용기간 NUll체크
+        // if (contractTerm == null || contractTerm == '') {
+        //     return alert("이용기간을 입력하세요.");
+        // }
+        //
+        // //입금일 NUll체크
+        // if (payDate == null || payDate == '') {
+        //     return alert("입금일을 하세요.");
+        // }
+        //
+        // //납부방법 NUll체크
+        // if (payMethod == null || payMethod == '') {
+        //     return alert("납부방법을 선택하세요.");
+        // }
+        //
+        // //월회비 NUll체크
+        // if (contractMoney == null || contractMoney == '') {
+        //     return alert("월회비를 입력하세요.");
+        // }
+        //
+        // //납부액 NUll체크
+        // if (contractMoney == null || contractMoney == '') {
+        //     return alert("납부액을 입력하세요.");
+        // }
+        // //계약접근경로 NUll체크
+        // if (contractPath == null || contractPath == '') {
+        //     return alert("계약접근경로를 선택하세요.");
+        // }
+
+        //let contractTerms = parseInt(contractTerm);
+        let startDate = startAsk_date.getFullYear() + '-' + (startAsk_date.getMonth() + 1) + '-' + startAsk_date.getDate();
+        //let endDate = startAsk_date.getFullYear() + '-' + ((startAsk_date.getMonth() + 1) + contractTerms) + '-' + startAsk_date.getDate(); 
+        
+        // const body = {
+        //     //회원정보
+        //     memberNm: memberNm,
+        //     firstRegNo: firstRegNo,
+        //     secondRegNo: secondRegNo,
+        //     thirdRegNo: thirdRegNo,
+        //     memberTp: memberTp,
+        //     empIdName: empIdName,
+        //     firstEmpHp: firstEmpHp,
+        //     secondEmpHp: secondEmpHp,
+        //     thirdEmpHp: thirdEmpHp,
+        //     zipcode: zipcode,
+        //     empEmailId: empEmailId,
+        //     domainAddress: domainAddress,
+        //     empAddress: empAddress,
+        //     empDetailAddress: empDetailAddress,
+        //     //계약정보
+        //     contractTp: contractTp,
+        //     contractTpVal: contractTpVal,
+        //     roomLockerTp: roomLockerTp,
+        //     contractMoney: contractMoney,
+        //     contractTerm: contractTerm,
+        //     startAsk_date: startDate,
+        //     endDate: dateEnd,
+        //     payDate: payDate,
+        //     payMethod: payMethod,
+        //     contractPath: contractPath,
+        //     comment: comment
+        // }
+        
+        //console.log('regNoCheckBtn1.',regNoCheckBtn);
+
+        // if(regNoCheckBtn == ''){
+        //     alert('사업자 번호 중복확인 하세요.');
+        //     console.log('regNoCheckBtn4.',regNoCheckBtn);
+        // }else if(empHpCheckBtn == ''){
+        //     alert('전화번호 중복확인 하세요.');
+        // }else if(dateCheckBtn == ''){
+        //     alert('이용날짜 중복확인 하세요.');
+        // }else if(regNoCheckBtn == 'check' && empHpCheckBtn == 'check' && dateCheckBtn == 'check'){
+        //     axios.post('/api/s010100010/insertMember010', body)
+        //     .then(response => { 
+        //             if (response.data.success) {
+        //                 alert('정상적으로 등록 되었습니다.')
+        //                 setRegNoCheckBtn('');
+        //                 setEmpHpCheckBtn('');
+        //                 setDateCheckBtn('');   
+        //             }else {
+        //                 alert('등록에 실패하였습니다.')
+        //             }
+    
+        //         })
+        if(regNoCheckBtn == ''){
+            alert('사업자 번호 중복확인 하세요.');
+            console.log('regNoCheckBtn4.',regNoCheckBtn);
+        }else if(empHpCheckBtn == ''){
+            alert('전화번호 중복확인 하세요.');
+        }else if(dateCheckBtn == ''){
+            alert('이용날짜 중복확인 하세요.');
+        }else if(regNoCheckBtn == 'check' && empHpCheckBtn == 'check' && dateCheckBtn == 'check'){
+           addMember().then((response) => {
+               console.log(response.data);
+           })
+        }
+
+       //window.location.reload();
+           
+    }
+    //onSubmit끝-->
+
+    const idCardHandleFileChange = (event) => {
+        // file: event.currentTarget.idCardFiles[0];
+        setIdCardFile(event.currentTarget.files[0]);
+        setIdCardFileName(event.currentTarget.value);
+    }
+
+    const  registCardHandleFileChange = (event) => {
+        // file: event.currentTarget.registCardFiles[0];
+        setRegistCardFile(event.currentTarget.files[0]);
+        setRegistCardFileName(event.currentTarget.value);
+    }
+
+   
+
     return (
 
         <form style={{
@@ -1059,6 +1197,7 @@ function S010100010(props) {
             width: '100%'
         }}
         //onSubmit={onSubmitHandler}
+        // encType='multipart/form-data'
         >
             <h1 id="useContractTitle">이용계약서</h1>
             <table class="useContractTable">
@@ -1172,15 +1311,21 @@ function S010100010(props) {
                     <tr>
                         <th className="memberInfo">첨부파일</th>
                         <td colSpan="4">
-                            <input type="file"
-                                onChange={onChange}
-                            />
+                        
+                        <input type='file'
+                        file = {idCardFile}
+                        name ='idCardFile'
+                        value = {idCardFileName}
+                        onChange = {idCardHandleFileChange}/> 
 
                         </td>
                         <td colSpan="5">
-                            <input type="file"
-                                onChange={onChange}
-                            />
+                            
+                        <input type='file' 
+                        file = {registCardFile} 
+                        name='registCardFile'
+                        value = {registCardFileName}
+                        onChange = {registCardHandleFileChange}/>
 
                         </td>
 
