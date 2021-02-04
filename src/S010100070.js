@@ -135,7 +135,9 @@ const makeYYMMDD = (value) => {
 }
 
 const s010100070R = paymentStatusList.map((paymentStatus, index) => {
-    let insertPayDate = new Date('20' + (paymentStatus.PAYED_DATE ? paymentStatus.PAYED_DATE : paymentStatus.PAY_PLAN_DATE));
+    let insertPayDate = paymentStatus.PAYED_DATE 
+                        ? new Date('20' + paymentStatus.PAYED_DATE) 
+                        : new Date();
         return (
             <tr className='dataTable'>
                 {/*CONTRACT_ID와 날짜를 함께 들고가야한다.*/}
