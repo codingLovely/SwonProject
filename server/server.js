@@ -1267,13 +1267,13 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
                 let comments = req.body.comment;
                 let userStatus = req.body.userStatus;
 
-                let image = '/image/' + req.body.idCardFileName;
-                console.log('filename',req.body.idCardFileName);
-                let filename = (req.body.idCardFileName).split('\\').reverse()[0];
-                console.log('filename!!',filename);
-                let image = '/image/' + req.file.filename;
-                console.log('testIdCardFile',req.files['idCardFile'][0]);
-                console.log('testRegistCardFile',req.files['registCardFile'][0].filename);
+                // let image = '/image/' + req.body.idCardFileName;
+                // console.log('filename',req.body.idCardFileName);
+                // let filename = (req.body.idCardFileName).split('\\').reverse()[0];
+                // console.log('filename!!',filename);
+                // let image = '/image/' + req.file.filename;
+                // console.log('testIdCardFile',req.files['idCardFile'][0]);
+                // console.log('testRegistCardFile',req.files['registCardFile'][0].filename);
                
                 let idCardimageAddr = '/image/'+ req.files['idCardFile'][0].filename;
                 let idCardFilename = req.files['idCardFile'][0].originalname;
