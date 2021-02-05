@@ -9,7 +9,7 @@ const bcrypt = require('bcrypt');
 const app = express();
 
 let upload = multer({dest: './src/uploads'})
-let mime = require('mime-types');
+let mime = require('mime');
 let fs = require('fs');
 
 app.use(bodyParser.json());
@@ -1964,7 +1964,6 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
         connection.query(sql, (error, rows) => {
             if (error) throw error;
             res.send({ success: true, rows });
-            //console.log('전체조회rows:' + rows);
         });
 
     })
@@ -1973,9 +1972,6 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
     app.get('/api/s01010050/download/tb_s10_member010_by_id',function(req,res){
       let type = req.query.type;
       let memberIdForDown = req.query.id;
-        
-      let dataName = req.body.dataName;
-      let dataEmpHp = req.body.dataEmpHp;
        
 
         let sql = 'SELECT CEO_IMAGE_ID_SERVER,CEO_IMAGE_ID,CEO_IMAGE_ID_PATH FROM TB_S10_MEMBER010 '+
@@ -1989,7 +1985,6 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
             mimetype = mime.getType(rows[0].CEO_IMAGE_ID);
             console.log('mimetype',mimetype);
             res.setHeader('Content-disposition','attachment; filename = "' + rows[0].CEO_IMAGE_ID + '"');
-
             res.setHeader('Content-type',mimetype);
             let filestream = fs.createReadStream(savedFileNm);
             console.log('filestream:' + filestream);
@@ -1997,25 +1992,6 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
 
         });
 
-        app.post('/api/s010100150/idDownloadPath',function(req,res){
-            let origFileNm,savedFileNm;
-            // let wasteIdPath = req.path.wasteIdPath;
-            let test = req.body.test;
-            // let wasteId = req.path.wasteId;
-            let testId = req.body.testId;
-            //console.log('wasteIdPath',wasteIdPath);
-                 // console.log('전체조회rows:' + rows[0].CEO_IMAGE_ID);
-                  //let a = rows[0].CEO_IMAGE_ID_SERVER.PATH;
-                  savedFileNm = test;
-                  mimetype = mime.getType(testId);
-                  res.setHeader('Content-disposition','attachment; filename = "' + testId + '"');
-      
-                  res.setHeader('Content-type',mimetype);
-                  console.log('typeof savedFileNm~~~~~~~~~~~~~~~~~~~~~',typeof req.body.test);
-                  let filestream = fs.createReadStream(savedFileNm);
-                  filestream.pipe(res);
-      
-              });
 
     })
     
