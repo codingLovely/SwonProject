@@ -50,24 +50,24 @@ function S010100010(props) {
     const [contractPath, setContractPath] = useState('');
     const [contractStart, setContractStart] = useState('');
     const [contractEnd, setContractEnd] = useState('');
-    const [userStatus,setUserStatus] = useState('');
+    const [userStatus, setUserStatus] = useState('');
 
-    
-    const [regNoCheckBtn,setRegNoCheckBtn] = useState('');
-    const [empHpCheckBtn,setEmpHpCheckBtn] = useState('');
-    const [dateCheckBtn,setDateCheckBtn] = useState('');
+
+    const [regNoCheckBtn, setRegNoCheckBtn] = useState('');
+    const [empHpCheckBtn, setEmpHpCheckBtn] = useState('');
+    const [dateCheckBtn, setDateCheckBtn] = useState('');
 
     //주소api
     const [open, setOpen] = React.useState(false);
     const [isPostOpen, setIsPostOpen] = useState(false);
     //hidden 이용해보기
-    
-    //첨부파일업로드
-    const[idCardFile,setIdCardFile] = useState(null);
-    const[idCardFileName,setIdCardFileName] = useState('');
 
-    const[registCardFile,setRegistCardFile] = useState(null);
-    const[registCardFileName,setRegistCardFileName] = useState('');
+    //첨부파일업로드
+    const [idCardFile, setIdCardFile] = useState(null);
+    const [idCardFileName, setIdCardFileName] = useState('');
+
+    const [registCardFile, setRegistCardFile] = useState(null);
+    const [registCardFileName, setRegistCardFileName] = useState('');
     const onHandleClickClose = (event) => {
         setOpen(false);
     }
@@ -149,9 +149,9 @@ function S010100010(props) {
                         const modalCPayMethod = response.data.rows[0].PAY_METHOD;
 
                         const modalCContractPath = response.data.rows[0].CONTRACT_PATH;
-                        const modalCContractPathM =response.data.rows[0].CONTRACT_PATH_M;
-                        
-                        
+                        const modalCContractPathM = response.data.rows[0].CONTRACT_PATH_M;
+
+
                         const modalCEndDate = response.data.rows[0].END_DATE;
 
                         const modalCContractTpVal = response.data.rows[0].CONTRACT_ROOM;
@@ -199,7 +199,7 @@ function S010100010(props) {
                         //setContractPath(modalCContractPath);
                         setRoomLockerTp(modalCRoomLockerTp);
                         setComment(modalCComment);
-                        
+
                         setStartAsk_date(new Date(modalCContractDate));
 
 
@@ -209,8 +209,8 @@ function S010100010(props) {
 
                         setContractTpVals([{ key: modalCContractTpVal, value: modalCContractTpValM }]);
                         setRoomLockers([{ key: modalCRoomLockerTp, value: modalCRoomLockerTpM }]);
-                        
-                        setContractPaths([{ key: modalCContractPath, value: modalCContractPathM}]);
+
+                        setContractPaths([{ key: modalCContractPath, value: modalCContractPathM }]);
                         //setEndFlag(modalEndFLag);
                     } else {
                         alert("상세 정보 가져오기를 실패하였습니다.")
@@ -240,102 +240,102 @@ function S010100010(props) {
         alert('입력되었습니다.');
 
     }
-   
+
 
 
 
     const findAddr = () => {
 
-    //     const script = document.createElement("script");
-    //     script.innerHTML = `         
-    //     new daum.Postcode({
-    //         oncomplete: function(data) {
-            
-    //             var addr = ''; 
-    //             var extraAddr = ''; 
+        //     const script = document.createElement("script");
+        //     script.innerHTML = `         
+        //     new daum.Postcode({
+        //         oncomplete: function(data) {
 
-              
-    //             if (data.userSelectedType === 'R') { 
-    //                 addr = data.roadAddress;
-    //             } else {
-    //                 addr = data.jibunAddress;
-    //             }
+        //             var addr = ''; 
+        //             var extraAddr = ''; 
 
-           
-    //             if(data.userSelectedType === 'R'){
-                   
-    //                 if(data.bname !== '' && /[동|로|가]$/g.test(data.bname)){
-    //                     extraAddr += data.bname;
-    //                 }
-               
-    //                 if(data.buildingName !== '' && data.apartment === 'Y'){
-    //                     extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName);
-    //                 }
-                 
-    //                 if(extraAddr !== ''){
-    //                     extraAddr = ' (' + extraAddr + ')';
-    //                 }
-                 
-    //                 document.getElementById("sample6_extraAddress").value = extraAddr;
-                
-    //             } else {
-    //                 document.getElementById("sample6_extraAddress").value = '';
-    //             }
 
-        
-    //             document.getElementById('sample6_postcode').value = data.zonecode;
-    //             document.getElementById("sample6_address").value = addr;
-            
-    //             document.getElementById("sample6_detailAddress").focus();  
-    //         }
-    //     }).open();
-    //    `;
-    //     script.type = "text/javascript";
-    //     script.async = "async";
-    //     document.head.appendChild(script);
+        //             if (data.userSelectedType === 'R') { 
+        //                 addr = data.roadAddress;
+        //             } else {
+        //                 addr = data.jibunAddress;
+        //             }
+
+
+        //             if(data.userSelectedType === 'R'){
+
+        //                 if(data.bname !== '' && /[동|로|가]$/g.test(data.bname)){
+        //                     extraAddr += data.bname;
+        //                 }
+
+        //                 if(data.buildingName !== '' && data.apartment === 'Y'){
+        //                     extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+        //                 }
+
+        //                 if(extraAddr !== ''){
+        //                     extraAddr = ' (' + extraAddr + ')';
+        //                 }
+
+        //                 document.getElementById("sample6_extraAddress").value = extraAddr;
+
+        //             } else {
+        //                 document.getElementById("sample6_extraAddress").value = '';
+        //             }
+
+
+        //             document.getElementById('sample6_postcode').value = data.zonecode;
+        //             document.getElementById("sample6_address").value = addr;
+
+        //             document.getElementById("sample6_detailAddress").focus();  
+        //         }
+        //     }).open();
+        //    `;
+        //     script.type = "text/javascript";
+        //     script.async = "async";
+        //     document.head.appendChild(script);
 
         console.log('ggggg');
 
-         const postCodeStyle = {
+        const postCodeStyle = {
             display: "block",
             position: "absolute",
             top: "26%",
             right: "33%",
             width: "1000px",
             height: "1600px"
-    
+
         }
-        
+
         const handleComplete = (data) => {
             let fullAddress = data.address;
-            let extraAddress = ''; 
-        
+            let extraAddress = '';
+
             if (data.addressType === 'R') {
-              if (data.bname !== '') {
-                extraAddress += data.bname;
-              }
-              if (data.buildingName !== '') {
-                extraAddress += (extraAddress !== '' ? `, ${data.buildingName}` : data.buildingName);
-              }
-              fullAddress += (extraAddress !== '' ? ` (${extraAddress})` : '');
+                if (data.bname !== '') {
+                    extraAddress += data.bname;
+                }
+                if (data.buildingName !== '') {
+                    extraAddress += (extraAddress !== '' ? `, ${data.buildingName}` : data.buildingName);
+                }
+                fullAddress += (extraAddress !== '' ? ` (${extraAddress})` : '');
             }
-        
+
             console.log(fullAddress);  // e.g. '서울 성동구 왕십리로2길 20 (성수동1가)'
             setZipcode(data.zonecode);
             setEmpAddress(fullAddress);
             alert('입력되었습니다.');
-          }
-        
-          return (
+        }
+
+        return (
             <div>
                 {console.log(';/')}
-            <DaumPostcode
-              onComplete={handleComplete}
-              style={postCodeStyle}
-            height={700}
-            />
+                <DaumPostcode
+                    onComplete={handleComplete}
+                    style={postCodeStyle}
+                    height={700}
+                />
             </div>
-          );
+        );
 
     }
 
@@ -376,13 +376,13 @@ function S010100010(props) {
                 if (response.data.success) {
                     let conAccessPath = response.data.rows.CD_V;
                     let arr = [{ key: '선택', value: '선택' }]
-                    
+
                     response.data.rows.map((data) =>
                         arr.push({
                             value: data.CD_V_MEANING, key: data.CD_V
                         }));
 
-                        setContractPaths(arr);
+                    setContractPaths(arr);
 
                 } else {
                     alert("데이터를 불러오는데 실패하였습니다.");
@@ -406,87 +406,87 @@ function S010100010(props) {
 
     const [contractTpVals, setContractTpVals] = useState([{ key: '', value: '선택' }]);
     const [roomLockers, setRoomLockers] = useState([{ key: '', value: '선택' }]);
-    const [contractpaths,setContractPaths] = useState([{ key: '', value: '선택' }]);
+    const [contractpaths, setContractPaths] = useState([{ key: '', value: '선택' }]);
 
     const onContractTpHandler = (event) => {
-     
-            setContractTp(event.currentTarget.value);
-            let contractTpBody = event.currentTarget.value;
+
+        setContractTp(event.currentTarget.value);
+        let contractTpBody = event.currentTarget.value;
 
 
-            axios.post('/api/s010100010/contHier', { contractTpBody: contractTpBody })
-                .then(response => {
-                    if (response.data.success) {
-                        //console.log('ContractTpVal', response.data.rows);
-                        let arr = [{ key: '선택', value: '선택' }]
+        axios.post('/api/s010100010/contHier', { contractTpBody: contractTpBody })
+            .then(response => {
+                if (response.data.success) {
+                    //console.log('ContractTpVal', response.data.rows);
+                    let arr = [{ key: '선택', value: '선택' }]
 
-                        response.data.rows.map((data) =>
-                            arr.push({
-                                value: data.CD_V_MEANING, key: data.CD_V
-                            }));
-                        switch (contractTpBody) {
-                            case 'R1':
-                                setContractTpVals(arr);
-                                break;
-                            case 'R2':
-                                setContractTpVals(arr);
-                                break;
-                            case 'R3':
-                                setContractTpVals(arr);
-                                break;
-                            case 'FI':
-                                setContractTpVals(arr);
-                                break;
-                            case 'FL':
-                                setContractTpVals(arr);
-                                break;
-                            case 'FR':
-                                setContractTpVals(arr);
-                                break;
-                        }//switch
+                    response.data.rows.map((data) =>
+                        arr.push({
+                            value: data.CD_V_MEANING, key: data.CD_V
+                        }));
+                    switch (contractTpBody) {
+                        case 'R1':
+                            setContractTpVals(arr);
+                            break;
+                        case 'R2':
+                            setContractTpVals(arr);
+                            break;
+                        case 'R3':
+                            setContractTpVals(arr);
+                            break;
+                        case 'FI':
+                            setContractTpVals(arr);
+                            break;
+                        case 'FL':
+                            setContractTpVals(arr);
+                            break;
+                        case 'FR':
+                            setContractTpVals(arr);
+                            break;
+                    }//switch
 
-                        if (contractTpBody === 'FI' || contractTpBody === 'FL') {
-                            axios.post('/api/s010100010/roomLockerHier')
-                                .then(response => {
-                                    if (response.data.success) {
-                                        //console.log('roomLocker', response.data.rows);
-                                        let arr = [{ key: '선택', value: '선택' }]
-                                        response.data.rows.map((data) =>
-                                            arr.push({
-                                                value: data.CD_V_MEANING, key: data.CD_V
-                                            }));
-                                        setRoomLockers(arr);
-                                    } else {
-                                        alert('사물함정보를 불러오는데 실패하였습니다.');
-                                    }
-                                })//axios
-                        } else {
-                            let arr = [{ key: '선택', value: '선택' }];
-                            setRoomLockers(arr);
-                        }
-
-
-                        let monthlyMoney = {
-                            contractTpBody: contractTpBody
-                        }
-                        axios.post('/api/s010100010/monthlyMoney', monthlyMoney)
+                    if (contractTpBody === 'FI' || contractTpBody === 'FL') {
+                        axios.post('/api/s010100010/roomLockerHier')
                             .then(response => {
                                 if (response.data.success) {
-                                    //console.log(response.data.rows[0].ATTRIBUTE3);
-                                    setContractMoney(response.data.rows[0].ATTRIBUTE3);
-
+                                    //console.log('roomLocker', response.data.rows);
+                                    let arr = [{ key: '선택', value: '선택' }]
+                                    response.data.rows.map((data) =>
+                                        arr.push({
+                                            value: data.CD_V_MEANING, key: data.CD_V
+                                        }));
+                                    setRoomLockers(arr);
                                 } else {
                                     alert('사물함정보를 불러오는데 실패하였습니다.');
                                 }
-                            })
-
-                    }//if문
-                    else {
-                        alert('호실 정보를 불러오는데 실패하였습니다.');
+                            })//axios
+                    } else {
+                        let arr = [{ key: '선택', value: '선택' }];
+                        setRoomLockers(arr);
                     }
 
-                })//axios,then
-       
+
+                    let monthlyMoney = {
+                        contractTpBody: contractTpBody
+                    }
+                    axios.post('/api/s010100010/monthlyMoney', monthlyMoney)
+                        .then(response => {
+                            if (response.data.success) {
+                                //console.log(response.data.rows[0].ATTRIBUTE3);
+                                setContractMoney(response.data.rows[0].ATTRIBUTE3);
+
+                            } else {
+                                alert('사물함정보를 불러오는데 실패하였습니다.');
+                            }
+                        })
+
+                }//if문
+                else {
+                    alert('호실 정보를 불러오는데 실패하였습니다.');
+                }
+
+            })//axios,then
+
     }
 
     const onContractTpValHandler = (event) => {
@@ -526,14 +526,14 @@ function S010100010(props) {
 
 
     useEffect(() => {
-        return () => setRegNoCheckBtn('');   
-      }, []);
-      useEffect(() => {
-        return () => setEmpHpCheckBtn('');  
-      }, []);
-      useEffect(() => {
-        return () =>  setDateCheckBtn('');
-      }, []);
+        return () => setRegNoCheckBtn('');
+    }, []);
+    useEffect(() => {
+        return () => setEmpHpCheckBtn('');
+    }, []);
+    useEffect(() => {
+        return () => setDateCheckBtn('');
+    }, []);
 
     //<!--onSubmit
     // const onSubmitHandler = (event) => {
@@ -596,7 +596,7 @@ function S010100010(props) {
     //     //let contractTerms = parseInt(contractTerm);
     //     let startDate = startAsk_date.getFullYear() + '-' + (startAsk_date.getMonth() + 1) + '-' + startAsk_date.getDate();
     //     //let endDate = startAsk_date.getFullYear() + '-' + ((startAsk_date.getMonth() + 1) + contractTerms) + '-' + startAsk_date.getDate(); 
-        
+
     //     const body = {
     //         //회원정보
     //         memberNm: memberNm,
@@ -626,7 +626,7 @@ function S010100010(props) {
     //         contractPath: contractPath,
     //         comment: comment
     //     }
-     
+
     //     //console.log('regNoCheckBtn1.',regNoCheckBtn);
     //     if(regNoCheckBtn == ''){
     //         alert('사업자 번호 중복확인 하세요.');
@@ -646,21 +646,21 @@ function S010100010(props) {
     //                 }else {
     //                     alert('등록에 실패하였습니다.')
     //                 }
-    
+
     //             })
     //     }
-           
+
     // }
     // //onSubmit끝-->
 
 
-     //임시저장
-     const temporaryStorage = (event) => {
-      
+    //임시저장
+    const temporaryStorage = (event) => {
+
         event.preventDefault();
-      
+
         let startDate = startAsk_date.getFullYear() + '-' + (startAsk_date.getMonth() + 1) + '-' + startAsk_date.getDate();
-        
+
         const body = {
             //회원정보
             memberNm: memberNm,
@@ -691,25 +691,25 @@ function S010100010(props) {
             comment: comment
         }
 
-        if(regNoCheckBtn == ''){
+        if (regNoCheckBtn == '') {
             alert('사업자 번호 중복확인 하세요.');
-        }else if(empHpCheckBtn == ''){
+        } else if (empHpCheckBtn == '') {
             alert('전화번호 중복확인 하세요.');
-        }else if(dateCheckBtn == ''){
+        } else if (dateCheckBtn == '') {
             alert('이용날짜 중복확인 하세요.');
-        }else if(regNoCheckBtn == 'check' && empHpCheckBtn == 'check' && dateCheckBtn == 'check'){
+        } else if (regNoCheckBtn == 'check' && empHpCheckBtn == 'check' && dateCheckBtn == 'check') {
             axios.post('/api/s010100140/tempStorage', body)
-            .then(response => {      
+                .then(response => {
                     if (response.data.success) {
                         alert('임시저장 하였습니다.')
                         setRegNoCheckBtn('');
                         setEmpHpCheckBtn('');
-                        setDateCheckBtn(''); 
-                    }else {
-                        alert('임시저장에 실패하였습니다.')  
+                        setDateCheckBtn('');
+                    } else {
+                        alert('임시저장에 실패하였습니다.')
                     }
-            })
-        }  
+                })
+        }
 
     }
 
@@ -771,7 +771,7 @@ function S010100010(props) {
     //신규계약추가
     const newMemberIdStorage = (event) => {
 
-         // //계약구분 NUll체크
+        // //계약구분 NUll체크
         // if (contractTp == null || contractTp == '') {
         //     return alert("계약구분을 선택하세요.");
         // }
@@ -817,21 +817,21 @@ function S010100010(props) {
 
         let body = {
 
-           //회원정보
-           memberNm: memberNm,
-           firstRegNo: firstRegNo,
-           secondRegNo: secondRegNo,
-           thirdRegNo: thirdRegNo,
-           memberTp: memberTp,
-           empIdName: empIdName,
-           firstEmpHp: firstEmpHp,
-           secondEmpHp: secondEmpHp,
-           thirdEmpHp: thirdEmpHp,
-           zipcode: zipcode,
-           empEmailId: empEmailId,
-           domainAddress: domainAddress,
-           empAddress: empAddress,
-           empDetailAddress: empDetailAddress,
+            //회원정보
+            memberNm: memberNm,
+            firstRegNo: firstRegNo,
+            secondRegNo: secondRegNo,
+            thirdRegNo: thirdRegNo,
+            memberTp: memberTp,
+            empIdName: empIdName,
+            firstEmpHp: firstEmpHp,
+            secondEmpHp: secondEmpHp,
+            thirdEmpHp: thirdEmpHp,
+            zipcode: zipcode,
+            empEmailId: empEmailId,
+            domainAddress: domainAddress,
+            empAddress: empAddress,
+            empDetailAddress: empDetailAddress,
 
             //계약정보
             contractTp: contractTp,
@@ -866,7 +866,7 @@ function S010100010(props) {
     const newMemberIdModifyStorage = (event) => {
 
         setEmpDetailAddress(event.currentTarget.value);
-        
+
         let startDate = startAsk_date.getFullYear() + '-' + (startAsk_date.getMonth() + 1) + '-' + startAsk_date.getDate();
         let modifyDataNum = props.dataNum;
         //console.log('modifyDataNum',modifyDataNum);
@@ -914,7 +914,7 @@ function S010100010(props) {
     const onEmpDetailAddressHandler = (event) => {
         setEmpDetailAddress(event.currentTarget.value);
     }
-    
+
 
 
     const newTemporaryStorage = (event) => {
@@ -947,8 +947,8 @@ function S010100010(props) {
 
 
     const [postCodeDisplay, setPostCodeDisplay] = useState('none');
-    
-   
+
+
 
     const handleOpenPost = (event) => {
         setPostCodeDisplay('block');
@@ -962,25 +962,25 @@ function S010100010(props) {
 
         setUserStatus('');
         //alert(rNum);
-        
+
         axios.post(`/api/s010100010/memberDelete_by_id?id=${rNum}`)
-        .then(response => {
-            if (response.data.success) {
-                alert('삭제 하였습니다.')
-            } else {
-                alert('삭제에 실패하였습니다.')
-            }
-        })
-    
+            .then(response => {
+                if (response.data.success) {
+                    alert('삭제 하였습니다.')
+                } else {
+                    alert('삭제에 실패하였습니다.')
+                }
+            })
+
     }
 
     const onRegNoCheckHandler = (event) => {
-  
+
         event.preventDefault();
 
         setRegNoCheckBtn('check');
 
-        console.log('regNoCheckBtn2.',regNoCheckBtn);
+        console.log('regNoCheckBtn2.', regNoCheckBtn);
 
         const body = {
             //회원정보
@@ -1003,7 +1003,7 @@ function S010100010(props) {
                 }
             })
 
-            console.log('regNoCheckBtn3.',regNoCheckBtn);
+        console.log('regNoCheckBtn3.', regNoCheckBtn);
     }
 
     const onEmpHpChkHandler = (event) => {
@@ -1038,20 +1038,20 @@ function S010100010(props) {
     let contractTerms = parseInt(contractTerm);
     //let wasteEndDate = startAsk_date.getFullYear() + '-' + ((startAsk_date.getMonth() + 1) + contractTerms) + '-' + startAsk_date.getDate(); 
     //let endDate = startAsk_date.getFullYear() + '-' + ((startAsk_date.getMonth() + 1) + contractTerms) + '-' + startAsk_date.getDate(); 
-    
-    
 
-    let finalMonth = ((startAsk_date.getMonth()*1 + contractTerm*1 ) % 12 ) + 1 ;
-    let finalYear  = ((startAsk_date.getMonth()*1 + contractTerm*1 ) / 12 ) + startAsk_date.getFullYear();
+
+
+    let finalMonth = ((startAsk_date.getMonth() * 1 + contractTerm * 1) % 12) + 1;
+    let finalYear = ((startAsk_date.getMonth() * 1 + contractTerm * 1) / 12) + startAsk_date.getFullYear();
 
 
     let dateEnd = Math.floor(finalYear) + '.' + finalMonth + '.' + startAsk_date.getDate();
 
 
     const onDateHandler = (event) => {
-        
+
         event.preventDefault();
-        
+
         setDateCheckBtn('check');
 
         let startDate = startAsk_date.getFullYear() + '.' + (startAsk_date.getMonth() + 1) + '.' + startAsk_date.getDate();
@@ -1086,20 +1086,20 @@ function S010100010(props) {
 
         let startDate = startAsk_date.getFullYear() + '-' + (startAsk_date.getMonth() + 1) + '-' + startAsk_date.getDate();
 
-        formData.append('idCardFile',idCardFile);
-        formData.append('registCardFile',registCardFile);
-        formData.append('idCardFileName',idCardFileName);
-        formData.append('registCardFileName',registCardFileName);
+        formData.append('idCardFile', idCardFile);
+        formData.append('registCardFile', registCardFile);
+        formData.append('idCardFileName', idCardFileName);
+        formData.append('registCardFileName', registCardFileName);
 
-        formData.append('memberNm',memberNm);
-        formData.append('firstRegNo',firstRegNo);
-        formData.append('secondRegNo',secondRegNo);
-        formData.append('thirdRegNo',thirdRegNo);
-        formData.append('memberTp',memberTp);
-        formData.append('empIdName',empIdName);
-        formData.append('firstEmpHp',firstEmpHp);
-        formData.append('secondEmpHp',secondEmpHp);
-        formData.append('thirdEmpHp',thirdEmpHp);
+        formData.append('memberNm', memberNm);
+        formData.append('firstRegNo', firstRegNo);
+        formData.append('secondRegNo', secondRegNo);
+        formData.append('thirdRegNo', thirdRegNo);
+        formData.append('memberTp', memberTp);
+        formData.append('empIdName', empIdName);
+        formData.append('firstEmpHp', firstEmpHp);
+        formData.append('secondEmpHp', secondEmpHp);
+        formData.append('thirdEmpHp', thirdEmpHp);
 
         formData.append('zipcode', zipcode);
         formData.append('empEmailId', empEmailId);
@@ -1118,12 +1118,12 @@ function S010100010(props) {
         formData.append('payMethod', payMethod);
         formData.append('contractPath', contractPath);
         formData.append('comment', comment);
-        
+
         console.log(formData);
 
         const config = {
-            headers : {
-                'content-type':'multipart/form-data'
+            headers: {
+                'content-type': 'multipart/form-data'
             }
         }
         return post(url, formData, config);
@@ -1192,7 +1192,7 @@ function S010100010(props) {
         //let contractTerms = parseInt(contractTerm);
         let startDate = startAsk_date.getFullYear() + '-' + (startAsk_date.getMonth() + 1) + '-' + startAsk_date.getDate();
         //let endDate = startAsk_date.getFullYear() + '-' + ((startAsk_date.getMonth() + 1) + contractTerms) + '-' + startAsk_date.getDate(); 
-        
+
         // const body = {
         //     //회원정보
         //     memberNm: memberNm,
@@ -1222,7 +1222,7 @@ function S010100010(props) {
         //     contractPath: contractPath,
         //     comment: comment
         // }
-        
+
         //console.log('regNoCheckBtn1.',regNoCheckBtn);
 
         // if(regNoCheckBtn == ''){
@@ -1243,23 +1243,23 @@ function S010100010(props) {
         //             }else {
         //                 alert('등록에 실패하였습니다.')
         //             }
-    
+
         //         })
-        if(regNoCheckBtn == ''){
+        if (regNoCheckBtn == '') {
             alert('사업자 번호 중복확인 하세요.');
-            console.log('regNoCheckBtn4.',regNoCheckBtn);
-        }else if(empHpCheckBtn == ''){
+            console.log('regNoCheckBtn4.', regNoCheckBtn);
+        } else if (empHpCheckBtn == '') {
             alert('전화번호 중복확인 하세요.');
-        }else if(dateCheckBtn == ''){
+        } else if (dateCheckBtn == '') {
             alert('이용날짜 중복확인 하세요.');
-        }else if(regNoCheckBtn == 'check' && empHpCheckBtn == 'check' && dateCheckBtn == 'check'){
-           addMember().then((response) => {
-               console.log(response.data);
-           })
+        } else if (regNoCheckBtn == 'check' && empHpCheckBtn == 'check' && dateCheckBtn == 'check') {
+            addMember().then((response) => {
+                console.log(response.data);
+            })
         }
 
-       //window.location.reload();
-           
+        //window.location.reload();
+
     }
     //onSubmit끝-->
 
@@ -1269,13 +1269,13 @@ function S010100010(props) {
         setIdCardFileName(event.currentTarget.value);
     }
 
-    const  registCardHandleFileChange = (event) => {
+    const registCardHandleFileChange = (event) => {
         // file: event.currentTarget.registCardFiles[0];
         setRegistCardFile(event.currentTarget.files[0]);
         setRegistCardFileName(event.currentTarget.value);
     }
-   
-  
+
+
 
     return (
 
@@ -1375,10 +1375,10 @@ function S010100010(props) {
                             <input type="text" value={zipcode} id="zipcode" name="zipcode" size="10"
                                 onChange={onZipcodeHandler} />
                             <input type="button" class="useContractBtn" onClick={findAddr}
-                         
+
                                 value="우편"
                             />
-                
+
 
                             <input type="text" value={empAddress} id="empAddress" name="empAddress" size="30"
                                 onChange={onEmpAddressHandler} />
@@ -1397,21 +1397,21 @@ function S010100010(props) {
                     <tr>
                         <th className="memberInfo">첨부파일</th>
                         <td colSpan="4">
-                        
-                        <input type='file'
-                        file = {idCardFile}
-                        name ='idCardFile'
-                        value = {idCardFileName}
-                        onChange = {idCardHandleFileChange}/> 
+
+                            <input type='file'
+                                file={idCardFile}
+                                name='idCardFile'
+                                value={idCardFileName}
+                                onChange={idCardHandleFileChange} />
 
                         </td>
                         <td colSpan="5">
-                            
-                        <input type='file' 
-                        file = {registCardFile} 
-                        name='registCardFile'
-                        value = {registCardFileName}
-                        onChange = {registCardHandleFileChange}/>
+
+                            <input type='file'
+                                file={registCardFile}
+                                name='registCardFile'
+                                value={registCardFileName}
+                                onChange={registCardHandleFileChange} />
 
                         </td>
 
@@ -1465,23 +1465,23 @@ function S010100010(props) {
                         <th className="info">이용기간</th>
                         <td>
                             <input type="text" value={contractTerm} id="contractTerm" name="contractTerm" size="1"
-                            onChange={onContractTermHandler} /> &nbsp;개월 &nbsp;
-                       
-                                <DatePicker
-                                    locale="ko"
-                                    selected={startAsk_date.setHours(9, 0, 0, 0)}//Front = 한국시 BackEnd = 표준시 9시간차이
-                                    onChange={date => setStartAsk_date(date)}
-                                    selectsStart
-                                    startDate={startAsk_date.setHours(9, 0, 0, 0)}
-                                    endDate={endAsk_date}
-                                    dateFormat="yyyy.MM.dd"
+                                onChange={onContractTermHandler} /> &nbsp;개월 &nbsp;
 
-                                />&nbsp;
+                                <DatePicker
+                                locale="ko"
+                                selected={startAsk_date.setHours(9, 0, 0, 0)}//Front = 한국시 BackEnd = 표준시 9시간차이
+                                onChange={date => setStartAsk_date(date)}
+                                selectsStart
+                                startDate={startAsk_date.setHours(9, 0, 0, 0)}
+                                endDate={endAsk_date}
+                                dateFormat="yyyy.MM.dd"
+
+                            />&nbsp;
                             ~ &nbsp;
                             <input type="text" disabled={true} value={dateEnd} size="8" />
-                                <input type="button" onClick={onDateHandler} className="useContractBtn"
-                                    value="중복확인"></input>
-                       
+                            <input type="button" onClick={onDateHandler} className="useContractBtn"
+                                value="중복확인"></input>
+
                         </td>
 
                         <th className="info">입금일</th>
@@ -1506,7 +1506,7 @@ function S010100010(props) {
                             size="10"
                             onChange={onContractMoneyHandler} /></td>
                     </tr>
-            
+
                     <tr>
                         <th className="info">특약사항</th>
                         <td colSpan="9" className="alignLeft" id="infoPadding">
@@ -1533,17 +1533,17 @@ function S010100010(props) {
                         <td colSpan="2" className="basicInfo">070-4355-2312</td>
 
                         <th className="basicInfoTitle">E-mail</th>
-                        <td colSpan="2"className="basicInfo">swonbiz@s-onetech.com</td>
+                        <td colSpan="2" className="basicInfo">swonbiz@s-onetech.com</td>
                     </tr>
 
                     <tr>
                         <th className="basicInfoTitle">성명</th>
                         <td className="basicInfo">이정희</td>
 
-                        <th  className="basicInfoTitle">FAX번호</th>
-                        <td  colSpan="2" className="basicInfo">070-4015-3344/02-6203-4433</td>
+                        <th className="basicInfoTitle">FAX번호</th>
+                        <td colSpan="2" className="basicInfo">070-4015-3344/02-6203-4433</td>
 
-                        <th colSpan="2"className="info">계약접근경로</th>
+                        <th colSpan="2" className="info">계약접근경로</th>
                         <td>
                             <select multiple={false} onChange={onContractPathHandler} value={contractPath}>
                                 {contractpaths.map(item => (
@@ -1580,7 +1580,7 @@ function S010100010(props) {
 
                         </td>
                         <td colSpan="4" className="alignLeft" id="sndTextSpacing">
-                            을 :&nbsp; &nbsp; &nbsp; 
+                            을 :&nbsp; &nbsp; &nbsp;
                             {zipcode} {empAddress} {empDetailAddress}<br />
                             &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; {memberNm} {empIdName} (인)<br />
                             <span id="hidden">spacing</span>
@@ -1616,7 +1616,7 @@ function S010100010(props) {
                     onClick={newTemporaryStorage} value="종료" />
                 <input type="button" className="contractId" hidden={props.cDataForm !== 'I'}
                     onClick={newTemporaryStorage} value="종료" />
-                <input type="button" hidden={ userStatus !== 'T'}
+                <input type="button" hidden={userStatus !== 'T'}
                     onClick={onDeleteHandler} value="삭제" />
                 <Link to="/member">
                 </Link>
