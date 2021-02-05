@@ -29,8 +29,6 @@ import Navbar from '../Navbar';
           {/* 로그인/로그아웃*/}
           <Route exact path = "/login" component = {S010100150}></Route>
 
-
-
           {/* 상담등록 */}
           <Route exact path = "/registration" component = {S010100140}></Route>
           {/* 이용계약서  */}

@@ -14,9 +14,6 @@ import S010100010 from "./S010100010";
 import DialogActions from "@material-ui/core/DialogActions";
 registerLocale("ko", ko);
 
-
-
-
 //켈린더 라이브러리 끝-->
 let paymentState = [{ key: '전체', value: '전체' },
 { key: 'Y', value: 'Y' },
@@ -77,8 +74,8 @@ function S010100060(props) {
                 }
 
             })
-
     }
+
     //<!--onSubmit
     const onSubmitHandler = (event) => {
         event.preventDefault();
@@ -101,8 +98,6 @@ function S010100060(props) {
 
     const handleToggle = (e) => {
         console.log('event', e.target.id);
-
-
         const currentIndex = checked.indexOf(e.target.id);
         //전체 Checked된 State에서 현재 누를 Checkbox가 있는지 확인
         const newChecked = checked;
@@ -116,7 +111,6 @@ function S010100060(props) {
         setChecked(newChecked);
         //빽주고
         //state를 넣어준다
-
         //e.target.checked = false;
 
         console.log('currentIndex', currentIndex);
@@ -139,7 +133,6 @@ function S010100060(props) {
     }
 
     const excelHandler = (event) => {
-
         event.preventDefault();
 
         const ws = xlsx.utils.json_to_sheet(payStatusList);
@@ -181,7 +174,7 @@ function S010100060(props) {
             </tr>
         )
     });
-    
+
     const indexOfFirstPost = indexOfLastPost - postsPerPage;
     const currentPosts = s010100060R.slice(indexOfFirstPost, indexOfLastPost);
     //Change page
@@ -248,7 +241,6 @@ function S010100060(props) {
 
                     <input type="button" value="조회" onClick={paymentSearchHandler}></input>
                 </div>
-
 
                 <table id="btn">
                     <thead>

@@ -20,6 +20,7 @@ function S010100010(props) {
     //console.log(props.params);
 
     //회원정보
+    /**state를 세분화시킨 이유가있나요? */
     const [memberNm, setMemberNm] = useState('');
     const [firstRegNo, setFisrtRegNo] = useState('');
     const [secondRegNo, setSecondRegNo] = useState('');
@@ -1122,8 +1123,6 @@ function S010100010(props) {
         }
         return post(url, formData, config);
     }
-
-
 
     //<!--onSubmit
     const onSubmitHandler = (event) => {
