@@ -1997,34 +1997,25 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
 
         });
 
-        // app.post('/api/s010100150/idDownloadPath',function(req,res){
-        //     let origFileNm,savedFileNm;
-        //     // let wasteIdPath = req.path.wasteIdPath;
-        //     let test = req.body.test;
-        //     // let wasteId = req.path.wasteId;
-        //     let testId = req.body.testId;
-        //     //console.log('wasteIdPath',wasteIdPath);
-        //          // console.log('전체조회rows:' + rows[0].CEO_IMAGE_ID);
-        //           //let a = rows[0].CEO_IMAGE_ID_SERVER.PATH;
-        //           savedFileNm = test;
-        //           mimetype = mime.getType(testId);
-        //           res.setHeader('Content-disposition','attachment; filename = "' + testId + '"');
+        app.post('/api/s010100150/idDownloadPath',function(req,res){
+            let origFileNm,savedFileNm;
+            // let wasteIdPath = req.path.wasteIdPath;
+            let test = req.body.test;
+            // let wasteId = req.path.wasteId;
+            let testId = req.body.testId;
+            //console.log('wasteIdPath',wasteIdPath);
+                 // console.log('전체조회rows:' + rows[0].CEO_IMAGE_ID);
+                  //let a = rows[0].CEO_IMAGE_ID_SERVER.PATH;
+                  savedFileNm = test;
+                  mimetype = mime.getType(testId);
+                  res.setHeader('Content-disposition','attachment; filename = "' + testId + '"');
       
-        //           res.setHeader('Content-type',mimetype);
-        //           console.log('typeof savedFileNm~~~~~~~~~~~~~~~~~~~~~',typeof req.body.test);
-        //           let filestream = fs.createReadStream(savedFileNm);
-        //           filestream.pipe(res);
+                  res.setHeader('Content-type',mimetype);
+                  console.log('typeof savedFileNm~~~~~~~~~~~~~~~~~~~~~',typeof req.body.test);
+                  let filestream = fs.createReadStream(savedFileNm);
+                  filestream.pipe(res);
       
-        //       });
-
-        // res.setHeader('Content-disposition','attachment; filename=' + );
-
-        // res.setHeader('Content-type',MimeType);
-        // let filestream = fs.createReadStream(file);
-        // filestream.pipe(res);
-        //console.log(imageRows);
-        
-        
+              });
 
     })
     
@@ -2045,6 +2036,8 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
    
       var filestream = fs.createReadStream(file);
       filestream.pipe(res);
+
+      
    });
    
    

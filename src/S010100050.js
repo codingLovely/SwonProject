@@ -278,18 +278,7 @@ function S010100050(props) {
         axios.get(`/api/s01010050/download/tb_s10_member010_by_id?id=${dataMemId}&type=single`)
             .then(response => {
                 if (response) {
-                    alert('so');
-                    // let wasteIdPath =response.data.rows[0].CEO_IMAGE_ID_PATH;
-                    // let wasteId =response.data.rows[0].CEO_IMAGE_ID;
-                    // console.log(typeof wasteIdPath);
-                    // let test = wasteIdPath;
-                    // let testId = wasteId;
-                    // console.log(typeof test);
-                    // let path = {
-                    //     test:test,
-                    //     testId:testId
-                    // }
-                    // console.log(path);
+                    alert('res');
                    
           } else {
                     alert("다운로드에 실패하였습니다.");
@@ -300,9 +289,14 @@ function S010100050(props) {
     const onRegDownloadHandler = (event) => {
         event.preventDefault();
 
-        axios.get('/api/s010100150/regDownload')
+        axios.get(`/api/s01010050/download/tb_s10_member010_by_id?id=${dataMemId}&type=single`)
             .then(response => {
-                console.log('response',response);
+                if (response) {
+                    alert('res');
+                
+        } else {
+                    alert("다운로드에 실패하였습니다.");
+                }
             })
     }
 
