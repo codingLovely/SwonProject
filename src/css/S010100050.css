@@ -1,6 +1,14 @@
-#btn-center{ margin-left: 500px;}
+/* #btn-center{ margin-left: 500px;} */
 #infoTitle{text-align: center;}
 #conInfoTitle{text-align: center;}
-.memberInfoWrapper{width: 1200px; height: 300px; margin:30px;}
-.memberInfoWrap{width: 1000px; margin:30px;}
+.memberInfoWrapper{width: 1050px; height: 350px; margin-top: 20px;margin-right:10px;}
+.memberInfoWrap{width: 1000px; }
 #btnAlign{text-align: center;}
+
+#memberDetailTable {margin:10px; border: 1px solid; width: 104%;}
+#memberDetailTable th {border:1px solid;}
+#memberDetailTable td {border:1px solid; text-align: center;} 
+
+#conInfoDetialTable {margin:10px; border: 1px solid; width: 104%;}
+#conInfoDetialTable th{border:1px solid;}
+#conInfoDetialTable td {border:1px solid; text-align: center;} 

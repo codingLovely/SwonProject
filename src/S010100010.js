@@ -240,6 +240,105 @@ function S010100010(props) {
         alert('입력되었습니다.');
 
     }
+   
+
+
+
+    const findAddr = () => {
+
+    //     const script = document.createElement("script");
+    //     script.innerHTML = `         
+    //     new daum.Postcode({
+    //         oncomplete: function(data) {
+            
+    //             var addr = ''; 
+    //             var extraAddr = ''; 
+
+              
+    //             if (data.userSelectedType === 'R') { 
+    //                 addr = data.roadAddress;
+    //             } else {
+    //                 addr = data.jibunAddress;
+    //             }
+
+           
+    //             if(data.userSelectedType === 'R'){
+                   
+    //                 if(data.bname !== '' && /[동|로|가]$/g.test(data.bname)){
+    //                     extraAddr += data.bname;
+    //                 }
+               
+    //                 if(data.buildingName !== '' && data.apartment === 'Y'){
+    //                     extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+    //                 }
+                 
+    //                 if(extraAddr !== ''){
+    //                     extraAddr = ' (' + extraAddr + ')';
+    //                 }
+                 
+    //                 document.getElementById("sample6_extraAddress").value = extraAddr;
+                
+    //             } else {
+    //                 document.getElementById("sample6_extraAddress").value = '';
+    //             }
+
+        
+    //             document.getElementById('sample6_postcode').value = data.zonecode;
+    //             document.getElementById("sample6_address").value = addr;
+            
+    //             document.getElementById("sample6_detailAddress").focus();  
+    //         }
+    //     }).open();
+    //    `;
+    //     script.type = "text/javascript";
+    //     script.async = "async";
+    //     document.head.appendChild(script);
+
+        console.log('ggggg');
+
+         const postCodeStyle = {
+            display: "block",
+            position: "absolute",
+            top: "26%",
+            right: "33%",
+            width: "1000px",
+            height: "1600px"
+    
+        }
+        
+        const handleComplete = (data) => {
+            let fullAddress = data.address;
+            let extraAddress = ''; 
+        
+            if (data.addressType === 'R') {
+              if (data.bname !== '') {
+                extraAddress += data.bname;
+              }
+              if (data.buildingName !== '') {
+                extraAddress += (extraAddress !== '' ? `, ${data.buildingName}` : data.buildingName);
+              }
+              fullAddress += (extraAddress !== '' ? ` (${extraAddress})` : '');
+            }
+        
+            console.log(fullAddress);  // e.g. '서울 성동구 왕십리로2길 20 (성수동1가)'
+            setZipcode(data.zonecode);
+            setEmpAddress(fullAddress);
+            alert('입력되었습니다.');
+          }
+        
+          return (
+            <div>
+                {console.log(';/')}
+            <DaumPostcode
+              onComplete={handleComplete}
+              style={postCodeStyle}
+            height={700}
+            />
+            </div>
+          );
+
+    }
+
 
     //<Lov시작>
     useEffect(() => {
@@ -770,6 +869,7 @@ function S010100010(props) {
         
         let startDate = startAsk_date.getFullYear() + '-' + (startAsk_date.getMonth() + 1) + '-' + startAsk_date.getDate();
         let modifyDataNum = props.dataNum;
+        //console.log('modifyDataNum',modifyDataNum);
 
         let body = {
             //회원정보
@@ -808,8 +908,6 @@ function S010100010(props) {
                 } else {
                     alert("이용계약서 수정을 실패 하였습니다");
                 }
-
-
             })
     }
 
@@ -850,15 +948,7 @@ function S010100010(props) {
 
     const [postCodeDisplay, setPostCodeDisplay] = useState('none');
     
-    const postCodeStyle = {
-        display: postCodeDisplay,
-        position: "absolute",
-        top: "26%",
-        right: "33%",
-        width: "350px",
-        height: "600px"
-
-    }
+   
 
     const handleOpenPost = (event) => {
         setPostCodeDisplay('block');
@@ -1184,8 +1274,8 @@ function S010100010(props) {
         setRegistCardFile(event.currentTarget.files[0]);
         setRegistCardFileName(event.currentTarget.value);
     }
-
    
+  
 
     return (
 
@@ -1214,7 +1304,7 @@ function S010100010(props) {
                                 onChange={onMemberNmHandler} /></td>
 
                         <th className="memberInfo">사업자 번호</th>
-                        <td colSpan="2">
+                        <td>
 
                             <input type="text" value={firstRegNo} id="firstRegNo" name="firstRegNo" size="3"
                                 onChange={onFirstRegNoHandler} />
@@ -1232,8 +1322,8 @@ function S010100010(props) {
                             <input type="button" class="useContractBtn" onClick={onRegNoCheckHandler}
                                 value="중복확인"></input>
                         </td>
-                        <th className="memberInfo">회원구분</th>
-                        <td colSpan="2">
+                        <th className="memberInfo" colSpan="2">회원구분</th>
+                        <td colSpan="3">
                             <select onChange={onMemberTpHandler} value={memberTp}>
                                 {valueArr[0].map(item => (
                                     <option key={item.key} value={item.key}>{item.value}</option>
@@ -1284,15 +1374,11 @@ function S010100010(props) {
 
                             <input type="text" value={zipcode} id="zipcode" name="zipcode" size="10"
                                 onChange={onZipcodeHandler} />
-                            <input type="button" class="useContractBtn" onClick={handleOpenPost}
+                            <input type="button" class="useContractBtn" onClick={findAddr}
+                         
                                 value="우편"
                             />
-                            <DaumPostcode
-                                onComplete={handleComplete}
-                                style={postCodeStyle}
-                                //isPostOpen={false}
-                                autoClose={true}
-                            />
+                
 
                             <input type="text" value={empAddress} id="empAddress" name="empAddress" size="30"
                                 onChange={onEmpAddressHandler} />
@@ -1377,10 +1463,10 @@ function S010100010(props) {
 
                     <tr>
                         <th className="info">이용기간</th>
-                        <td><input type="text" value={contractTerm} id="contractTerm" name="contractTerm" size="1"
-                            onChange={onContractTermHandler} />&nbsp;개월 &nbsp;
-
-                        <div>
+                        <td>
+                            <input type="text" value={contractTerm} id="contractTerm" name="contractTerm" size="1"
+                            onChange={onContractTermHandler} /> &nbsp;개월 &nbsp;
+                       
                                 <DatePicker
                                     locale="ko"
                                     selected={startAsk_date.setHours(9, 0, 0, 0)}//Front = 한국시 BackEnd = 표준시 9시간차이
@@ -1395,7 +1481,7 @@ function S010100010(props) {
                             <input type="text" disabled={true} value={dateEnd} size="8" />
                                 <input type="button" onClick={onDateHandler} className="useContractBtn"
                                     value="중복확인"></input>
-                            </div>
+                       
                         </td>
 
                         <th className="info">입금일</th>
@@ -1420,7 +1506,7 @@ function S010100010(props) {
                             size="10"
                             onChange={onContractMoneyHandler} /></td>
                     </tr>
-
+            
                     <tr>
                         <th className="info">특약사항</th>
                         <td colSpan="9" className="alignLeft" id="infoPadding">
@@ -1443,21 +1529,21 @@ function S010100010(props) {
                         <th className="basicInfoTitle">센터</th>
                         <td className="basicInfo">(주)에스원테크</td>
 
-                        <th colSpan="2" className="basicInfoTitle">전화번호</th>
+                        <th className="basicInfoTitle">전화번호</th>
                         <td colSpan="2" className="basicInfo">070-4355-2312</td>
 
                         <th className="basicInfoTitle">E-mail</th>
-                        <td className="basicInfo">swonbiz@s-onetech.com</td>
+                        <td colSpan="2"className="basicInfo">swonbiz@s-onetech.com</td>
                     </tr>
 
                     <tr>
                         <th className="basicInfoTitle">성명</th>
                         <td className="basicInfo">이정희</td>
 
-                        <th colSpan="2" className="basicInfoTitle">FAX번호</th>
-                        <td colSpan="2" className="basicInfo">070-4015-3344/02-6203-4433</td>
+                        <th  className="basicInfoTitle">FAX번호</th>
+                        <td  colSpan="2" className="basicInfo">070-4015-3344/02-6203-4433</td>
 
-                        <th className="info">계약접근경로</th>
+                        <th colSpan="2"className="info">계약접근경로</th>
                         <td>
                             <select multiple={false} onChange={onContractPathHandler} value={contractPath}>
                                 {contractpaths.map(item => (

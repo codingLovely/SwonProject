@@ -33,7 +33,7 @@ let rNum = 0;
 
 let dataForm = '';
 
-let ask_tps = []
+
 
 function S010100130(props) {
     const [data] = useState('I');
@@ -44,10 +44,10 @@ function S010100130(props) {
     const [deleteAskOpen, setDeleteAskOpen] = React.useState(false);
 
     //페이징
-
     const [currentPage,setCurrentPage] = useState(1);
     const [postsPerPage,setPostsPerPage] = useState(10);
 
+    const[ask_tps, setAsk_tps]= useState([{}])
 
     useEffect(() => {
         searchAsk();
@@ -89,7 +89,7 @@ function S010100130(props) {
                             value: data.CD_V_MEANING, key: data.CD_V
                         }));
 
-                    ask_tps = arr;
+                        setAsk_tps(arr);
 
                 } else {
                     alert("문의구분 데이터를 불러오는데 실패하였습니다.");
@@ -259,7 +259,8 @@ function S010100130(props) {
             ask_tp,
             endAsk_date
         }
-        //alert('ask_tp',ask_tp);
+
+        console.log('ask_tp',ask_tp);
         //console.log("조회조건", body);
         // alert('startDate day:'+startAsk_date.getDay());
         // alert('endDate year:'+endAsk_date.getFullYear());
@@ -310,7 +311,7 @@ function S010100130(props) {
 
     const s010100130R = tb_s10_ask010.map((tb_s10_ask010, index) => {
         return (
-            <tr class='dataTable'>
+            <tr className='dataTable'>
                 <td id="chkLine" hidden={checkForDelete}>
                     {/*밑줄처리*/}
                     <span id = "underLine"><input type="checkbox"  onChange={handleToggle} id={tb_s10_ask010.ASK_ID}/></span></td>
@@ -407,8 +408,6 @@ function S010100130(props) {
                             <input type="button" className='loginBtn' onClick={onHandleClickOpen} value="상담등록"/>
                             <input type="button" className='deleteBtn' hidden={!checkForDelete} onClick={onDeleteHandle}
                                    value="삭제하기"/>
-                            <input type="button" className='backBtn' hidden={checkForDelete} onClick={onBackHandle}
-                                   value="되돌리기"/>
                             <input type="button" className='delete' onClick={onHandleDelete} value="삭제"
                                    hidden={checkForDelete}/>
                                    <Dialog

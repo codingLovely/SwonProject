@@ -5,8 +5,6 @@ import Pagination from'./utils/Pagination';
 // import RowSelection from "./utils/RowSelection";
 import DatePicker, {registerLocale} from 'react-datepicker';
 import ko from 'date-fns/locale/ko';
-import Table from './utils/Table';
-import { useForkRef } from '@material-ui/core';
 registerLocale("ko", ko);
 
 
@@ -134,6 +132,9 @@ const makeYYMMDD = (value) => {
     return year+'.'+month+'.'+date;
 }
 
+
+
+//뿌려주는 곳
 const s010100070R = paymentStatusList.map((paymentStatus, index) => {
     let insertPayDate = paymentStatus.PAYED_DATE 
                         ? new Date('20' + paymentStatus.PAYED_DATE) 
@@ -185,7 +186,6 @@ const s010100070R = paymentStatusList.map((paymentStatus, index) => {
     //Change page
     const paginate = pageNumber => setCurrentPage(pageNumber);
 
-    //setS010100070R(contHi);
 
        // const s010100070R = paymentStatusList.map((paymentStatusList, index) => {
     //     return (
@@ -224,6 +224,8 @@ const s010100070R = paymentStatusList.map((paymentStatus, index) => {
     // });
     const[payMethodM,setPayMethodM] = useState('');
 
+
+    //데이터 들고오는 API
     useEffect(() => {
         axios.get(`/api/s01010070/insert/tb_s10_contract020_by_id?id=${dataContracId}`)
             .then(response => {
@@ -247,45 +249,6 @@ const s010100070R = paymentStatusList.map((paymentStatus, index) => {
             })
     }, [])
 
-    const columns = useMemo (
-        () => [
-            {
-                Header: '선택',
-            },
-            {
-                Header: 'No',
-                accessor: 'CONTRACT_ID'
-            },
-            {
-                Header: '납부예정일',
-                accessor: 'PAY_PLAN_DATE'
-            },
-            {
-                Header: '납부여부',
-                accessor: 'PAYED_FLAG'
-            },
-            {
-                Header: '납부일자',
-                accessor: 'PAYED_DATE'
-            },
-            {
-                Header: '비고',
-                accessor: 'CONTRACT_COMMENT'
-            }
-        ]);
-
-
-    
-        const data = useMemo (
-            () =>
-            (paymentStatusList).map((paymentStatus, index) => ({
-                    CONTRACT_ID: paymentStatus.CONTRACT_ID,
-                    PAY_PLAN_DATE: paymentStatus.PAY_PLAN_DATE,
-                    PAYED_FLAG: paymentStatus.PAYED_FLAG,
-                    PAYED_DATE: paymentStatus.PAYED_DATE ? paymentStatus.PAYED_DATE : paymentStatus.PAY_PLAN_DATE,
-                    CONTRACT_COMMENT: paymentStatus.CONTRACT_COMMENT
-                }))
-        );
 
    
 

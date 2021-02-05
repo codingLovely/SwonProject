@@ -237,7 +237,6 @@ function S010100050(props) {
         setDetailDetailAddress(event.currentTarget.value);
     }
 
-
     const onSubmitDetailHandler = (event) => {
 
     }
@@ -246,7 +245,7 @@ function S010100050(props) {
         num = event.target.innerHTML;
         rNum = parseInt(num);
         setNameForDetailCModal(rNum);
-        //console.log(rNum);
+        console.log(rNum);
         setConOpen(true);
     }
 
@@ -347,7 +346,7 @@ function S010100050(props) {
                     {/* 회원정보란 */}
                     <h2 id="infoTitle">회원정보</h2>
 
-                    <table>
+                    <table id = "memberDetailTable">
                         <tr>
                             <th>회원명</th>
                             <td><input type="text" value={detailMemberNm} id="detailMemberNm" name="detailMemberNm"
@@ -426,7 +425,7 @@ function S010100050(props) {
                     </table>
 
                     <h6 id="conInfoTitle">계약정보</h6>
-                    <table>
+                    <table id = "conInfoDetialTable">
                         <tr>
                             <th>계약ID</th>
                             <th>계약일자</th>

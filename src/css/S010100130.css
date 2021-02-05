@@ -5,9 +5,13 @@ h1 {font-size: 30px; margin: 10px;}
         margin: 10px;    
     }
 
-table {margin:10px; border: 1px solid; width: 104%;}
+/* table {margin:10px; border: 1px solid; width: 104%;}
 table th {border:1px solid;}
-table td {border:1px solid; text-align: center;}
+table td {border:1px solid; text-align: center;} */
+
+#list {margin:10px; border: 1px solid; width: 104%;}
+#list th {border:1px solid;}
+#list td {border:1px solid; text-align: center;} 
 
 #btn {border: none; width: 1225px; }
 #btd {border:none; text-align: left;}
