@@ -64,7 +64,7 @@ function S010100050(props) {
     const dataEmpHp = props.dataEmpHp;
     //console.log('dataEmpHp',dataEmpHp); dataMemId = {memberIdModal}
     const dataMemId = props.dataMemId;
-    console.log('dataName',props.dataMemId);
+  
 
     const [conOpen, setConOpen] = React.useState(false);
     const [newOpen, setNewOpen] = React.useState(false);

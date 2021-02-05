@@ -9,7 +9,7 @@ const bcrypt = require('bcrypt');
 const app = express();
 
 let upload = multer({dest: './src/uploads'})
-let mime = require('mime');
+let mime = require('mime-types');
 let fs = require('fs');
 
 app.use(bodyParser.json());
