@@ -70,9 +70,9 @@ function S010100140(props) {
         const[modalAskPath, setModalAskPath] = useState('')
 
 
-        const[modalContractTpLov, setModalContractTpLov]= useState([{key: '', value: 'waiting...'}])
-        const[modalAskMethodLov, setModalAskMethodLov] = useState( [{key: '', value: 'waiting...'}])
-        const[modalAccessPathLov, setModalAccessPathLov] = useState( [{key: '', value: 'waiting...'}])
+        const[modalContractTpLov, setModalContractTpLov]= useState([{key: '', value: '선택'}])
+        const[modalAskMethodLov, setModalAskMethodLov] = useState( [{key: '', value: '선택'}])
+        const[modalAccessPathLov, setModalAccessPathLov] = useState( [{key: '', value: '선택'}])
 
         useEffect(()=>{
             getContractTpLov();

@@ -25,17 +25,13 @@ registerLocale("ko", ko);
 //켈린더 라이브러리 끝-->ghy
 
 
-let valueArr = [[]];
-let queryArr = [['MEMBER_TP', '']];
-let contractsStatus = [];
-let endStatus = [{ key: '전체', value: '전체' },
-{ key: 'Y', value: 'Y' },
-{ key: 'N', value: 'N' }]
+
+
+
 
 let memberName = '';
 let memberEmpHp = '';
 let memberIdM = '';
-let rNum = 0;
 
 function S010100040(props) {
 
@@ -49,6 +45,10 @@ function S010100040(props) {
     const [empHpForDetailModal, setEmpHpForDetailModal] = useState('')
     const [tbMember, setTbMember] = useState([])
 
+    //select박스
+    const [memberStatus,setMemberStatus] = useState([{}]);
+    const [memberType,setMemberType] = useState([{}]);
+
     //<!--모달창 속성 및 이벤트
     const [open, setOpen] = React.useState(false);
     const [storeOpen, setStoreOpen] = React.useState(false);
@@ -60,52 +60,33 @@ function S010100040(props) {
 
     const [memberIdModal,setMemberIdModal] = useState(0);
 
+    //select박스
+    useEffect(() => {
 
-    const memberList = () => {
-        axios.post('/api/s010100040/list')
+        axios.get('/api/s010100140/selectMemberTp')
             .then(response => {
                 if (response.data.success) {
-                    //console.log('tb_member',response.data.rows);
-                    setTbMember(response.data.rows);
+                    //console.log('ask_tp',response.data.rows);
+                    let arr = [{ key: '전체', value: '전체' }]
+
+                    response.data.rows.map((data) =>
+                        arr.push({
+                            value: data.CD_V_MEANING,
+                            key: data.CD_V
+
+                        }));
+
+                        setMemberType(arr);
+
                 } else {
-                    alert("데이터 조회를 실패하였습니다.")
+                    alert("회원상태 데이터를 불러오는데 실패하였습니다.");
                 }
-
             })
-    }
-
-    useEffect(() => {
-        memberList();
     }, [])
 
-
-    useEffect(() => {
-        for (let i = 0; i < queryArr.length; i++) {
-
-            let firstVal = queryArr[i][0];
-            let secondVal = queryArr[i][1];
-            axios.post('/api/s010100140/selectTest', { firstVal: firstVal, secondVal: secondVal })
-                .then(response => {
-                    if (response.data.success) {
-                        //console.log('ask_tp',response.data.rows);
-                        let arr = [{ key: '전체', value: '전체' }]
-
-                        response.data.rows.map((data) =>
-                            arr.push({
-                                value: data.CD_V_MEANING,
-                                key: data.CD_V
-
-                            }));
-
-                        valueArr[i] = arr;
-                        //console.log(valueArr[2]);
-                    } else {
-                        alert("문의구분 데이터를 불러오는데 실패하였습니다.");
-                    }
-                })
-
-        }
-    }, [])
+    const endStatus = [ { key: '전체', value: '전체'  },
+                        { key: 'Y', value: 'Y' },
+                        { key: 'N', value: 'N' } ]
 
     useEffect(() => {
 
@@ -122,19 +103,16 @@ function S010100040(props) {
 
                         }));
 
-                    contractsStatus = arr;
+                        setMemberStatus(arr);
 
                 } else {
-                    alert("회원상테 데이터를 불러오는데 실패하였습니다.");
+                    alert("회원상태 데이터를 불러오는데 실패하였습니다.");
                 }
             })
-
-
     }, [])
 
-    //<!--onSubmit
-    const onSearchSubmitHandler = (event) => {
-
+    //조회
+    const memberList = () => {
         const body = {
             memberNm,
             regNo,
@@ -143,28 +121,29 @@ function S010100040(props) {
             contractStatus,
             memberSt
         }
-
-        const memberList = () => {
-            axios.post('/api/s010100040/searchMember', body)
-                .then(response => {
-                    if (response.data.success) {
-                        //console.log('tb_member',response.data.rows);
-                        setTbMember(response.data.rows);
-                    } else {
-                        alert("검색에 실패하였습니다.")
-                    }
-
-                })
-        }
-
-        memberList(body);
-
+        
+        axios.post('/api/s010100040/searchMember', body)
+            .then(response => {
+                if (response.data.success) {
+                    //console.log('tb_member',response.data.rows);
+                    setTbMember(response.data.rows);
+                } else {
+                    alert("데이터 목록을 가져오는 것을 실패하였습니다.")
+                }
+            })
     }
-    //onSubmit끝-->
+
+    useEffect(() => {    
+        memberList();
+    }, [])
+
+    const onSearchSubmitHandler = (event) => {
+        memberList();
+    }
+
 
     const onHandleClickOpen = () => {
         setStoreOpen(true);
-
     };
 
     const onHandleClickClose = () => {
@@ -179,7 +158,6 @@ function S010100040(props) {
     const nameHandler = (event) => {
         setName(event.currentTarget.value);
     }
-
 
     const memberNmHandler = (event) => {
         setMemberNm(event.currentTarget.value);
@@ -198,17 +176,14 @@ function S010100040(props) {
     }
 
     const onHandleDetailClickOpen = (event) => {
-        //console.log(event.target.id);
         memberEmpHp = event.target.id;
         memberName = event.target.innerHTML;
         memberIdM = event.target.className;
-        //console.log('memberIdM :',memberIdM);
-        //console.log('memberName :',memberName);
+
         setEmpHpForDetailModal(memberEmpHp);
         setNumForDetailModal(memberName);
         setMemberIdModal(memberIdM);
         setOpen(true);
-        //console.log('memberName',memberName);
     }
 
     const onHandleDetailClickClose = () => {
@@ -216,37 +191,35 @@ function S010100040(props) {
         setOpen(false);
     }
 
-    const onModifyHandler = (event) => {
+    const onSNSHandler = (event) => {
 
     }
 
-    const onApprovalHandler = (event) => {
+    const onEmailHandler = (event) => {
 
     }
 
+    //엑셀다운로드
     const excelHandler = (event) => {
 
         event.preventDefault();
 
         const ws = xlsx.utils.json_to_sheet(tbMember);
-        console.log(tbMember);
+        //console.log(tbMember);
 
         ['NO','사업자번호','회원명','회원구분','상태','대표자 성명','대표자 연락처','대표자 E-mail','종료여부']
         .forEach((x,idx) => {
             const cellAdd = xlsx.utils.encode_cell({c:idx,r:0});
             ws[cellAdd].v = x;
-            
         })
 
         ws['!cols'] = [];
         ws['!cols'][0] = {hidden:true};
-        
 
         const wb = xlsx.utils.book_new();
 
         xlsx.utils.book_append_sheet(wb,ws,"Sheet1");
         xlsx.writeFile(wb,"회원현황.xlsx");
-
     }
 
     const s010100040R = tbMember.map((tbMember, index) => {
@@ -266,6 +239,7 @@ function S010100040(props) {
         )
     });
 
+
     const indexOfFirstPost = indexOfLastPost - postsPerPage;
     const currentPosts = s010100040R.slice(indexOfFirstPost, indexOfLastPost);
     //Change page
@@ -277,13 +251,13 @@ function S010100040(props) {
             <Navbar />
 
             <form style={{
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-                width: '100%',
-            }} onSubmit={onSearchSubmitHandler}
-            >
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    width: '100%',
+                }} 
+            onSubmit={onSearchSubmitHandler}>
 
                 <h1>회원현황</h1>
                 <div id="search">
@@ -307,24 +281,24 @@ function S010100040(props) {
 
                     회원구분 &nbsp;
                     <select multiple={false} onChange={memberTpHandler} value={memberTp}>
-
-                        {valueArr[0].map(item => (
+                        {memberType.map(item => (
                             <option key={item.key} value={item.key}>{item.value}</option>
                         ))}
                     </select>
                     &nbsp;
+
                     종료 &nbsp;
                     <select multiple={false} onChange={contractStatusHandler} value={contractStatus}>
                         {endStatus.map(item => (
                             <option key={item.key} value={item.key}>{item.value}</option>
                         ))}
                     </select>
-
                     &nbsp;
+
                     상태 &nbsp;
                     <select multiple={false} onChange={memberStHandler} value={memberSt}>
 
-                        {contractsStatus.map(item => (
+                        {memberStatus.map(item => (
                             <option key={item.key} value={item.key}>{item.value}</option>
                         ))}
                     </select>
@@ -340,11 +314,7 @@ function S010100040(props) {
                     onClose={onHandleDetailClickClose}>
                     <S010100050 dataMemId = {memberIdModal} dataName={numForDetailModal} dataForm={"U"} dataEmpHp={empHpForDetailModal} />
                     <DialogActions>
-                        {/* <Button onClick={onhandleStoreClose} color="primary" autoFocus>
-                                저장
-                            </Button> */}
-                        <input type="button" id="contractBtn" onClick={onHandleDetailClickClose} color="primary"
-                            value='닫기' />
+                        <input type="button" id="contractBtn" onClick={onHandleDetailClickClose} color="primary" value='닫기' />
                     </DialogActions>
                 </Dialog>
 
@@ -354,8 +324,8 @@ function S010100040(props) {
                         <tr>
                             <td colSpan="5">
                                 <input type="button" onClick={onHandleClickOpen} value="신규회원"></input>
-                                <input type="button" onClick={onModifyHandler} value="SNS" />
-                                <input type="button" onClick={onApprovalHandler} value="메일전송" />
+                                <input type="button" onClick={onSNSHandler} value="SNS" />
+                                <input type="button" onClick={onEmailHandler} value="메일전송" />
                             </td>
                             <td id="alignRight">
                                 <input type="button" onClick = {excelHandler} value="엑셀다운로드"></input>
@@ -382,21 +352,24 @@ function S010100040(props) {
                             <th>E-mail</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         {currentPosts}
                     </tbody>
+
                 </table>
+
                 <Pagination postsPerPage={postsPerPage} totalPosts={s010100040R.length} paginate={paginate} />
+
             </form>
 
             <Dialog
                 maxWidth={"lg"}
                 open={storeOpen}
                 onClose={onHandleClickClose}>
-                <S010100010 />
+                <S010100010/>
                 <DialogActions>
-                    <input type="button" onClick={onHandleClickClose} color="primary" value="닫기">
-                    </input>
+                    <input type="button" onClick={onHandleClickClose} color="primary" value="닫기"/>
                 </DialogActions>
             </Dialog>
 

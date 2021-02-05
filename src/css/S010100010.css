@@ -2,10 +2,15 @@
 .useContractTable{width: 1200px; margin: 50px 50px 0px 50px; border-spacing: 0px;}
 .alignLeft{text-align: left; padding:50px;}
 
+.useContractTable {border: 1px solid;}
+.useContractTable th {border:1px solid;}
+.useContractTable td {border:1px solid;}
+
 #borderBottom{border-bottom: none;}
 #borderTopBottom{text-align: right; border-top: none;border-bottom: none;}
 .useContractTable tr td {padding: 5px;}
 .useContractTable .memberInfo{background-color:#C7D3ED;}
+.useContractTable .memberInfo td {text-align: left;}
 .useContractTable .info{background-color: #D6BCB0;}
 .useContractTable .basicInfoTitle{background-color: #777777;}
 .useContractTable .basicInfo{background-color: #999999;}
