@@ -9,7 +9,6 @@ import S010100130 from '../S010100130';
 import S010100140 from '../S010100140';
 import S010100150 from '../S010100150';
 
-
 import Navbar from '../Navbar';
 //export default
  function Routes (){

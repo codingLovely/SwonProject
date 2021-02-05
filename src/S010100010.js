@@ -35,7 +35,6 @@ function S010100010(props) {
     const [empAddress, setEmpAddress] = useState('');
     const [empDetailAddress, setEmpDetailAddress] = useState('');
 
-
     //계약정보
     const [contractTp, setContractTp] = useState('');
     const [contractTpVal, setContractTpVal] = useState([{ key: '', value: '선택' }]);
@@ -51,7 +50,6 @@ function S010100010(props) {
     const [contractStart, setContractStart] = useState('');
     const [contractEnd, setContractEnd] = useState('');
     const [userStatus, setUserStatus] = useState('');
-
 
     const [regNoCheckBtn, setRegNoCheckBtn] = useState('');
     const [empHpCheckBtn, setEmpHpCheckBtn] = useState('');
@@ -71,15 +69,11 @@ function S010100010(props) {
     const onHandleClickClose = (event) => {
         setOpen(false);
     }
-
     const rNum = props.dataNum;
     const modalMemberId = props.dataMem;
 
-
     useEffect(() => {
-
         if (props.newDataForm === 'N') {
-
             axios.get(`/api/s01010010/insert/tb_s10_contract010_by_id?id=${modalMemberId}&type=single`)
                 .then(response => {
                     if (response.data.success) {
@@ -1274,8 +1268,6 @@ function S010100010(props) {
         setRegistCardFile(event.currentTarget.files[0]);
         setRegistCardFileName(event.currentTarget.value);
     }
-
-
 
     return (
 

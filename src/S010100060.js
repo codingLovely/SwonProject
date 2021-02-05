@@ -1,4 +1,4 @@
-import React, {Fragment, useEffect, useState} from 'react';
+import React, { Fragment, useEffect, useState } from 'react';
 import Navbar from './Navbar';
 import S010100070 from "./S010100070";
 import Pagination from "./utils/Pagination";
@@ -6,7 +6,7 @@ import Pagination from "./utils/Pagination";
 import xlsx from 'xlsx';
 
 //<!--켈린더 라이브러리시작
-import DatePicker, {registerLocale} from "react-datepicker";
+import DatePicker, { registerLocale } from "react-datepicker";
 import ko from 'date-fns/locale/ko';
 import axios from "axios";
 import Dialog from "@material-ui/core/Dialog";
@@ -18,9 +18,9 @@ registerLocale("ko", ko);
 
 
 //켈린더 라이브러리 끝-->
-let paymentState = [{key: '전체', value: '전체'},
-    {key: 'Y', value: 'Y'},
-    {key: 'N', value: 'N'}]
+let paymentState = [{ key: '전체', value: '전체' },
+{ key: 'Y', value: 'Y' },
+{ key: 'N', value: 'N' }]
 
 function S010100060(props) {
 
@@ -41,8 +41,8 @@ function S010100060(props) {
     const [currentPage, setCurrentPage] = useState(1);
     const [postsPerPage, setPostsPerPage] = useState(10);
     const indexOfLastPost = currentPage * postsPerPage;
-    
-   
+
+
     useEffect(() => {
         let body = {
             startDate: startDate,
@@ -107,11 +107,11 @@ function S010100060(props) {
         //전체 Checked된 State에서 현재 누를 Checkbox가 있는지 확인
         const newChecked = checked;
 
-            if (currentIndex === -1) {
-                newChecked.push(e.target.id)
-            } else {
-                newChecked.splice(currentIndex, 1)
-            }
+        if (currentIndex === -1) {
+            newChecked.push(e.target.id)
+        } else {
+            newChecked.splice(currentIndex, 1)
+        }
 
         setChecked(newChecked);
         //빽주고
@@ -129,12 +129,12 @@ function S010100060(props) {
     const onPaymenthandler = () => {
         if (checked.length === 0) {
             alert('선택하세요');
-        } else if(checked.length > 1){
+        } else if (checked.length > 1) {
             alert('하나만 체크하세요');
-        }else {
-                setDataAllContract(checked);
-                //console.log(checked);
-                setStoreOpen(true);
+        } else {
+            setDataAllContract(checked);
+            //console.log(checked);
+            setStoreOpen(true);
         }
     }
 
@@ -145,29 +145,28 @@ function S010100060(props) {
         const ws = xlsx.utils.json_to_sheet(payStatusList);
         console.log(payStatusList);
 
-        ['회원명','납부예정일','납부여부','납부일자','계약기간','계약기간','대표자 성명','대표자 연락처','대표자 E-mail','계약ID']
-        .forEach((x,idx) => {
-            const cellAdd = xlsx.utils.encode_cell({c:idx,r:0});
-            ws[cellAdd].v = x;
-            
-        })
+        ['회원명', '납부예정일', '납부여부', '납부일자', '계약기간', '계약기간', '대표자 성명', '대표자 연락처', '대표자 E-mail', '계약ID']
+            .forEach((x, idx) => {
+                const cellAdd = xlsx.utils.encode_cell({ c: idx, r: 0 });
+                ws[cellAdd].v = x;
+
+            })
 
         ws['!cols'] = [];
-        ws['!cols'][9] = {hidden:true};
-        
+        ws['!cols'][9] = { hidden: true };
+
 
         const wb = xlsx.utils.book_new();
 
-        xlsx.utils.book_append_sheet(wb,ws,"Sheet1");
-        xlsx.writeFile(wb,"고객납부현황.xlsx");
+        xlsx.utils.book_append_sheet(wb, ws, "Sheet1");
+        xlsx.writeFile(wb, "고객납부현황.xlsx");
 
     }
-
 
     const s010100060R = payStatusList.map((payStatusList, index) => {
         return (
             <tr class='dataTable'>
-                <td><input type="checkbox" onChange={handleToggle} id={payStatusList.CONTRACT_ID}/></td>
+                <td><input type="checkbox" onChange={handleToggle} id={payStatusList.CONTRACT_ID} /></td>
                 <td name="uname" variant="outlined" color="primary">
                     {payStatusList.CONTRACT_ID}
                 </td>
@@ -182,7 +181,7 @@ function S010100060(props) {
             </tr>
         )
     });
-
+    
     const indexOfFirstPost = indexOfLastPost - postsPerPage;
     const currentPosts = s010100060R.slice(indexOfFirstPost, indexOfLastPost);
     //Change page
@@ -190,7 +189,7 @@ function S010100060(props) {
 
     return (
         <Fragment>
-            <Navbar/>
+            <Navbar />
             <form style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -198,7 +197,7 @@ function S010100060(props) {
                 alignItems: 'center',
                 width: '100%'
             }}
-                  onSubmit={onSubmitHandler}
+                onSubmit={onSubmitHandler}
             >
 
                 <h1>고객납부현황</h1>
@@ -227,8 +226,14 @@ function S010100060(props) {
                     {/* <input type="image" src="/examples/images/submit_icon.png" alt="제출버튼" height="30" width="30"/> */}
                     &nbsp;
                     회원명&nbsp;
-                    <input type="text" value={userName} id="userName" name="userName" size="5"
-                           onChange={nameSearchHandler}/>
+                    <input
+                        type="text"
+                        value={userName}
+                        id="userName"
+                        name="userName"
+                        size="5"
+                        onChange={nameSearchHandler}
+                    />
                     &nbsp;
 
                     납부여부&nbsp;
@@ -247,37 +252,37 @@ function S010100060(props) {
 
                 <table id="btn">
                     <thead>
-                    <tr>
-                        <td id="btd">
-                            <button className='loginBtn' onClick={onPaymenthandler}> 납부</button>
-                        </td>
-                        <td id="btd2">
-                            <input type ="button" onClick ={excelHandler} value = "엑셀다운로드"></input>
-                        </td>
-                    </tr>
+                        <tr>
+                            <td id="btd">
+                                <button className='loginBtn' onClick={onPaymenthandler}> 납부</button>
+                            </td>
+                            <td id="btd2">
+                                <input type="button" onClick={excelHandler} value="엑셀다운로드"></input>
+                            </td>
+                        </tr>
                     </thead>
                 </table>
 
                 <table id="list">
                     <thead>
-                    <tr>
-                        <th rowSpan="2">선택</th>
-                        <th rowSpan="2">No</th>
-                        <th rowSpan="2">회원명</th>
-                        <th rowSpan="2">납부예정일</th>
-                        <th rowSpan="2">납부여부</th>
-                        <th rowSpan="2">납부일자</th>
-                        <th rowSpan="2">계약기간</th>
-                        <th colSpan="3">대표자</th>
-                    </tr>
-                    <tr>
-                        <th>성명</th>
-                        <th>연락처</th>
-                        <th>E-mail</th>
-                    </tr>
+                        <tr>
+                            <th rowSpan="2">선택</th>
+                            <th rowSpan="2">No</th>
+                            <th rowSpan="2">회원명</th>
+                            <th rowSpan="2">납부예정일</th>
+                            <th rowSpan="2">납부여부</th>
+                            <th rowSpan="2">납부일자</th>
+                            <th rowSpan="2">계약기간</th>
+                            <th colSpan="3">대표자</th>
+                        </tr>
+                        <tr>
+                            <th>성명</th>
+                            <th>연락처</th>
+                            <th>E-mail</th>
+                        </tr>
                     </thead>
                     <tbody>
-                    {currentPosts}
+                        {currentPosts}
                     </tbody>
                 </table>
                 <Pagination postsPerPage={postsPerPage} totalPosts={s010100060R.length} paginate={paginate} />
@@ -285,7 +290,7 @@ function S010100060(props) {
                     maxWidth={"lg"}
                     open={storeOpen}
                     onClose={onPayHandleClickClose}>
-                    <S010100070 dataContracId={dataAllContract}/>
+                    <S010100070 dataContracId={dataAllContract} />
                     <DialogActions>
                         <input type="button" onClick={onPayHandleClickClose} color="primary" value="닫기">
                         </input>
