@@ -1,14 +1,11 @@
-import React, {Fragment, useState, useEffect, useMemo} from 'react';
+import React, { Fragment, useState, useEffect, useMemo } from 'react';
 import './css/S010100070.css';
 import axios from 'axios';
-import Pagination from'./utils/Pagination';
+import Pagination from './utils/Pagination';
 // import RowSelection from "./utils/RowSelection";
-import DatePicker, {registerLocale} from 'react-datepicker';
+import DatePicker, { registerLocale } from 'react-datepicker';
 import ko from 'date-fns/locale/ko';
 registerLocale("ko", ko);
-
-
-
 
 function S010100070(props) {
 
@@ -57,10 +54,7 @@ function S010100070(props) {
         console.log(event.target.id);
     }
 
-
     const payBtnHandler = (event) => {
-
-
         let modalContractId = props.dataContracId;
         let modalPayPlanDate = checked;
         //console.log(checked);
@@ -70,40 +64,37 @@ function S010100070(props) {
             //id -> date
             modalContractId: modalContractId,
             modalPayPlanDate: modalPayPlanDate,
-            payMethodM:payMethodM
+            payMethodM: payMethodM
             //insertPayDate: insertPayDate,
             //referComment: referComment
         }
         console.log(payMethodM);
 
         //console.log(referComment);
-        axios.post('api/s01010070/paymentUpdate',body)
+        axios.post('api/s01010070/paymentUpdate', body)
             .then(response => {
                 if (response.data.success) {
                     alert('왼료되었습니다.');
-        
+
                 } else {
                     alert('실패하였습니다.');
                 }
-        
             })
-
-
     }
+
     const snsBtnHandler = (event) => {
 
     }
+
     const emailBtnHandler = (event) => {
 
     }
+
     const excelBtnHandler = (event) => {
 
     }
 
-
     let dataContracId = props.dataContracId;
-
-    
 
     const toggleHandler = (e) => {
         const currentIndex = checked.indexOf(e.target.id);
@@ -116,51 +107,52 @@ function S010100070(props) {
             newChecked.splice(currentIndex, 1)
         }
         setChecked(newChecked);
-        
+
         console.log(newChecked);
 
     }
 
-// const [s010100070R, setS010100070R] = useState([]);
-const makeYYMMDD = (value) => {
-    let year = (value.getFullYear()+'').substring(2);
-    console.log('year',year);
-    let month = value.getMonth() + 1;
-    let date = value.getDate();
-    month = month < 10 ? '0' + month : month;
-    date = date < 10 ? '0' + date : date;
-    return year+'.'+month+'.'+date;
-}
+    // const [s010100070R, setS010100070R] = useState([]);
+    const makeYYMMDD = (value) => {
+        let year = (value.getFullYear() + '').substring(2);
+        console.log('year', year);
+        let month = value.getMonth() + 1;
+        let date = value.getDate();
+        month = month < 10 ? '0' + month : month;
+        date = date < 10 ? '0' + date : date;
+        return year + '.' + month + '.' + date;
+    }
 
+    //뿌려주는 곳
+    const s010100070R = paymentStatusList.map((paymentStatus, index) => {
+        let insertPayDate = paymentStatus.PAYED_DATE
+            ? new Date('20' + paymentStatus.PAYED_DATE)
+            : new Date();
 
-
-//뿌려주는 곳
-const s010100070R = paymentStatusList.map((paymentStatus, index) => {
-    let insertPayDate = paymentStatus.PAYED_DATE 
-                        ? new Date('20' + paymentStatus.PAYED_DATE) 
-                        : new Date();
         return (
             <tr className='dataTable'>
                 {/*CONTRACT_ID와 날짜를 함께 들고가야한다.*/}
                 <td name="uname" variant="outlined" color="primary">
-                    <input type="checkbox" onChange={toggleHandler} id={paymentStatus.PAY_PLAN_DATE}/>
+                    <input type="checkbox" onChange={toggleHandler} id={paymentStatus.PAY_PLAN_DATE} />
                 </td>
-                <td id = {paymentStatus.CONTRACT_ID}>{index + 1}</td>
+                <td id={paymentStatus.CONTRACT_ID}>{index + 1}</td>
                 <td>{paymentStatus.PAY_PLAN_DATE}</td>
                 <td>{paymentStatus.PAYED_FLAG}</td>
-                <td key = {paymentStatus.PAY_PLAN_DATE}  id={paymentStatus.PAY_PLAN_DATE}>
+                <td key={paymentStatus.PAY_PLAN_DATE} id={paymentStatus.PAY_PLAN_DATE}>
                     <DatePicker
                         id={paymentStatus.PAY_PLAN_DATE}
                         locale="ko"
                         selected={insertPayDate.setHours(9, 0, 0, 0)}
                         onChange={
                             // date => {console.log('date',makeYYMMDD(date))}
-                            date => {setPaymentStatusList(
-                                paymentStatusList.map(changePaymentStatus =>
-                                    changePaymentStatus.PAY_PLAN_DATE === paymentStatus.PAY_PLAN_DATE ?
-                                    {...changePaymentStatus, PAYED_DATE : makeYYMMDD(date)}
-                                    : changePaymentStatus
-                            ))}
+                            date => {
+                                setPaymentStatusList(
+                                    paymentStatusList.map(changePaymentStatus =>
+                                        changePaymentStatus.PAY_PLAN_DATE === paymentStatus.PAY_PLAN_DATE ?
+                                            { ...changePaymentStatus, PAYED_DATE: makeYYMMDD(date) }
+                                            : changePaymentStatus
+                                    ))
+                            }
                         }
                         selectsStart
                         startDate={insertPayDate}
@@ -169,25 +161,21 @@ const s010100070R = paymentStatusList.map((paymentStatus, index) => {
                 </td>
                 <td>
                     {paymentStatus.CONTRACT_COMMENT}
-                    <textarea type="text" cols="20" rows="2" value = {referComment}
-                              size="5" id={paymentStatus.PAY_PLAN_DATE} onChange={referCommentHandler}/>
+                    <textarea type="text" cols="20" rows="2" value={referComment}
+                        size="5" id={paymentStatus.PAY_PLAN_DATE} onChange={referCommentHandler} />
                 </td>
-    
-    
+
+
             </tr>
         )
     });
-
-
-   
 
     const indexOfFirstPost = indexOfLastPost - postsPerPage;
     const currentPosts = s010100070R.slice(indexOfFirstPost, indexOfLastPost);
     //Change page
     const paginate = pageNumber => setCurrentPage(pageNumber);
 
-
-       // const s010100070R = paymentStatusList.map((paymentStatusList, index) => {
+    // const s010100070R = paymentStatusList.map((paymentStatusList, index) => {
     //     return (
     //         <tr className='dataTable'>
     //             {/*CONTRACT_ID와 날짜를 함께 들고가야한다.*/}
@@ -222,8 +210,7 @@ const s010100070R = paymentStatusList.map((paymentStatus, index) => {
     //         </tr>
     //     )
     // });
-    const[payMethodM,setPayMethodM] = useState('');
-
+    const [payMethodM, setPayMethodM] = useState('');
 
     //데이터 들고오는 API
     useEffect(() => {
@@ -239,9 +226,6 @@ const s010100070R = paymentStatusList.map((paymentStatus, index) => {
                     setPaymentEmpEmail(response.data.rows[0].EMP_EMAIL);
                     setPaymentEmpComment(response.data.rows[0].COMMENT);
                     setPayMethodM(response.data.rows[0].PAY_METHOD);
-                    
-                    
-
                 } else {
                     alert("데이터 조회를 실패하였습니다.")
                 }
@@ -249,13 +233,9 @@ const s010100070R = paymentStatusList.map((paymentStatus, index) => {
             })
     }, [])
 
-
-   
-
     return (
         <div>
             <Fragment>
-
                 <form style={{
                     display: 'flex',
                     flexDirection: 'column',
@@ -263,9 +243,6 @@ const s010100070R = paymentStatusList.map((paymentStatus, index) => {
                     alignItems: 'center',
                     width: '100%'
                 }}>
-                    {/* */}
-
-
                     <h1>고객납부등록</h1>
                     <div id='list'>
                         <table className='resultTable'>
@@ -273,11 +250,11 @@ const s010100070R = paymentStatusList.map((paymentStatus, index) => {
                                 <td>
                                     회원명&nbsp;&nbsp;&nbsp;&nbsp;
                                     <input type="text" value={paymentMemberNm} id="memberNm" name="memberNm" size="5"
-                                           onChange={paymentMemberNmHandler}/>
+                                        onChange={paymentMemberNmHandler} />
                                     &nbsp;&nbsp;&nbsp;
                                     계약기간 &nbsp;
                                     <input type="text" value={paymentPeriod} id="regNo" name="regNo" size="27"
-                                           onChange={paymentPeriodHandler}/>
+                                        onChange={paymentPeriodHandler} />
                                     &nbsp;
                                 </td>
                             </tr>
@@ -285,16 +262,16 @@ const s010100070R = paymentStatusList.map((paymentStatus, index) => {
                                 <td>
                                     대표자 &nbsp;&nbsp;&nbsp;
                                     <input type="text" value={paymentCeoNm} id="name" name="name" size="7"
-                                           onChange={paymentCeoNmHandler}/>
+                                        onChange={paymentCeoNmHandler} />
                                     &nbsp;
 
                                     연락처 &nbsp;&nbsp;&nbsp;
                                     <input type="text" value={paymentEmpHp} id="name" name="name" size="13"
-                                           onChange={paymentEmpHpHandler}/>
+                                        onChange={paymentEmpHpHandler} />
                                     &nbsp;
                                     메일주소 &nbsp;
                                     <input type="text" value={paymentEmpEmail} id="name" name="name" size="20"
-                                           onChange={paymentEmpEmailHandler}/>
+                                        onChange={paymentEmpEmailHandler} />
 
                                 </td>
                             </tr>
@@ -303,39 +280,39 @@ const s010100070R = paymentStatusList.map((paymentStatus, index) => {
                                 <td>
                                     <span id="commentTitle">특약사항</span>&nbsp;
                                     <textarea type="text" cols="90" rows="3" value={paymentEmpComment} id="name"
-                                              name="name"
-                                              size="5"
-                                              onChange={paymentEmpCommentHandler}/>
+                                        name="name"
+                                        size="5"
+                                        onChange={paymentEmpCommentHandler} />
                                 </td>
                             </tr>
                         </table>
                     </div>
                     <table id='paymentList'>
-                    <thead>
-                        <tr>
-                            <th>선택</th>
-                            <th>No</th>
-                            <th>납부예정일</th>
-                            <th>납부여부</th>
-                            <th>납부일자</th>
-                            <th>비고</th>
-                        </tr>
+                        <thead>
+                            <tr>
+                                <th>선택</th>
+                                <th>No</th>
+                                <th>납부예정일</th>
+                                <th>납부여부</th>
+                                <th>납부일자</th>
+                                <th>비고</th>
+                            </tr>
                         </thead>
-                     <tbody>
-                     {currentPosts}
-                    </tbody>
-                   </table>
-                   <Pagination postsPerPage={postsPerPage} totalPosts={s010100070R.length} paginate={paginate} />
+                        <tbody>
+                            {currentPosts}
+                        </tbody>
+                    </table>
+                    <Pagination postsPerPage={postsPerPage} totalPosts={s010100070R.length} paginate={paginate} />
                     <div>
                         <input type="button"
-                               onClick={payBtnHandler} value="납부"/>
+                            onClick={payBtnHandler} value="납부" />
                         <input type="button" className="new"
-                               onClick={snsBtnHandler} value="SNS 전송"/>
+                            onClick={snsBtnHandler} value="SNS 전송" />
                         <input type="button" className="memberId"
-                               onClick={emailBtnHandler} value="메일 전송"/>
+                            onClick={emailBtnHandler} value="메일 전송" />
                         <input type="button" className="contractId"
-                               onClick={excelBtnHandler} value="엑셀다운로드"/>
-                        <input type="button" id="btnWidth" value="계산서발행"/>
+                            onClick={excelBtnHandler} value="엑셀다운로드" />
+                        <input type="button" id="btnWidth" value="계산서발행" />
                     </div>
                 </form>
             </Fragment>

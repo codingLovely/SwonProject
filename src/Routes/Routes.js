@@ -9,7 +9,6 @@ import S010100130 from '../S010100130';
 import S010100140 from '../S010100140';
 import S010100150 from '../S010100150';
 
-
 import Navbar from '../Navbar';
 //export default
  function Routes (){
@@ -29,8 +28,6 @@ import Navbar from '../Navbar';
           <Route exact path = "/staff" component = {S010100090}></Route>
           {/* 로그인/로그아웃*/}
           <Route exact path = "/login" component = {S010100150}></Route>
-
-
 
           {/* 상담등록 */}
           <Route exact path = "/registration" component = {S010100140}></Route>
