@@ -1,0 +1,31 @@
+.agreementWrapper {
+    line-height:30px;
+    font-size: 20px;
+    padding: 30px;
+}
+
+.paragraph{
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.paragraph h1 {
+    margin:20px;
+} 
+
+.paragraph h3 {
+    font-size: 17px;
+} 
+
+.paragraph ul li{
+    font-size: 17px;
+    padding-left:20px ;
+}
+
+#processOfSign{
+    padding:20px 0px 20px 70px;
+}
+
+#finalSign{
+    padding-left: 20px;
+}

@@ -11,6 +11,7 @@ import S010100150 from '../S010100150';
 
 
 import Navbar from '../Navbar';
+import LeaseAgreement from '../utils/LeaseAgreement';
 //export default
  function Routes (){
    return(
@@ -38,6 +39,8 @@ import Navbar from '../Navbar';
           <Route exact path = "/useContract" component = {S010100010}></Route>
           {/* 회원상세현황 */}
           <Route exact path = "/memberDetails" component = {S010100050}></Route>
+          {/* 임대차계약서 */}
+          <Route exact path = "/leasAgreement" component = {LeaseAgreement}></Route>
   </Router>
   );
  }

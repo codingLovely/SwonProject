@@ -485,12 +485,12 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
                     //console.log('!!!!!!!!!!!!!!!!!monthDay: ' + monthDay);
                     finalDate = contractYearDay + '-' + contractMonthDay + '-' + payDate;
                 
-                    payContractSql = 'INSERT INTO  TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,PAYED_PLAN_MONEY)  \n' +
-                        '\t\t\t  VALUES((SELECT CONTRACT_ID FROM (SELECT  \n' +
-                        '              CONTRACT_ID  \n' +
-                        '              ,ROW_NUMBER() OVER(ORDER BY CONTRACT_ID DESC) AS RN  \n' +
-                        '              FROM TB_S10_CONTRACT010 CON010  \n' +
-                        '              ) CON010  \n' +
+                    payContractSql = 'INSERT INTO  TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,PAYED_PLAN_MONEY)  ' +
+                        '  VALUES((SELECT CONTRACT_ID FROM (SELECT  ' +
+                        '              CONTRACT_ID  ' +
+                        '              ,ROW_NUMBER() OVER(ORDER BY CONTRACT_ID DESC) AS RN  ' +
+                        '              FROM TB_S10_CONTRACT010 CON010  ' +
+                        '              ) CON010  ' +
                         '              WHERE RN = 1),?,SYSDATE(),?)';
                     //여기서 생성된 contract_id가 con2에 가야함
 
@@ -542,18 +542,18 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
 
         let type = req.query.type
         let memberId = req.query.id
-        console.log(memberId);
+        //console.log(memberId);
 
         let sql =
-            'SELECT \n' +
-            '\t   EMP.NAME, EMP.EMP_HP, EMP.EMP_EMAIL, EMP.ADDRESS,EMP.ZIP_CODE,EMP.DETAIL_ADDRESS,\n' +
-            '\t   MEM.MEMBER_NM, MEM.REG_NO, CODE1.CD_V AS "MEMBER_TP"\n' +
-            'FROM TB_S10_EMP010 EMP \n' +
-            'INNER JOIN TB_S10_MEMBER010 MEM\n' +
-            'ON EMP.EMP_ID = MEM.CEO_ID\n' +
-            'LEFT JOIN TB_S10_CODE CODE1  ON MEM.MEMBER_TP = CODE1.CD_V\n' +
-            'AND CODE1.CD_TP = "MEMBER_TP"\n' +
-            'WHERE MEM.MEMBER_ID =' + memberId
+            'SELECT ' +
+            '   EMP.NAME, EMP.EMP_HP, EMP.EMP_EMAIL, EMP.ADDRESS,EMP.ZIP_CODE,EMP.DETAIL_ADDRESS, ' +
+            '   MEM.MEMBER_NM, MEM.REG_NO, CODE1.CD_V AS "MEMBER_TP" ' +
+            'FROM TB_S10_EMP010 EMP ' +
+            ' INNER JOIN TB_S10_MEMBER010 MEM ' +
+            ' ON EMP.EMP_ID = MEM.CEO_ID ' +
+            ' LEFT JOIN TB_S10_CODE CODE1  ON MEM.MEMBER_TP = CODE1.CD_V ' +
+            ' AND CODE1.CD_TP = "MEMBER_TP" ' +
+            ' WHERE MEM.MEMBER_ID =' + memberId
         //console.log(sql);
 
         connection.query(sql, (error, rows) => {//쿼리문
@@ -573,47 +573,48 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
         //console.log(contractId);
 
         let sql =
-            'SELECT EMP.NAME, EMP.EMP_HP, EMP.EMP_EMAIL, EMP.ADDRESS,EMP.ZIP_CODE,EMP.DETAIL_ADDRESS,\n' +
-            '\t   MEM.MEMBER_NM, MEM.REG_NO, CODE1.CD_V AS "MEMBER_TP", CODE1.CD_V_MEANING AS "MEMBER_TP_M", CODE2.CD_V AS "MEMBER_ST",\n' +
-            '       CODE2.CD_V_MEANING AS "MEMBER_ST_M",CON.CONTRACT_ID, CON.CONTRACT_DATE, CON.CONTRACT_MONEY, CODE3.CD_V AS "CONTRACT_TP" , \n' +
-            '       CODE3.CD_V_MEANING AS "CONTRACT_TP_M" ,CON.END_DATE,\n' +
-            '       CON.END_FLAG ,\n' +
+            'SELECT EMP.NAME, EMP.EMP_HP, EMP.EMP_EMAIL, EMP.ADDRESS,EMP.ZIP_CODE,EMP.DETAIL_ADDRESS,' +
+            '   MEM.MEMBER_NM, MEM.REG_NO, CODE1.CD_V AS "MEMBER_TP", CODE1.CD_V_MEANING AS "MEMBER_TP_M", CODE2.CD_V AS "MEMBER_ST",' +
+            '   MEM.CEO_IMAGE_ID, MEM.CEO_IMAGE_REGISTER,' +
+            '       CODE2.CD_V_MEANING AS "MEMBER_ST_M",CON.CONTRACT_ID, CON.CONTRACT_DATE, CON.CONTRACT_MONEY, CODE3.CD_V AS "CONTRACT_TP" , ' +
+            '       CODE3.CD_V_MEANING AS "CONTRACT_TP_M" ,CON.END_DATE,' +
+            '       CON.END_FLAG ,' +
             '       CON.PAY_DATE,' +
-            '       CODE6.CD_V AS"CONTRACT_ROOM", CODE6.CD_V_MEANING AS"CONTRACT_ROOM_M",\n' +
-            '       CODE7.CD_V AS"CONTRACT_LOCKER", CODE7.CD_V_MEANING AS"CONTRACT_LOCKER_M",\n' +
-            '       CON.COMMENT,\n' +
-            '       CON.CONTRACT_TERM,\n' +
-            '       PCON.PAYED_PLAN_MONEY,\n' +
-            '       CON.PAY_METHOD,\n' +
+            '       CODE6.CD_V AS"CONTRACT_ROOM", CODE6.CD_V_MEANING AS"CONTRACT_ROOM_M",' +
+            '       CODE7.CD_V AS"CONTRACT_LOCKER", CODE7.CD_V_MEANING AS"CONTRACT_LOCKER_M",' +
+            '       CON.COMMENT,' +
+            '       CON.CONTRACT_TERM,' +
+            '       PCON.PAYED_PLAN_MONEY,' +
+            '       CON.PAY_METHOD,' +
             '       CODE4.CD_V AS "PAY_METHOD",CODE4.CD_V_MEANING AS "PAY_METHOD_M",' +
             '       CODE5.CD_V AS "CONTRACT_PATH",' +
-            '       CODE5.CD_V_MEANING AS "CONTRACT_PATH_M" \n' +
-            'FROM TB_S10_EMP010 EMP \n' +
-            'INNER JOIN TB_S10_MEMBER010 MEM\n' +
-            'ON EMP.EMP_ID = MEM.CEO_ID\n' +
-            'INNER JOIN TB_S10_CONTRACT010 CON\n' +
-            'ON MEM.MEMBER_ID = CON.MEMBER_ID\n' +
-            'INNER JOIN TB_S10_CONTRACT020 PCON\n' +
-            'ON CON.CONTRACT_ID = PCON.CONTRACT_ID\n' +
-            'LEFT JOIN TB_S10_CODE CODE1  \n' +
-            'ON MEM.MEMBER_TP = CODE1.CD_V  \n' +
-            'AND CODE1.CD_TP ="MEMBER_TP"  \n' +
-            'LEFT JOIN TB_S10_CODE CODE2  \n' +
-            'ON MEM.MEMBER_ST = CODE2.CD_V  \n' +
-            'AND CODE2.CD_TP ="MEMBER_ST"  \n' +
-            'LEFT JOIN TB_S10_CODE CODE3  \n' +
-            'ON CON.CONTRACT_TP = CODE3.CD_V  \n' +
-            'AND CODE3.CD_TP ="CONTRACT_TP"  \n' +
-            'AND CODE3.ATTRIBUTE1 = "CONTRACT"  \n' +
-            'LEFT JOIN TB_S10_CODE CODE4  \n' +
-            'ON CON.PAY_METHOD = CODE4.CD_V  \n' +
-            'AND CODE4.CD_TP ="PAY_METHOD"  \n' +
-            'LEFT JOIN TB_S10_CODE CODE5  \n' +
-            'ON CON.CONTRACT_PATH = CODE5.CD_V  \n' +
-            'AND CODE5.CD_TP ="ACCESS_PATH"\n' +
-            'LEFT JOIN TB_S10_CODE code6 ON CON.CONTRACT_ROOM = CODE6.CD_V   \n' +
-            'LEFT OUTER JOIN TB_S10_CODE code7 ON CON.CONTRACT_LOCKER = CODE7.CD_V   \n' +
-            'AND CODE7.CD_TP = "L"\n' +
+            '       CODE5.CD_V_MEANING AS "CONTRACT_PATH_M" ' +
+            'FROM TB_S10_EMP010 EMP ' +
+            'INNER JOIN TB_S10_MEMBER010 MEM ' +
+            'ON EMP.EMP_ID = MEM.CEO_ID ' +
+            'INNER JOIN TB_S10_CONTRACT010 CON ' +
+            'ON MEM.MEMBER_ID = CON.MEMBER_ID ' +
+            'INNER JOIN TB_S10_CONTRACT020 PCON ' +
+            'ON CON.CONTRACT_ID = PCON.CONTRACT_ID ' +
+            'LEFT JOIN TB_S10_CODE CODE1  ' +
+            'ON MEM.MEMBER_TP = CODE1.CD_V  ' +
+            'AND CODE1.CD_TP ="MEMBER_TP"  ' +
+            'LEFT JOIN TB_S10_CODE CODE2  ' +
+            'ON MEM.MEMBER_ST = CODE2.CD_V  ' +
+            'AND CODE2.CD_TP ="MEMBER_ST"  ' +
+            'LEFT JOIN TB_S10_CODE CODE3  ' +
+            'ON CON.CONTRACT_TP = CODE3.CD_V  ' +
+            'AND CODE3.CD_TP ="CONTRACT_TP"  ' +
+            'AND CODE3.ATTRIBUTE1 = "CONTRACT"  ' +
+            'LEFT JOIN TB_S10_CODE CODE4  ' +
+            'ON CON.PAY_METHOD = CODE4.CD_V  ' +
+            'AND CODE4.CD_TP ="PAY_METHOD"  ' +
+            'LEFT JOIN TB_S10_CODE CODE5  ' +
+            'ON CON.CONTRACT_PATH = CODE5.CD_V  ' +
+            'AND CODE5.CD_TP ="ACCESS_PATH" ' +
+            'LEFT JOIN TB_S10_CODE code6 ON CON.CONTRACT_ROOM = CODE6.CD_V   ' +
+            'LEFT OUTER JOIN TB_S10_CODE code7 ON CON.CONTRACT_LOCKER = CODE7.CD_V   ' +
+            'AND CODE7.CD_TP = "L"' +
             'WHERE CON.CONTRACT_ID =' + contractId;
         //console.log(sql);
 
@@ -633,27 +634,19 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
 
         let type = req.query.type
         let dataContracId = req.query.id
-        //console.log(dataContracId);
 
         let sql =
-            'SELECT EMP.NAME, EMP.EMP_HP, EMP.EMP_EMAIL, EMP.ADDRESS,EMP.ZIP_CODE,EMP.DETAIL_ADDRESS, ' +
-            '       MEM.MEMBER_NM, MEM.REG_NO, CODE1.CD_V_MEANING AS "MEMBER_TP", CODE2.CD_V_MEANING AS "MEMBER_ST", ' +
-            '       CON.CONTRACT_DATE, CON.CONTRACT_MONEY, CODE3.CD_V_MEANING AS "CONTRACT_TP" ,  ' +
+            'SELECT EMP.NAME, EMP.EMP_HP, EMP.EMP_EMAIL, ' +
+            '       MEM.MEMBER_NM, CODE1.CD_V_MEANING AS "MEMBER_ST", ' +
             '       DATE_FORMAT(CON.START_DATE,"%y.%m.%d") AS "START_DATE",' +
             '       DATE_FORMAT(CON.END_DATE,"%y.%m.%d" ) AS "END_DATE",' +
-            '       CON.END_FLAG , ' +
             '       DATE_FORMAT(PCON.PAYED_DATE,"%y.%m.%d") AS "PAYED_DATE",' +
-            '       CODE6.CD_V_MEANING AS"CONTRACT_ROOM", ' +
-            '       CODE7.CD_V_MEANING AS"CONTRACT_LOCKER", ' +
             '       CON.COMMENT, ' +
             '       CON.CONTRACT_TERM, ' +
-            '       PCON.PAYED_MONEY, ' +
             '       DATE_FORMAT(PCON.PAY_PLAN_DATE,"%y.%m.%d") AS "PAY_PLAN_DATE", ' +
             '       PCON.CONTRACT_ID, ' +
             '       PCON.PAYED_FLAG, ' +
-            '       PCON.CONTRACT_COMMENT, ' +
-            '       CON.PAY_METHOD, ' +
-            '       CODE4.CD_V_MEANING AS "PAY_METHOD",CODE5.CD_V_MEANING AS "CONTRACT_PATH" ' +
+            '       PCON.CONTRACT_COMMENT ' +
             'FROM TB_S10_EMP010 EMP ' +
             'INNER JOIN TB_S10_MEMBER010 MEM ' +
             'ON EMP.EMP_ID = MEM.CEO_ID ' +
@@ -662,24 +655,8 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
             'INNER JOIN TB_S10_CONTRACT020 PCON ' +
             'ON CON.CONTRACT_ID = PCON.CONTRACT_ID ' +
             'LEFT JOIN TB_S10_CODE CODE1  ' +
-            'ON MEM.MEMBER_TP = CODE1.CD_V  ' +
-            'AND CODE1.CD_TP ="MEMBER_TP"  ' +
-            'LEFT JOIN TB_S10_CODE CODE2  ' +
-            'ON MEM.MEMBER_ST = CODE2.CD_V  ' +
-            'AND CODE2.CD_TP ="MEMBER_ST"  ' +
-            'LEFT JOIN TB_S10_CODE CODE3  ' +
-            'ON CON.CONTRACT_TP = CODE3.CD_V  ' +
-            'AND CODE3.CD_TP ="CONTRACT_TP"  ' +
-            'AND CODE3.ATTRIBUTE1 = "CONTRACT"  ' +
-            'LEFT JOIN TB_S10_CODE CODE4    ' +
-            'ON CON.PAY_METHOD = CODE4.CD_V    ' +
-            'AND CODE4.CD_TP ="PAY_METHOD"    ' +
-            'LEFT JOIN TB_S10_CODE CODE5    ' +
-            'ON CON.CONTRACT_PATH = CODE5.CD_V    ' +
-            'AND CODE5.CD_TP ="ACCESS_PATH"  ' +
-            'LEFT JOIN TB_S10_CODE code6 ON CON.CONTRACT_ROOM = CODE6.CD_V    ' +
-            'LEFT OUTER JOIN TB_S10_CODE code7 ON CON.CONTRACT_LOCKER = CODE7.CD_V    ' +
-            'AND CODE7.CD_TP = "L"  ' +
+            'ON MEM.MEMBER_ST = CODE1.CD_V  ' +
+            'AND CODE1.CD_TP ="MEMBER_ST"  ' +
             'WHERE PCON.CONTRACT_ID =' + dataContracId;
 
         connection.query(sql, (error, rows) => {//쿼리문
@@ -755,37 +732,37 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
         let empHp= req.body.dataEmpHp
         let name = req.body.dataName
 
-        let sql = 'SELECT   \n' +
-            '                                 MEM.MEMBER_ID,MEM.MEMBER_NM,MEM.REG_NO,CODE1.CD_V "MEMBER_TP",  \n' +
-            '                                 MEM.CEO_IMAGE_ID,MEM.CEO_IMAGE_ID_SERVER,MEM.CEO_IMAGE_REGISTER,MEM.CEO_IMAGE_REGISTER_SERVER,  \n' +
-            '                                 EMP.NAME,EMP.EMP_HP,EMP.EMP_EMAIL,EMP.ZIP_CODE,EMP.ADDRESS,EMP.DETAIL_ADDRESS,    \n' +
+        let sql = 'SELECT   ' +
+            '                                 MEM.MEMBER_ID,MEM.MEMBER_NM,MEM.REG_NO,CODE1.CD_V "MEMBER_TP",  ' +
+            '                                 MEM.CEO_IMAGE_ID,MEM.CEO_IMAGE_ID_SERVER,MEM.CEO_IMAGE_REGISTER,MEM.CEO_IMAGE_REGISTER_SERVER,  ' +
+            '                                 EMP.NAME,EMP.EMP_HP,EMP.EMP_EMAIL,EMP.ZIP_CODE,EMP.ADDRESS,EMP.DETAIL_ADDRESS,    ' +
             '                                 CON.CONTRACT_ID,DATE_FORMAT(CON.END_DATE,"%y.%m.%d") AS "END_DATE",'+                                                                                      
             '                                 DATE_FORMAT(CON.CONTRACT_DATE,"%y.%m.%d") AS "CONTRACT_DATE",' +
-            '                                 CODE2.CD_V_MEANING AS "MEMBER_ST", \n' +
-            '                                 CODE3.CD_V_MEANING AS"CONTRACT_TP",  \n' +
-            '                                 CODE5.CD_V_MEANING AS "CONTRACT_LOCKER",  \n' +
-            '                                 CODE4.CD_V_MEANING AS "CONTRACT_ROOM",  \n' +
-            '                                 CON.CONTRACT_TERM,CON.PAY_DATE,CON.CONTRACT_MONEY,     \n' +
-            '                                 CON.END_FLAG,  \n' +
+            '                                 CODE2.CD_V_MEANING AS "MEMBER_ST", ' +
+            '                                 CODE3.CD_V_MEANING AS"CONTRACT_TP",  ' +
+            '                                 CODE5.CD_V_MEANING AS "CONTRACT_LOCKER",  ' +
+            '                                 CODE4.CD_V_MEANING AS "CONTRACT_ROOM",  ' +
+            '                                 CON.CONTRACT_TERM,CON.PAY_DATE,CON.CONTRACT_MONEY,     ' +
+            '                                 CON.END_FLAG,  ' +
             '                                 PCON.PAYED_PLAN_MONEY, ' +
-            '                                 DATE_FORMAT(CON.START_DATE,"%y.%m.%d") AS "START_DATE"\n' +
-            '                           FROM TB_S10_MEMBER010 MEM   \n' +
-            '                                 INNER JOIN TB_S10_EMP010 EMP     \n' +
-            '                                 ON MEM.CEO_ID = EMP.EMP_ID     \n' +
-            '                                 INNER JOIN TB_S10_CONTRACT010 CON     \n' +
-            '                                 ON MEM.MEMBER_ID = CON.MEMBER_ID   \n' +
-            '                                 INNER JOIN (SELECT DISTINCT CONTRACT_ID ,PAYED_PLAN_MONEY    \n' +
-            '                                 FROM TB_S10_CONTRACT020 C020) PCON  \n' +
-            '                                 ON CON.CONTRACT_ID = PCON.CONTRACT_ID  \n' +
-            '                                 LEFT OUTER JOIN TB_S10_CODE code1 ON MEM.MEMBER_TP = CODE1.CD_V     \n' +
-            '                                 AND CODE1.CD_TP = "MEMBER_TP"   \n' +
-            '                                 LEFT OUTER JOIN TB_S10_CODE code2 ON MEM.MEMBER_ST = CODE2.CD_V     \n' +
-            '                                 AND CODE2.CD_TP = "MEMBER_ST"  \n' +
-            '\t\t\t\t\t\t\t\t LEFT OUTER JOIN TB_S10_CODE CODE3 ON CON.CONTRACT_TP = CODE3.CD_V     \n' +
-            '                                 AND CODE3.CD_TP = "CONTRACT_TP" AND CODE3.ATTRIBUTE1 = "CONTRACT" \n' +
-            '                                 LEFT OUTER JOIN TB_S10_CODE code4 ON CON.CONTRACT_ROOM = CODE4.CD_V     \n' +
-            '                                 LEFT OUTER JOIN TB_S10_CODE code5 ON CON.CONTRACT_LOCKER = CODE5.CD_V     \n' +
-            '                                 AND CODE5.CD_TP = "L"  \n' +
+            '                                 DATE_FORMAT(CON.START_DATE,"%y.%m.%d") AS "START_DATE"' +
+            '                           FROM TB_S10_MEMBER010 MEM   ' +
+            '                                 INNER JOIN TB_S10_EMP010 EMP     ' +
+            '                                 ON MEM.CEO_ID = EMP.EMP_ID     ' +
+            '                                 INNER JOIN TB_S10_CONTRACT010 CON     ' +
+            '                                 ON MEM.MEMBER_ID = CON.MEMBER_ID   ' +
+            '                                 INNER JOIN (SELECT DISTINCT CONTRACT_ID ,PAYED_PLAN_MONEY    ' +
+            '                                 FROM TB_S10_CONTRACT020 C020) PCON  ' +
+            '                                 ON CON.CONTRACT_ID = PCON.CONTRACT_ID  ' +
+            '                                 LEFT OUTER JOIN TB_S10_CODE code1 ON MEM.MEMBER_TP = CODE1.CD_V     ' +
+            '                                 AND CODE1.CD_TP = "MEMBER_TP"   ' +
+            '                                 LEFT OUTER JOIN TB_S10_CODE code2 ON MEM.MEMBER_ST = CODE2.CD_V     ' +
+            '                                 AND CODE2.CD_TP = "MEMBER_ST"  ' +
+            ' LEFT OUTER JOIN TB_S10_CODE CODE3 ON CON.CONTRACT_TP = CODE3.CD_V     ' +
+            '                                 AND CODE3.CD_TP = "CONTRACT_TP" AND CODE3.ATTRIBUTE1 = "CONTRACT" ' +
+            '                                 LEFT OUTER JOIN TB_S10_CODE code4 ON CON.CONTRACT_ROOM = CODE4.CD_V     ' +
+            '                                 LEFT OUTER JOIN TB_S10_CODE code5 ON CON.CONTRACT_LOCKER = CODE5.CD_V     ' +
+            '                                 AND CODE5.CD_TP = "L"  ' +
             '                                 WHERE EMP.NAME = "' + name + '" AND EMP.EMP_HP ="' + empHp + '"';
 
 
@@ -897,39 +874,51 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
     // })
 
 
-
+    app.post('/api/s010100140/endFlag', (req, res) => {
+        //요청된 이메일을 데이터베이스에서 있는지 찾는다.
+        let contractId = req.body.rNum;
+        let sql = 'UPDATE TB_S10_CONTRACT010 '+
+                  'SET END_FLAG ="Y"'+
+                  'WHERE CONTRACT_ID = '+contractId;
+        +
+        connection.query(sql, (error, rows) => {//쿼리문
+          if(error) throw error;
+          //console.log(rows)
+         res.send({success:true})
+        })
+    })
 
     app.post('/api/s010100050/detailModifyContract_by_id', (req, res) => {
         
         let type = req.query.type;
         let modifyDataNum = req.query.id;
-        //console.log(modifyDataNum);
+        console.log(modifyDataNum);
         let payPlanDateModifySql;
 
-        if (dateChkNum === 0 && empHpChkNum === 0 && regNoChkNum === 0) {
+        if (dateChkNum === 0) {
             connection.beginTransaction(function (error) {
-                let empIdName = req.body.empIdName;
+                // let empIdName = req.body.empIdName;
 
-                let firstEmpHp = req.body.firstEmpHp;
-                let secondEmpHp = req.body.secondEmpHp;
-                let thirdEmpHp = req.body.thirdEmpHp;
-                let empHp = firstEmpHp + "-" + secondEmpHp + "-" + thirdEmpHp;
+                // let firstEmpHp = req.body.firstEmpHp;
+                // let secondEmpHp = req.body.secondEmpHp;
+                // let thirdEmpHp = req.body.thirdEmpHp;
+                // let empHp = firstEmpHp + "-" + secondEmpHp + "-" + thirdEmpHp;
 
-                let empEmailId = req.body.empEmailId;
-                let domainAddress = req.body.domainAddress;
-                let empEmail = empEmailId + "@" + domainAddress;
+                // let empEmailId = req.body.empEmailId;
+                // let domainAddress = req.body.domainAddress;
+                // let empEmail = empEmailId + "@" + domainAddress;
 
-                let zipcode = req.body.zipcode;
-                let empAddress = req.body.empAddress;
-                let empDetailAddress = req.body.empDetailAddress;
+                // let zipcode = req.body.zipcode;
+                // let empAddress = req.body.empAddress;
+                // let empDetailAddress = req.body.empDetailAddress;
 
-                let memberNm = req.body.memberNm;
+                // let memberNm = req.body.memberNm;
 
 
-                let firstRegNo = req.body.firstRegNo;
-                let secondRegNo = req.body.secondRegNo;
-                let thirdRegNo = req.body.thirdRegNo;
-                let regNo = firstRegNo + "-" + secondRegNo + "-" + thirdRegNo;
+                // let firstRegNo = req.body.firstRegNo;
+                // let secondRegNo = req.body.secondRegNo;
+                // let thirdRegNo = req.body.thirdRegNo;
+                // let regNo = firstRegNo + "-" + secondRegNo + "-" + thirdRegNo;
 
                 let memberTp = req.body.memberTp;
                 let comments = req.body.comment;
@@ -951,15 +940,7 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
                 '   INNER JOIN TB_S10_MEMBER010 MEM ON EMP.EMP_ID = MEM.MEMBER_ID ' +
                 '   INNER JOIN TB_S10_CONTRACT010 CON ON MEM.MEMBER_ID = CON.MEMBER_ID ' +
                 '       INNER JOIN TB_S10_CONTRACT020 CON2 ON CON.CONTRACT_ID = CON2.CONTRACT_ID ' +
-                'SET MEM.MEMBER_NM = "' + memberNm + '" ,' +
-                ' MEM.REG_NO = "' + regNo + '",' +
-                '    MEM.MEMBER_TP = "' + memberTp + '",' +
-                '    EMP.NAME = "' + empIdName + '",' +
-                '    EMP.EMP_HP = "' + empHp + '",' +
-                '    EMP.EMP_EMAIL = "' + empEmail + '",' +
-                '    EMP.ZIP_CODE = "' + zipcode + '",' +
-                '    EMP.ADDRESS = "' + empAddress + '",' +
-                '    EMP.DETAIL_ADDRESS = "' + empDetailAddress + '",' +
+                'SET ' +
                 '    CON.CONTRACT_TP =  "' + contractTp + '",' +
                 '    CON.CONTRACT_ROOM = "' + contractTpVal + '",' +
                 '    CON.CONTRACT_LOCKER = "' + roomLockerTp + '",' +
@@ -1077,8 +1058,8 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
                 });//commit
                 });//modifySql
             })//transaction
-        } else if (regNoChkNum >= 1 || empHpChkNum >= 1 || dateChkNum >= 1){
-            res.send({check: false, message: "이미 존재하는 데이터 입니다."});
+        } else if (dateChkNum >= 1){
+            res.send({check: false, message: "이미 존재하는 날짜 입니다."});
         }
     })
 
@@ -1095,8 +1076,8 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
         // console.log(firstRegNo + secondRegNo + thirdRegNo);
         let RegNo = firstRegNo + "-" + secondRegNo + "-" + thirdRegNo;
 
-        let regNoChkSql = 'SELECT  COUNT(REG_NO) AS RowNum  \n' +
-            '\t\tFROM TB_S10_MEMBER010 MEM010 \n' +
+        let regNoChkSql = 'SELECT  COUNT(REG_NO) AS RowNum  ' +
+            ' FROM TB_S10_MEMBER010 MEM010 ' +
             '        WHERE MEM010.REG_NO= "' + RegNo + '"';
 
         connection.query(regNoChkSql, (error, number) => {//쿼리문
@@ -1119,8 +1100,8 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
         let EmpHp = firstEmpHp + "-" + secondEmpHp + "-" + thirdEmpHp;
 
         let empHpChkSql =
-            'SELECT  COUNT(EMP_HP) AS RowNum  \n' +
-            '\t\tFROM TB_S10_EMP010 EMP010 \n' +
+            'SELECT  COUNT(EMP_HP) AS RowNum  ' +
+            ' FROM TB_S10_EMP010 EMP010 ' +
             '        WHERE EMP010.EMP_HP= "' + EmpHp + '"';
 
         connection.query(empHpChkSql, (error, number) => {//쿼리문
@@ -1141,21 +1122,45 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
         let roomLockerTp = req.body.roomLockerTp;
         let startDate = req.body.startDate;
         let endDate = req.body.endDate;
+        let modalMemberId  = req.body.modalMemberId;
+
+        
+        // let dateChkSql = 'SELECT COUNT(START_DATE) AS STARTENDDATE '+   
+        //                 ' FROM TB_S10_CONTRACT010 CON '+
+        //                 ' WHERE "'+startDate+'" AND "'+endDate+'" between CON.START_DATE AND CON.END_DATE '+
+        //                 ' AND CON.CONTRACT_ROOM ="'+contractTpVal+'"'
 
 
-        let dateChkSql =
-            'SELECT  COUNT(START_DATE) AS STARTENDDATE \n' +
-            '        FROM TB_S10_CONTRACT010 CON010 \n' +
-            '        WHERE CON010.START_DATE="' + startDate + '" AND CON010.END_DATE="' + endDate + '" '+
-            ' AND CON010.CONTRACT_ROOM';
+        let dateChkSql = 'SELECT COUNT(START_DATE) AS STARTENDDATE '+   
+        ' FROM TB_S10_CONTRACT010 CON '+
+        ' WHERE ("'+startDate+'" <= CON.END_DATE AND "'+endDate+'">= CON.START_DATE)'+
+        ' AND CON.CONTRACT_ROOM ="'+contractTpVal+'"'
+        
+        if(modalMemberId != null && modalMemberId != '')
+        dateChkSql += 'AND CON.MEMBER_ID = '+ modalMemberId;
 
-        connection.query(dateChkSql, (error, number) => {//쿼리문
+            connection.query(dateChkSql, (error, number) => {//쿼리문
             if (error) throw error;
             res.send({ success: true, number })
             dateChkNum = number[0].STARTENDDATE;
-            //console.log(number[0].RowNum);
-            //console.log(number.RowDataPacket.RowNum);
+            //console.log('dateChkNum',dateChkNum);
         });
+    })
+
+    app.post('/api/s010100010/modifymemberSt', (req, res) => {
+       let rNum = req.body.rNum;
+        
+        let sql =
+        'UPDATE TB_S10_MEMBER010 MEM INNER JOIN TB_S10_CONTRACT010 CON '+
+        ' SET MEM.MEMBER_ST = "C" '+
+        ' WHERE CON.CONTRACT_ID ='+rNum
+
+            connection.query(sql, (error, rows) => {
+                if (error) throw error;
+                res.send({ success: true, rows })
+            })
+
+
     })
     //<<회원현황 조회
     app.post('/api/s010100040/searchMember', (req, res) => {
@@ -1211,13 +1216,15 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
         })
 
     })
-    //>
+    
 
     //<이용계약서 등록
     app.post('/api/s010100010/insertMember010',upload.fields([{name:'idCardFile',maxCount:3},{name:'registCardFile',maxCount:5}]), (req, res) => {
-        //console.log('dataCheck',req,res);
+      
+      //console.log('dataCheck',req,res);
       if (dateChkNum === 0 && empHpChkNum === 0 && regNoChkNum === 0) {
             connection.beginTransaction(function (error) {
+
                 //emp010-> 대표자 이름
                 let empIdName = req.body.empIdName;
                 //console.log('empIdName: ' + empIdName);
@@ -1244,7 +1251,6 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
                 // console.log('zipcode: ' + zipcode);
                 // console.log('empAddress: ' + empAddress);
                 // console.log('empDetailAddress: ' + empDetailAddress);
-                
 
                 //insert .. from tb_s10_emp010;
                 let empSql = 'INSERT INTO TB_S10_EMP010 (CREATED_DATE, NAME, EMP_HP, EMP_EMAIL,' +
@@ -1274,31 +1280,49 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
                 // let image = '/image/' + req.file.filename;
                 // console.log('testIdCardFile',req.files['idCardFile'][0]);
                 // console.log('testRegistCardFile',req.files['registCardFile'][0].filename);
-               
-                let idCardimageAddr = '/image/'+ req.files['idCardFile'][0].filename;
-                let idCardFilename = req.files['idCardFile'][0].originalname;
-                let idCardFilePath = req.files['idCardFile'][0].path;
-                let testFilePath = idCardFilePath + ".jpg";
-                
-                
-                let registCardimageAddr = './image/'+ req.files['registCardFile'][0].filename;
-                let registCardFilename = req.files['registCardFile'][0].originalname;
-                let registCardFilePath = req.files['registCardFile'][0].path;
-                
-                // console.log('image',image);
-                // console.log('idCardFilename',idCardFilename);
-                
+                let idCardimageAddr;
+                let idCardFilename;
+                let idCardFilePath;
 
+                let registCardimageAddr;
+                let registCardFilename;
+                let registCardFilePath;
+            
+                //console.log("typeof ['idCardFile'][0]",typeof ['idCardFile'][0]);
+
+            if(['idCardFile'][0] != null && typeof ['idCardFile'][0] != 'undefined'){
+                 idCardimageAddr = '/image/'+ req.files['idCardFile'][0].filename;
+                 idCardFilename = req.files['idCardFile'][0].originalname;
+                 idCardFilePath = req.files['idCardFile'][0].path;
+            }
+
+            if(['registCardFile'][0] != null && typeof ['registCardFile'][0] != 'undefined'){
+                 registCardimageAddr = '/image/'+ req.files['registCardFile'][0].filename;
+                 registCardFilename = req.files['registCardFile'][0].originalname;
+                 registCardFilePath = req.files['registCardFile'][0].path;
+            }
+                // console.log('image',image);
+                
+                let memStatus = req.body.memStatus;
+                
+                //기존에 회원정보가 있는 경우에는 MEMBER_ID가 없는 곳에 새로운 정보 INSERT하기
                 let memberSql =
                     'INSERT INTO  ' +
                     '            TB_S10_MEMBER010 ( MEMBER_NM, REG_NO, MEMBER_TP,CREATED_DATE,MEMBER_ST,COMMENT,CEO_ID,LAST_UPDATE_DATE,'+
                     'CEO_IMAGE_ID,CEO_IMAGE_REGISTER_SERVER,CEO_IMAGE_REGISTER,CEO_IMAGE_ID_SERVER,CEO_IMAGE_ID_PATH,CEO_IMAGE_REGIST_PATH )  ' +
-                    '            VALUES (?, ?, ?, SYSDATE(),"C", ?, (SELECT EMP_ID FROM TB_S10_EMP010 WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '"),'+
+                    '            VALUES (?, ?, ?, SYSDATE(),"C", ?, (SELECT EMP_ID FROM TB_S10_EMP010 WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '"'+
+                    'AND MEMBER_ID IS NULL),'+
                     'SYSDATE(),?,?,?,?,?,?)'
                 //console.log(memberSql);
-                let memberParams = [memberNm, regNo, memberTp, comments, idCardFilename, idCardimageAddr, registCardFilename,registCardimageAddr,testFilePath,registCardFilePath];
+                let memberParams = [memberNm, regNo, memberTp,comments, idCardFilename, idCardimageAddr, registCardFilename,registCardimageAddr,idCardFilePath,registCardFilePath];
                 //Member_id는 -> sequence로 생성
 
+                //새로 INSERT한 tb_s10_member010테이블의 정보를 Member_id를 다시 tb_s10_emp010의 member_id에 넣기
+                let empMemberIdSql = 'UPDATE TB_S10_EMP010 '+
+                                     'SET MEMBER_ID '+
+                                     'WHERE EMP_ID = (SELECT CEO_ID FROM TB_S10_MEMBER010 WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '"'+
+                                     'AND MEMBER_ID IS NULL)'
+                
                 //tb_s10_contract010
                 //select member_id where ,,ceo_id 에insert하기
 
@@ -1478,21 +1502,23 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
         } 
     })
 
-    app.post('/api/s010100140/tempStorage', (req, res) => {
+    app.post('/api/s010100140/tempStorage',upload.fields([{name:'idCardFile',maxCount:3},{name:'registCardFile',maxCount:5}]), (req, res) => {
         if (dateChkNum === 0 && empHpChkNum === 0 && regNoChkNum === 0) {
             connection.beginTransaction(function (error) {
                 //emp010-> 대표자 이름
                 let empIdName = req.body.empIdName;
-                // console.log('empIdName: ' + empIdName);
+                //console.log('empIdName: ' + empIdName);
                 //emp010-> 대표자 연락처
                 let firstEmpHp = req.body.firstEmpHp;
                 let secondEmpHp = req.body.secondEmpHp;
                 let thirdEmpHp = req.body.thirdEmpHp;
                 let empHp = firstEmpHp + "-" + secondEmpHp + "-" + thirdEmpHp;
+
                 // console.log('firstEmpHp: ' + firstEmpHp);
                 // console.log('secondEmpHp: ' + secondEmpHp);
                 // console.log('thirdEmpHp: ' + thirdEmpHp);
                 // console.log('empHp: ' + empHp);
+
                 //emp010-> 대표자 이메일
                 let empEmailId = req.body.empEmailId;
                 let domainAddress = req.body.domainAddress;
@@ -1505,10 +1531,11 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
                 // console.log('zipcode: ' + zipcode);
                 // console.log('empAddress: ' + empAddress);
                 // console.log('empDetailAddress: ' + empDetailAddress);
+            
 
                 //insert .. from tb_s10_emp010;
                 let empSql = 'INSERT INTO TB_S10_EMP010 (CREATED_DATE, NAME, EMP_HP, EMP_EMAIL,' +
-                    'ZIP_CODE,ADDRESS,DETAIL_ADDRESS,CEO_FLAG) VALUES (SYSDATE(),?,?,?,?,?,?,"Y")';
+                    'ZIP_CODE,ADDRESS,DETAIL_ADDRESS,CEO_FLAG,LAST_UPDATE_DATE) VALUES (SYSDATE(),?,?,?,?,?,?,"Y",SYSDATE())';
 
                 let empParams = [empIdName, empHp, empEmail, zipcode, empAddress, empDetailAddress];
 
@@ -1525,15 +1552,51 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
                 let memberTp = req.body.memberTp;
                 //코멘트
                 let comments = req.body.comment;
+                let userStatus = req.body.userStatus;
+
+                // let image = '/image/' + req.body.idCardFileName;
+                // console.log('filename',req.body.idCardFileName);
+                // let filename = (req.body.idCardFileName).split('\\').reverse()[0];
+                // console.log('filename!!',filename);
+                // let image = '/image/' + req.file.filename;
+                // console.log('testIdCardFile',req.files['idCardFile'][0]);
+                // console.log('testRegistCardFile',req.files['registCardFile'][0].filename);
+                let idCardimageAddr;
+                let idCardFilename;
+                let idCardFilePath;
+
+                let registCardimageAddr;
+                let registCardFilename;
+                let registCardFilePath;
+            
+                //console.log("typeof ['idCardFile'][0]",typeof ['idCardFile'][0]);
+
+            if(['idCardFile'][0] != null && typeof ['idCardFile'][0] != 'undefined'){
+
+                 idCardimageAddr = '/image/'+ req.files['idCardFile'][0].filename;
+                 idCardFilename = req.files['idCardFile'][0].originalname;
+                 idCardFilePath = req.files['idCardFile'][0].path;
+            }
+
+            if(['registCardFile'][0] != null && typeof ['registCardFile'][0] != 'undefined'){
+                 registCardimageAddr = '/image/'+ req.files['registCardFile'][0].filename;
+                 registCardFilename = req.files['registCardFile'][0].originalname;
+                 registCardFilePath = req.files['registCardFile'][0].path;
+            }
+                // console.log('image',image);
+                
+                let memStatus = req.body.memStatus;
 
                 let memberSql =
                     'INSERT INTO  ' +
-                    '            TB_S10_MEMBER010 ( MEMBER_NM, REG_NO, MEMBER_TP,CREATED_DATE,MEMBER_ST,COMMENT,CEO_ID)  ' +
-                    '            VALUES (?, ?, ?, SYSDATE(),"T",?, (SELECT EMP_ID FROM TB_S10_EMP010 WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '"))'
+                    '            TB_S10_MEMBER010 ( MEMBER_NM, REG_NO, MEMBER_TP,CREATED_DATE,MEMBER_ST,COMMENT,CEO_ID,LAST_UPDATE_DATE,'+
+                    'CEO_IMAGE_ID,CEO_IMAGE_REGISTER_SERVER,CEO_IMAGE_REGISTER,CEO_IMAGE_ID_SERVER,CEO_IMAGE_ID_PATH,CEO_IMAGE_REGIST_PATH )  ' +
+                    '            VALUES (?, ?, ?, SYSDATE(),"T", ?, (SELECT EMP_ID FROM TB_S10_EMP010 WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '"),'+
+                    'SYSDATE(),?,?,?,?,?,?)'
                 //console.log(memberSql);
-                let memberParams = [memberNm, regNo, memberTp, comments];
+                let memberParams = [memberNm, regNo, memberTp,comments, idCardFilename, idCardimageAddr, registCardFilename,registCardimageAddr,idCardFilePath,registCardFilePath];
                 //Member_id는 -> sequence로 생성
-
+                
                 //tb_s10_contract010
                 //select member_id where ,,ceo_id 에insert하기
 
@@ -1561,89 +1624,16 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
                 let contractSql =
                     'INSERT INTO ' +
                     'TB_S10_CONTRACT010(CONTRACT_TP,CONTRACT_ROOM,CONTRACT_LOCKER,CONTRACT_TERM,START_DATE,END_DATE,' +
-                    'PAY_DATE,PAY_METHOD,CONTRACT_PATH,CREATED_DATE,CONTRACT_DATE,COMMENT,MEMBER_ID ) ' +
+                    'PAY_DATE,PAY_METHOD,CONTRACT_PATH,CREATED_DATE,CONTRACT_DATE,COMMENT,MEMBER_ID,LAST_UPDATE_DATE) ' +
                     'VALUES (?,?,?,?,?,?,?,?,?,SYSDATE(),?,?,(SELECT MEMBER_ID FROM TB_S10_MEMBER010 WHERE CEO_ID = ' +
-                    '(SELECT EMP_ID FROM TB_S10_EMP010 WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '")))';
+                    '(SELECT EMP_ID FROM TB_S10_EMP010 WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '")),SYSDATE())';
 
                 let contractParams = [contractTp, contractTpVal, roomLockerTp, contractTerm, startDate, endDate, payDate, payMethod, contractPath, startDate, comments];
                 //contract_id는 -> sequence로 생성
 
                 //납부금액
                 let contractMoney = req.body.contractMoney;
-                // 납부년월
-                // let payPlanDate = req.body.startAsk_date;
-
-                //payDate->입금일만 보여줌(년월 없음), payed_date는 실제 납부 일자로 나중에 insert할 자리
-                //pay_plan_date 납부예정일 넣어서 for문 돌려서 insert하기
-
-                // //startDate '2021-03-01'
-                // let dateToString = startDate.toString().substring(0, 10);
-                // //날 01
-                // let contractDateDay = parseInt(dateToString.substring(8, 10));
-                // //월 03
-                // let contractMonthDay = parseInt(dateToString.substring(5, 7));
-                // //년 2021
-                // let contractYearDay = parseInt(dateToString.substring(0, 4));
-                //
-                // let finalDate = '';
-                // let dateMonth = 0;
-                // // console.log('dateToString: ' + dateToString);
-                // // console.log('contractDateDay: ' + contractDateDay);
-                // // console.log('contractMonthDay: ' + contractMonthDay);
-                // // console.log('contractYearDay: ' + contractYearDay);
-                //
-                //
-                // //계약시작일자가 납부일보다 크면 29 1
-                // if (contractDateDay > parseInt(payDate)) {
-                //     //console.log(payDate);
-                //     if (contractMonthDay >= 12) {
-                //         contractMonthDay = 1;
-                //         //console.log('contractMonthDay11: ' + contractMonthDay);
-                //         //contractMonthDay += 1;
-                //         //console.log('contractMonthDay11: ' + contractMonthDay);
-                //     } else {
-                //         contractMonthDay += 1;
-                //     }
-                //     finalDate = contractYearDay + '-' + contractMonthDay + '-' + payDate;
-                //     //계약일자가 납부일보다 작으면 1 29
-                // } else if (contractDateDay <= parseInt(payDate)) {
-                //     finalDate = contractYearDay + '-' + contractMonthDay + '-' + payDate;
-                //     //console.log('contractMonthDay22: ' + contractMonthDay);
-                // }
-                // //월만 우선 정해서 받아주는 곳 끝-------
-                // //let finalityOfDate = new Date(contractYearDay,contractMonthDay,payDate);
-                // //console.log('finality :' + finalityOfDate);
-                // let monthDay = 0;
-                // let payContractSql = '';
-                // let payContractParams = [];
-                //
-                // // payContractSql = 'INSERT INTO ' +
-                // //     'TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,PAYED_MONEY) ' +
-                // //     'VALUES((SELECT CONTRACT_ID FROM TB_S10_CONTRACT010 WHERE MEMBER_ID = (SELECT EMP_ID FROM TB_S10_EMP010 WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '") ),?,SYSDATE(),?)';
-                // // payContractParams = [finalDate, contractMoney];
-                // //console.log(payContractSql);
-                //
-                // for (let i = 1; i <= contractTerm; i++) {
-                //     //console.log('!!!!!!!!!!!!!!!!!!!contractMonthDay: ' + contractMonthDay);
-                //     //console.log('!!!!!!!!!!!!!!!!!monthDay: ' + monthDay);
-                //     finalDate = contractYearDay + '-' + contractMonthDay + '-' + payDate;
-                //     payContractSql = 'INSERT INTO ' +
-                //         'TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,PAYED_PLAN_MONEY) ' +
-                //         'VALUES((SELECT CONTRACT_ID FROM TB_S10_CONTRACT010 WHERE MEMBER_ID = (SELECT MEMBER_ID FROM TB_S10_MEMBER010 WHERE CEO_ID = (SELECT EMP_ID FROM TB_S10_EMP010 WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '"))),?,SYSDATE(),?)';
-                //
-                //     console.log(payContractSql);
-                //     console.log("--------------------------------");
-                //     console.log(finalDate);
-                //     console.log("--------------------------------");
-                //     console.log(payContractParams);
-                //     console.log("--------------------------------");
-                //     payContractParams = [finalDate, contractMoney];
-                //     console.log("--------------------------------");
-                //     console.log('finalDate: ' + finalDate);
-                //
-                //     contractMonthDay++;
-                // }
-
+    
 
                 if (error) throw error;
 
@@ -1675,77 +1665,80 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
                                 });
                             }
 
-
                             //payDate->입금일만 보여줌(년월 없음), payed_date는 실제 납부 일자로 나중에 insert할 자리
                             //pay_plan_date 납부예정일 넣어서 for문 돌려서 insert하기
 
                             //startDate '2021-03-01'
-                             dateToString = startDate.toString().substring(0, 10);
-                            //날 01
-                            let contractDateDay = parseInt(dateToString.substring(8, 10));
-                            //월 03
-                            let contractMonthDay = parseInt(dateToString.substring(5, 7));
-                            //년 2021
-                            let contractYearDay = parseInt(dateToString.substring(0, 4));
+                            let dateToString = startDate.toString().substring(0, 10);
+                            let wasteDateDay = dateToString.substring(7, 10);
+                            let wasteContracMonthDay = dateToString.substring(5, 7);
+                            let wasteContractYearDay = dateToString.substring(0, 4);
+
+                            // //날 01
+                            let contractDateDay = parseInt(wasteDateDay);
+                            let wasteMonth =  parseInt(wasteContracMonthDay);
+                            let contractYearDay =  parseInt(wasteContractYearDay);
 
                             let finalDate = '';
-                            let dateMonth = 0;
+                            let contractMonthDay = wasteMonth;
+
                             // console.log('dateToString: ' + dateToString);
                             // console.log('contractDateDay: ' + contractDateDay);
                             // console.log('contractMonthDay: ' + contractMonthDay);
                             // console.log('contractYearDay: ' + contractYearDay);
 
-
-                            //계약시작일자가 납부일보다 크면 29 1
+                            
+                            // //계약시작일자가 납부일보다 크면 29 1
                             if (contractDateDay > parseInt(payDate)) {
                                 //console.log(payDate);
-                                if (contractMonthDay >= 12) {
-                                    contractMonthDay = 1;
-                                    //console.log('contractMonthDay11: ' + contractMonthDay);
-                                    //contractMonthDay += 1;
-                                    //console.log('contractMonthDay11: ' + contractMonthDay);
-                                } else {
-                                    contractMonthDay += 1;
-                                }
-                                finalDate = contractYearDay + '-' + contractMonthDay + '-' + payDate;
-                                //계약일자가 납부일보다 작으면 1 29
-                            } else if (contractDateDay <= parseInt(payDate)) {
-                                finalDate = contractYearDay + '-' + contractMonthDay + '-' + payDate;
-                                //console.log('contractMonthDay22: ' + contractMonthDay);
-                            }
-                            //월만 우선 정해서 받아주는 곳 끝-------
-                            //let finalityOfDate = new Date(contractYearDay,contractMonthDay,payDate);
-                            //console.log('finality :' + finalityOfDate);
-                            let monthDay = 0;
+                    
+                             contractMonthDay = wasteMonth + 1;
+                            //console.log(contractMonthDay);
+                            //// console.log('납부일보다크면 contractMonthDay:' + contractMonthDay);
+                            //// console.log('납부일보다크면typeOf contractMonthDay:' , typeof contractMonthDay);
+                            //// console.log('납부일보다크면typeOf contractMonthDay:' , typeof 1);
+                            //// console.log('납부일보다크면 contractMonthDay:' + contractMonthDay + 1);
+                                    
+
+                             finalDate = contractYearDay + '-' + contractMonthDay + '-' + payDate;
+                            //     console.log('finalDate 납부일이 더 작을 때:',finalDate);
+                            //     //계약일자가 납부일보다 작으면 1 29
+                             } else if (contractDateDay <= parseInt(payDate)) {
+                             finalDate = contractYearDay + '-' + contractMonthDay + '-' + payDate;
+                             }
+                            //     //console.log('contractMonthDay22: ' + contractMonthDay);
+                            //     console.log('finalDate 납부일이 더 클 때:',finalDate);
+                            // }
+                          
+                           
                             let payContractSql = '';
                             let payContractParams = [];
-
-                            // payContractSql = 'INSERT INTO ' +
-                            //     'TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,PAYED_MONEY) ' +
-                            //     'VALUES((SELECT CONTRACT_ID FROM TB_S10_CONTRACT010 WHERE MEMBER_ID = (SELECT EMP_ID FROM TB_S10_EMP010 WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '") ),?,SYSDATE(),?)';
-                            // payContractParams = [finalDate, contractMoney];
-                            //console.log(payContractSql);
+                             
+                            
 
                             for (let i = 1; i <= contractTerm; i++) {
+
+                                while(contractMonthDay > 12){
+                                    contractYearDay  += 1;
+                                    contractMonthDay -= 12;
+                                }
                                 //console.log('!!!!!!!!!!!!!!!!!!!contractMonthDay: ' + contractMonthDay);
                                 //console.log('!!!!!!!!!!!!!!!!!monthDay: ' + monthDay);
+                                
                                 finalDate = contractYearDay + '-' + contractMonthDay + '-' + payDate;
                                 payContractSql = 'INSERT INTO ' +
-                                    'TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,PAYED_PLAN_MONEY) ' +
-                                    'VALUES((SELECT CONTRACT_ID FROM TB_S10_CONTRACT010 WHERE MEMBER_ID = (SELECT MEMBER_ID FROM TB_S10_MEMBER010 WHERE CEO_ID = (SELECT EMP_ID FROM TB_S10_EMP010 WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '"))),?,SYSDATE(),?)';
-
-                                console.log(payContractSql);
-                                console.log("--------------------------------");
-                                console.log(finalDate);
-                                console.log("--------------------------------");
-                                console.log(payContractParams);
-                                console.log("--------------------------------");
+                                    'TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,PAYED_PLAN_MONEY,LAST_UPDATE_DATE) ' +
+                                    'VALUES((SELECT CONTRACT_ID FROM TB_S10_CONTRACT010 '+ 
+                                    ' WHERE MEMBER_ID = (SELECT MEMBER_ID FROM TB_S10_MEMBER010 ' +
+                                    ' WHERE CEO_ID = (SELECT EMP_ID FROM TB_S10_EMP010 '+
+                                    ' WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '")))'+
+                                    ',?,SYSDATE(),?,SYSDATE())';
 
                                 payContractParams = [finalDate, contractMoney];
                                 
-                                
                                 console.log("--------------------------------");
-                                console.log('finalDate: ' + finalDate);
+                                console.log('payContractParams',payContractParams);
+                                console.log("--------------------------------");
 
                                 contractMonthDay++;
 
@@ -1772,14 +1765,14 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
                             //일단 빼놓음
                             console.log('success!');
                             res.send({ success: true });
-                        })
-                    });//contract
-                });//memberId
-            });//emp
 
-        } else if (dateChkNum >= 1 || empHpChkNum >= 1 || regNoChkNum >= 1) {
-            res.send({ msg: 'chk failed because of already exists' });
-        }
+                        });//contract
+                    });//memberId
+                });//emp
+            })//transaction
+        } else if (regNoChkNum >= 1 || empHpChkNum >= 1 || dateChkNum >= 1){
+            res.send({check: false, message: "이미 존재하는 데이터 입니다."});
+        } 
 
     })
 
@@ -1903,15 +1896,22 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
     })
 
     app.post('/api/s010100060/list', (req, res) => {
-        let startDate = req.body.startDate;
-        let endDate = req.body.endDate;
+
+        let startDate = req.body.startDate.toString().substring(0, 10);;
+        let endDate = req.body.endDate.toString().substring(0, 10);;
         let userName = req.body.userName;
         let paymentStatus = req.body.paymentStatus;
+
+        console.log('startDate', startDate);
+        console.log(' endDate', endDate);
+        console.log(' userName', userName);
+        console.log(' paymentStatus', paymentStatus);
+
 
 
         let sql = 'SELECT     ' +
             '                   MEM.MEMBER_NM, ' +
-            '                   date_format(CON2.PAY_PLAN_DATE,"%y.%m.%d") AS "PAY_PLAN_DATE", \n' +
+            '                   date_format(CON2.PAY_PLAN_DATE,"%y.%m.%d") AS "PAY_PLAN_DATE", ' +
             '                   CON2.PAYED_FLAG, ' +
             '                   date_format(CON2.PAYED_DATE,"%y.%m.%d") AS "PAYED_DATE", ' +
             '                   date_format(CON.START_DATE,"%y.%m.%d") AS "START_DATE", ' +
@@ -1930,11 +1930,12 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
             ' WHERE CON2.PAY_PLAN_DATE BETWEEN date_format("' + startDate + '","%y.%m.%d") AND date_format("' + endDate + '","%y.%m.%d") '
             
 
-        if (userName != null && userName != "")//null아니고 전체가 아닐때 때, null 아니고 공백이 아닐때
+        if (userName != null && userName != "" && userName != "undefined")//null아니고 전체가 아닐때 때, null 아니고 공백이 아닐때
             sql += ' AND MEM.MEMBER_NM LIKE "%' + userName + '%" ';
-        if (paymentStatus != null && paymentStatus != "")
+        if (paymentStatus != null && paymentStatus != "" && userName != "undefined" )
             sql += ' AND CON2.PAYED_FLAG = "' + paymentStatus + '"';
-            // sql += ' ORDER BY CON2.CONTRACT_ID DESC';
+        
+        sql += ' ORDER BY CON2.CONTRACT_ID DESC';
 
         connection.query(sql, (error, rows) => {
             if (error) throw error;
@@ -1946,25 +1947,42 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
 
     app.post('/api/s01010070/paymentUpdate', (req, res) => {
 
-        let modalContractId = modalContractId;
-        let modalPayPlanDate = modalPayPlanDate;
-        let insertPayDate = insertPayDate;
-        let referComment = referComment;
+        let modalContractId = req.body.modalContractId;
+        let modalPayPlanDate = req.body.modalPayPlanDate;
+        let insertPayDate = req.body.insertPayDate;
+        let referComment = req.body.referComment;
+        let paymentStatusList = req.body.paymentStatusList;
+        //체크된 값들
+        let newChecked = req.body.newChecked;
 
-        let sql =
-            '\tUPDATE TB_S10_CONTRACT020  \n' +
-            '        SET \n' +
-            '        PAYED_DATE ="' + insertPayDate + '", \n' +
-            '        PAYED_FLAG = "Y", \n' +
-            '            LAST_UPDATE_DATE = SYSDATE(), \n' +
-            '            PAYED_MONEY = PAYED_PLAN_MONEY, \n' +
-            '            CONTRACT_COMMENT = "' + referComment + '"' +
-            '         WHERE CONTRACT_ID =' + modalContractId + ' AND PAY_PLAN_DATE ="' + modalPayPlanDate + '"';
+        for(let i = 0; i < newChecked.length; i++){
+            //체크된 값 분리
+            let newCheckedList = newChecked[i].split(",");
+            console.log('newCheckedList',newCheckedList);
+            
+            let chkPayPlanDate = newCheckedList[0];
+            let chkPayDate = newCheckedList[1];
+            let chkConComment = newCheckedList[2];
+            console.log('chkPayPlanDate',chkPayPlanDate);
+            console.log('chkPayDate',chkPayDate);
+            console.log('chkConComment',chkConComment);
 
-        connection.query(sql, (error, rows) => {
-            if (error) throw error;
-            res.send({ success: true, rows });
-        });
+            let sql =
+                ' UPDATE TB_S10_CONTRACT020  ' +
+                '        SET ' +
+                '        PAYED_DATE ="' + chkPayDate + '", ' +
+                '        PAYED_FLAG = "Y", ' +
+                '            LAST_UPDATE_DATE = SYSDATE(), ' +
+                '            PAYED_MONEY = PAYED_PLAN_MONEY, ' +
+                '            CONTRACT_COMMENT = "' + chkConComment + '"' +
+                '         WHERE CONTRACT_ID =' + modalContractId + ' AND PAY_PLAN_DATE ="' + chkPayPlanDate + '"';
+
+            connection.query(sql, (error, rows) => {
+                if (error) throw error;
+                
+            });
+        }
+        res.send({ success: true});
 
     })
    
@@ -1983,7 +2001,7 @@ app.post('/api/s010100050/detailNewContract_by_id', (req, res) => {
             console.log('전체조회rows:' + rows[0].CEO_IMAGE_ID_PATH);
             savedFileNm =  rows[0].CEO_IMAGE_ID_PATH;
             mimetype = mime.getType(rows[0].CEO_IMAGE_ID);
-            console.log('mimetype',mimetype);
+            //console.log('mimetype',mimetype);
             res.setHeader('Content-disposition','attachment; filename = "' + rows[0].CEO_IMAGE_ID + '"');
             res.setHeader('Content-type',mimetype);
             let filestream = fs.createReadStream(savedFileNm);

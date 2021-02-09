@@ -1,15 +1,13 @@
-import React, { useState, useEffect, Fragment } from 'react';
+import React, { useState, useEffect} from 'react';
 import axios from 'axios';
 import './css/S010100050.css';
 import S010100010 from './S010100010';
 import Pagination from "./utils/Pagination";
+import { post } from 'axios';
 
 //<!--모달창 라이브러리
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
-import Button from '@material-ui/core/Button';
-import DatePicker from "react-datepicker";
-import { addDays } from "date-fns";
 //모달창 라이브러리 끝-->
 
 let num = '';
@@ -44,20 +42,11 @@ function S010100050(props) {
     const [detailDetailAddress, setDetailDetailAddress] = useState('');
 
     const [startAsk_date, setStartAsk_date] = useState(new Date());
-    const [endAsk_date, setEndAsk_date] = useState(new Date());
     const [endDateTest, setEndDateTest] = useState('');
 
     
-
-    // const [detailContractId, setDetailContractId] = useState('')
-    // const [detailContractDa
-    // te, setDetailContractDate] = useState('')
-    // const [detailContractTp, setDetailContractTp] = useState('')
-    // const [detailContractTerm, setDetailContractTerm] = useState('')
-    // const [detailMemberSt, setDetailMemberSt] = useState('')
-    // const [detailPayDate, setDetailPayDate] = useState('')
-    // const [detailContractMoney, setDetailContractMoney] = useState('')
-    // const [detailContractEndFlag, setDetailContractEndFlag] = useState('')
+    const [detailCeoIdCardImg, setDetailCeoIdCardImg] = useState('')
+    const [detailRegistCardImg, setDetailRegistCardImg] = useState('')
 
 
     const dataName = props.dataName;
@@ -71,23 +60,17 @@ function S010100050(props) {
     const [detailMemberId, setDetailMemberId] = useState('');
 
 
-    //datepicker속성 및 이벤트 시작
-    const [modifyDate, setModifyDate] = useState(new Date());
-    const [endModifyDate, setEndModifyDate] = useState(new Date());
-    //datepicker속성 및 이벤트 끝
-
     //페이징
     const [currentPage, setCurrentPage] = useState(1);
     const [postsPerPage, setPostsPerPage] = useState(3);
     const indexOfLastPost = currentPage * postsPerPage;
-    //let modalRegistImg;
+ 
 
     useEffect(() => {
 
         axios.get('/api/s010100150/memberTpDetail')
             .then(response => {
                 if (response.data.success) {
-                    //console.log('ask_tp',response.data.rows);
                     let arr = [{ key: '선택', value: '선택' }]
 
                     response.data.rows.map((data) =>
@@ -97,7 +80,6 @@ function S010100050(props) {
                         }));
 
                     memberTpDetail = arr;
-                    //console.log(valueArr[2]);
                 } else {
                     alert(" 데이터를 불러오는데 실패하였습니다.");
                 }
@@ -105,10 +87,7 @@ function S010100050(props) {
 
 
     }, [])
-  
-
-    useEffect(() => {
-
+    const detailMemberList = () =>{
         let body = {
             dataName:dataName,
             dataEmpHp:dataEmpHp
@@ -132,10 +111,11 @@ function S010100050(props) {
                     //const modalAddress = zip + ' ' + addr + ' ' + detailAddr;
                     const modalEndDate = response.data.rows[0].END_DATE;
                     const modalIdImg = response.data.rows[0].CEO_IMAGE_ID;
-                    //modalRegistImg = response.data.rows[0].CEO_IMAGE_REGISTER;
+                    const modalRegistImg = response.data.rows[0].CEO_IMAGE_REGISTER;
                     const modalRegNos = modalRegNo.split('-');
                     const modalEmpHps = modalEmpHp.split('-');
                     const modalEmpEmails = modalEmpEmail.split('@');
+
                     setDetailMemberId(memberId);
                     setEndDateTest(modalEndDate);
                     //console.log(modalRegistImg);
@@ -149,9 +129,6 @@ function S010100050(props) {
 
                     setDetailMemberTp(modalMemberTp);
                     setDetailName(modalName);
-                    
-                    //setIdCar(modalIdImg);
-                    //setRegistCar(modalRegistImg);
 
                     setDetailFstEmpHp(modalEmpHps[0]);
                     setDetailSndEmpHp(modalEmpHps[1]);
@@ -161,23 +138,95 @@ function S010100050(props) {
                     setDetailDomain(modalEmpEmails[1]);
 
                     setStartAsk_date(new Date(modalEndDate));
-           
-                    //alert(modalEndDate);
-
-                    //alert(finDate);
-                   // setModifyDate(finDate);
-
+        
                     setDetailZipcode(modalZip);
                     setDetailAddress(modalAddr);
                     setDetailDetailAddress(modalDetailAddr);
+                    setDetailCeoIdCardImg(modalIdImg);
+                    setDetailRegistCardImg(modalRegistImg);
                     //setDetailCheckoutDate(modalEndDate);
                 } else {
                     alert('상세정보 데이터를 불러오는데 실패하였습니다.');
                 }
             })
+        }
+
+    useEffect(() => {
+        detailMemberList();
     }, [])
 
-    
+    const tempAddMember = () => {
+        const url ='/api/s010100050/detailMemberModify';
+        const formData = new FormData();
+
+        //let startDate = startAsk_date.getFullYear() + '-' + (startAsk_date.getMonth() + 1) + '-' + startAsk_date.getDate();
+        
+        //첨부파일
+        // formData.append('idCardFile',idCardFile);
+        // formData.append('registCardFile',registCardFile);
+        // formData.append('idCardFileName',idCardFileName);
+        // formData.append('registCardFileName',registCardFileName);
+
+        // //회원명
+        // formData.append('memberNm',memberNm);
+        // //사업자번호
+        // formData.append('firstRegNo',firstRegNo);
+        // formData.append('secondRegNo',secondRegNo);
+        // formData.append('thirdRegNo',thirdRegNo);
+        // //회원구분
+        // formData.append('memberTp',memberTp);
+        // //성명
+        // formData.append('empIdName',empIdName);
+        // //연락처
+        // formData.append('firstEmpHp',firstEmpHp);
+        // formData.append('secondEmpHp',secondEmpHp);
+        // formData.append('thirdEmpHp',thirdEmpHp);
+        // //email
+        // formData.append('zipcode', zipcode);
+        // formData.append('empEmailId', empEmailId);
+        // //주소
+        // formData.append('domainAddress', domainAddress);
+        // formData.append('empAddress', empAddress);
+        // formData.append('empDetailAddress', empDetailAddress);
+       
+
+        const config = {
+            headers : {
+                'content-type':'multipart/form-data'
+            }
+        }
+        return post(url, formData, config);
+
+    }
+    //회원정보 수정
+    const onModifyHandler = (event) => {
+        event.preventDefault();
+
+        let body = {
+            dataName:dataName,
+            dataEmpHp:dataEmpHp,
+
+            detailMemberNm:detailMemberNm,
+            detailFstRegNo:detailFstRegNo,
+            detailSndRegNo:detailSndRegNo,
+            detailThdRegNo:detailThdRegNo,
+
+            detailMemberTp:detailMemberTp,
+            endDateTest:endDateTest
+        }
+
+        axios.post('/api/s010100050/detailMemberModify',body)
+            .then(response => {
+                if (response.data.success) {
+                    //console.log('memberId', response.data.rows[0].MEMBER_ID);
+                    alert('회원정보를 수정하였습니다.');
+                } else {
+                    alert('수정에 실패하였습니다.');
+                }
+            })
+
+    }
+
     const onDetailMemberNmHandler = (event) => {
         setDetailMemberNm(event.currentTarget.value);
     }
@@ -197,9 +246,6 @@ function S010100050(props) {
         setDetailMemberTp(event.currentTarget.value);
     }
 
-    const onDetailCheckoutDateHandler = (event) => {
-        setDetailCheckoutDate(event.currentTarget.value);
-    }
 
     const onDetailNameHandler = (event) => {
         setDetailName(event.currentTarget.value);
@@ -254,12 +300,15 @@ function S010100050(props) {
     }
 
     const onConContractHandler = (event) => {
-
         setConOpen(false);
+        detailMemberList();
+
     }
 
+    //신규계약 닫기
     const onNewContractHandler = (event) => {
         setNewOpen(false);
+        detailMemberList();
     }
 
     const onNewOpenContractHandler = (event) => {
@@ -364,7 +413,7 @@ function S010100050(props) {
                             </td>
                             <th>퇴실일자</th>
                             <td> 
-                                <input type = "text" value = {endDateTest} size = "6"></input>
+                                <input type = "text" value = {endDateTest} size = "6" disabled></input>
                             </td>
 
                         </tr>
@@ -401,6 +450,7 @@ function S010100050(props) {
                         <td colSpan="6">
                             <input type="text" value={detailZipcode} id="detailAddress" name="detailAddress" size="7"
                                 onChange={onDetailZipcodeHandler} />&nbsp;
+                            <input type="button" value="우편"/>&nbsp;
                             <input type="text" value={detailAddress} id="detailAddress" name="detailAddress" size="40"
                                 onChange={onDetailAddressHandler} />
                             <input type="text" value={detailDetailAddress} id="detailAddress" name="detailAddress"
@@ -409,11 +459,17 @@ function S010100050(props) {
                         </td>
                         <tr>
                             <th rowSpan="2">첨부파일</th>
-                            <td colSpan="7"><a href = '#' onClick={onIdDownloadHandler}>대표자신분증</a></td>
+                            <td colSpan="7">
+                                <a href = '#' onClick={onIdDownloadHandler} >{detailCeoIdCardImg}</a>&nbsp;
+                                <input type = "file"/>
+                            </td>    
                             {/* onClick={onIdDownloadHandler} */}
                         </tr>
                         <tr>
-                            <td colSpan="7"><a href = '#' onClick={onRegDownloadHandler}>사업자등록증</a></td>
+                            <td colSpan="7">
+                                <a href = '#' onClick={onRegDownloadHandler}>{detailRegistCardImg}</a>&nbsp;
+                                <input type = "file"/>        
+                            </td>
                         </tr>
 
                     </table>
@@ -440,6 +496,7 @@ function S010100050(props) {
 
                     <div id="btnAlign">
                         <input type="button" id="btn-centerN" onClick={onNewOpenContractHandler} value="신규계약" />
+                        <input type="button" id="btn-centerN" onClick={onModifyHandler} value="수정하기" />
                     </div>
 
                     {/*계약ID클릭*/}

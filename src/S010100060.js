@@ -44,9 +44,12 @@ function S010100060(props) {
     
    
     useEffect(() => {
+        let startDates = startDate.getFullYear() + '.' + (startDate.getMonth() + 1) + '.' + startDate.getDate();
+        let endDates = endDate.getFullYear() + '.' + (endDate.getMonth() + 1) + '.' + endDate.getDate();
+
         let body = {
-            startDate: startDate,
-            endDate: endDate
+            startDate: startDates,
+            endDate: endDates
         }
         axios.post('/api/s010100060/list', body)
             .then(response => {
@@ -61,12 +64,19 @@ function S010100060(props) {
     }, [])
 
     const paymentSearchHandler = (event) => {
+
+        let startDates = startDate.getFullYear() + '.' + (startDate.getMonth() + 1) + '.' + startDate.getDate();
+        let endDates = endDate.getFullYear() + '.' + (endDate.getMonth() + 1) + '.' + endDate.getDate();
+
         let body = {
-            startDate: startDate,
-            endDate: endDate,
+            startDate: startDates,
+            endDate: endDates,
             userName: userName,
             paymentStatus: paymentStatus
         }
+
+        
+    
         axios.post('/api/s010100060/list', body)
             .then(response => {
                 if (response.data.success) {
