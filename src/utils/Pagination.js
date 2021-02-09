@@ -12,7 +12,7 @@ const Pagination = ({postsPerPage,totalPosts,paginate}) =>{
             <ul className = "pagination" style = {{ margin:0, padding:0}} >
                 {pageNumbers.map(number =>(
                     <li key = {number} className = "pageItem" style = {{float:"left",  margin:0, padding:0}}>
-                        <a onClick={()=>paginate(number)} classname = "pageLink">
+                        <a onClick={()=>paginate(number)} className = "pageLink">
                             {number}
                         </a>
                     </li>

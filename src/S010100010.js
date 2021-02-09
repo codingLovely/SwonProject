@@ -19,7 +19,7 @@ let valueArr = [[], [], [], [], []];
 let queryArr = [['MEMBER_TP', ''], ['CONTRACT_TP', 'ASK'], ['PAY_METHOD', '']];
 let payDates = [];
 let forPrint;
-let ReactDOM = require('react-dom'); 
+let forMemberStatus; 
 
 function S010100010(props) {
     //console.log(props.params);
@@ -60,7 +60,7 @@ function S010100010(props) {
     const [userStatus, setUserStatus] = useState('');
 
     //확정 가계약 status
-    const [memStatus,setMemStatus] = useState('');
+    //const [memStatus,setMemStatus] = useState('');
 
     //중복확인
     const [regNoCheckBtn,setRegNoCheckBtn] = useState('');
@@ -84,14 +84,14 @@ function S010100010(props) {
 
     const [registCardFile,setRegistCardFile] = useState(null);
     const [registCardFileName,setRegistCardFileName] = useState('');
-    const onHandleClickClose = (event) => {
-        setOpen(false);
-    }
+    // const onHandleClickClose = (event) => {
+    //     setOpen(false);
+    // }
 
-     //주소api
-     const [open, setOpen] = React.useState(false);
-     const [isPostOpen, setIsPostOpen] = useState(false);
-     //hidden 이용해보기
+    //  //주소api
+    //  const [open, setOpen] = React.useState(false);
+    //  const [isPostOpen, setIsPostOpen] = useState(false);
+    //  //hidden 이용해보기
 
     const rNum = props.dataNum;
     const modalMemberId = props.dataMem;
@@ -565,10 +565,10 @@ function S010100010(props) {
         formData.append('payMethod', payMethod);
         formData.append('contractPath', contractPath);
         formData.append('comment', comment);
-        //formData.append('memStatus',memStatus);
+        formData.append('forMemberStatus',forMemberStatus);
         
         console.log(formData);
-        //alert('memStatus',memStatus);
+        alert('forMemberStatus',forMemberStatus);
 
         const config = {
             headers : {
@@ -633,6 +633,7 @@ function S010100010(props) {
     //저장-확정
      const onSubmitHandler = (event) => {
         event.preventDefault();
+        forMemberStatus ="C";
 
         // //대표자 NUll체크
         // if (empIdName == null || empIdName == '') {
@@ -688,6 +689,7 @@ function S010100010(props) {
         //     return alert("계약접근경로를 선택하세요.");
         // }
 
+        //중복확인
         if(regNoCheckBtn == ''){
             alert('사업자 번호 중복확인 하세요.');
         }else if(empHpCheckBtn == ''){
@@ -695,51 +697,29 @@ function S010100010(props) {
         }else if(dateCheckBtn == ''){
             alert('이용날짜 중복확인 하세요.');
         }else if(regNoCheckBtn == 'check' && empHpCheckBtn == 'check' && dateCheckBtn == 'check'){
-           //setMemStatus("C");
            addMember().then((response) => {
-               //console.log(response.data);
                alert('정상적으로 등록 되었습니다.');
            })
+        //alert(forMemberStatus);
         }
 
     }
 
      //임시저장-가계약
      const temporaryStorage = (event) => {
-      
         event.preventDefault();
-      
-        // if(regNoCheckBtn == ''){
-        //     alert('사업자 번호 중복확인 하세요.');
-        // }else if(empHpCheckBtn == ''){
-        //     alert('전화번호 중복확인 하세요.');
-        // }else if(dateCheckBtn == ''){
-        //     alert('이용날짜 중복확인 하세요.');
-        // }else if(regNoCheckBtn == 'check' && empHpCheckBtn == 'check' && dateCheckBtn == 'check'){
-        //     axios.post('/api/s010100140/tempStorage', body)
-        //     .then(response => {      
-        //             if (response.data.success) {
-        //                 alert('임시저장 하였습니다.')
-        //                 setRegNoCheckBtn('');
-        //                 setEmpHpCheckBtn('');
-        //                 setDateCheckBtn(''); 
-        //             }else {
-        //                 alert('임시저장에 실패하였습니다.')  
-        //             }
-        //     })
-        // }  
-        
-        //setMemStatus("T");
+        forMemberStatus ="T";
+    
 
+        //중복확인
         if(regNoCheckBtn == ''){
             alert('사업자 번호 중복확인 하세요.');
-            //console.log('regNoCheckBtn4.',regNoCheckBtn);
         }else if(empHpCheckBtn == ''){
             alert('전화번호 중복확인 하세요.');
         }else if(dateCheckBtn == ''){
             alert('이용날짜 중복확인 하세요.');
         }else if(regNoCheckBtn == 'check' && empHpCheckBtn == 'check' && dateCheckBtn == 'check'){
-            tempAddMember().then((response) => {
+           addMember().then((response) => {
                alert('정상적으로 등록 되었습니다.');
            })
         }
@@ -917,34 +897,26 @@ function S010100010(props) {
     
     //출력버튼 모달 open
     const onPrintHandler = (event) => {
-        event.preventDefault();
         forPrint = true;
-        //setForPrinting(true);
         setPrintSheetOpen(true);
     }
     //출력버튼 모달 close
     const onPrintSheetClose = (event) => {
-        setPrintSheetOpen(false);
         forPrint = false;
-        //setForPrinting(true);
+        setPrintSheetOpen(false);
     }
+
+    //useRef();
+    //const printArea = useRef();
     //출력함수
-    const onPrintSheetHandler = (event) => {
-        // let printContents = ReactDOM.findDOMNode(printArea).innerHTML; 
-        // let originalContents = document.body.innerHTML;
-        // document.body.innerHTML = printContents;
-        // window.print();
-        // document.body.innerHTML = originalContents;
+    // const onPrintSheetHandler = (event) => {
+    //     let printContents =printArea.current.focus; 
+    //     let originalContents = document.body.innerHTML;
+    //     document.body.innerHTML = printContents;
+    //     window.print();
+    //     document.body.innerHTML = originalContents;
         
-        // windowObject = window.open('', "PrintWindow", "width=5, height=5, top=200, lefg=200, toolbars=no, scrollbars=no, status=no, resizable=no"); 
-    
-        // windowObject.document.writeln(documentContent.innerHTML); 
-        // windowObject.document.close(); 
-        // windowObject.focus(); 
-        // windowObject.print(); 
-        // windowObject.close(); 
-        // window.print();
-    }
+    // }
 
     const onleaseAgreementHandler = (event) => {
         setLeaseAgreementOpen(true);
@@ -1636,7 +1608,8 @@ function S010100010(props) {
                 maxWidth={"lg"}
                 open={printSheetOpen}
                 onClose={onPrintSheetClose}>
-                <S010100010 dataNum={rNum} cDataForm={'I'}/>
+                <S010100010 dataNum={rNum} cDataForm={'I'} />    
+                {/* ref={printArea} */}
                 <DialogActions>
                     <input type="button" onClick={onPrintSheetClose} color="primary" value="닫기" hidden ={forPrint}/>
                 </DialogActions>

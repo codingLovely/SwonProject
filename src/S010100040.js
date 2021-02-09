@@ -15,11 +15,6 @@ import DialogActions from '@material-ui/core/DialogActions';
 //모달창 라이브러리 끝-->
 
 
-
-
-
-
-
 let memberName = '';
 let memberEmpHp = '';
 let memberIdM = '';
@@ -216,8 +211,7 @@ function S010100040(props) {
     const s010100040R = tbMember.map((tbMember, index) => {
         return (
             <tr className='dataTable'>
-                <td name="uname" variant="outlined" color="primary"
-                    id={tbMember.MEMBER_ID}> {index + 1}</td>
+                <td name="uname" variant="outlined" color="primary" id={tbMember.MEMBER_ID}> {index + 1}</td>
                 <td >{tbMember.MEMBER_NM}</td>
                 <td id={tbMember.REG_NO}>{tbMember.REG_NO}</td>
                 <td onClick={onHandleDetailClickOpen} className={tbMember.MEMBER_ID} id={tbMember.EMP_HP}>{tbMember.NAME}</td>
