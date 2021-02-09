@@ -222,7 +222,7 @@ const s010100070R = paymentStatusList.map((paymentStatus, index) => {
                 <td>{paymentStatus.PAY_PLAN_DATE}</td>
                 <td>{paymentStatus.PAYED_FLAG}</td>
                 <td key = {paymentStatus.PAY_PLAN_DATE} id={paymentStatus.PAY_PLAN_DATE}>
-                    
+                    {/* api보고 바뀐이벤트값들고오는거 찾아서 했어요 */}
                     <DatePicker
                         ref = {payDateRef}
                         id = {paymentStatus.PAY_PLAN_DATE}

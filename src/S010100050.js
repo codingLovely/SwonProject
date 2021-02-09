@@ -349,7 +349,6 @@ function S010100050(props) {
             })
     }
 
-
     const s010100050R = detailAllInfo.map((detailAllInfo, index) => {
         return (
             <tr>

@@ -25,6 +25,7 @@ function S010100010(props) {
     //console.log(props.params);
 
     //회원정보
+    /**state를 세분화시킨 이유가있나요? */
     const [memberNm, setMemberNm] = useState('');
     const [firstRegNo, setFisrtRegNo] = useState('');
     const [secondRegNo, setSecondRegNo] = useState('');
@@ -42,7 +43,6 @@ function S010100010(props) {
     const [ceoIdCardImg, setCeoIdCardImg] = useState('');
     const [ceoRegistCardImg, setCeoRegistCardImg] = useState('');
 
-
     //계약정보
     const [contractTp, setContractTp] = useState('');
     const [contractTpVal, setContractTpVal] = useState([{ key: '', value: '선택' }]);
@@ -57,7 +57,7 @@ function S010100010(props) {
     const [contractPath, setContractPath] = useState('');
     const [contractStart, setContractStart] = useState('');
     const [contractEnd, setContractEnd] = useState('');
-    const [userStatus,setUserStatus] = useState('');
+    const [userStatus, setUserStatus] = useState('');
 
     //확정 가계약 status
     const [memStatus,setMemStatus] = useState('');
@@ -84,15 +84,20 @@ function S010100010(props) {
 
     const [registCardFile,setRegistCardFile] = useState(null);
     const [registCardFileName,setRegistCardFileName] = useState('');
+    const onHandleClickClose = (event) => {
+        setOpen(false);
+    }
+
+     //주소api
+     const [open, setOpen] = React.useState(false);
+     const [isPostOpen, setIsPostOpen] = useState(false);
+     //hidden 이용해보기
 
     const rNum = props.dataNum;
     const modalMemberId = props.dataMem;
 
-
     useEffect(() => {
-
         if (props.newDataForm === 'N') {
-
             axios.get(`/api/s01010010/insert/tb_s10_contract010_by_id?id=${modalMemberId}&type=single`)
                 .then(response => {
                     if (response.data.success) {
@@ -294,46 +299,46 @@ function S010100010(props) {
 
         console.log('ggggg');
 
-         const postCodeStyle = {
+        const postCodeStyle = {
             display: "block",
             position: "absolute",
             top: "26%",
             right: "33%",
             width: "1000px",
             height: "1600px"
-    
+
         }
-        
+
         const handleComplete = (data) => {
             let fullAddress = data.address;
-            let extraAddress = ''; 
-        
+            let extraAddress = '';
+
             if (data.addressType === 'R') {
-              if (data.bname !== '') {
-                extraAddress += data.bname;
-              }
-              if (data.buildingName !== '') {
-                extraAddress += (extraAddress !== '' ? `, ${data.buildingName}` : data.buildingName);
-              }
-              fullAddress += (extraAddress !== '' ? ` (${extraAddress})` : '');
+                if (data.bname !== '') {
+                    extraAddress += data.bname;
+                }
+                if (data.buildingName !== '') {
+                    extraAddress += (extraAddress !== '' ? `, ${data.buildingName}` : data.buildingName);
+                }
+                fullAddress += (extraAddress !== '' ? ` (${extraAddress})` : '');
             }
-        
+
             console.log(fullAddress);  // e.g. '서울 성동구 왕십리로2길 20 (성수동1가)'
             setZipcode(data.zonecode);
             setEmpAddress(fullAddress);
             alert('입력되었습니다.');
-          }
-        
-          return (
+        }
+
+        return (
             <div>
                 {console.log(';/')}
-            <DaumPostcode
-              onComplete={handleComplete}
-              style={postCodeStyle}
-            height={700}
-            />
+                <DaumPostcode
+                    onComplete={handleComplete}
+                    style={postCodeStyle}
+                    height={700}
+                />
             </div>
-          );
+        );
 
     }
 
@@ -394,87 +399,87 @@ function S010100010(props) {
 
     const [contractTpVals, setContractTpVals] = useState([{ key: '', value: '선택' }]);
     const [roomLockers, setRoomLockers] = useState([{ key: '', value: '선택' }]);
-    const [contractpaths,setContractPaths] = useState([{ key: '', value: '선택' }]);
+    const [contractpaths, setContractPaths] = useState([{ key: '', value: '선택' }]);
 
     const onContractTpHandler = (event) => {
-     
-            setContractTp(event.currentTarget.value);
-            let contractTpBody = event.currentTarget.value;
+
+        setContractTp(event.currentTarget.value);
+        let contractTpBody = event.currentTarget.value;
 
 
-            axios.post('/api/s010100010/contHier', { contractTpBody: contractTpBody })
-                .then(response => {
-                    if (response.data.success) {
-                        //console.log('ContractTpVal', response.data.rows);
-                        let arr = [{ key: '선택', value: '선택' }]
+        axios.post('/api/s010100010/contHier', { contractTpBody: contractTpBody })
+            .then(response => {
+                if (response.data.success) {
+                    //console.log('ContractTpVal', response.data.rows);
+                    let arr = [{ key: '선택', value: '선택' }]
 
-                        response.data.rows.map((data) =>
-                            arr.push({
-                                value: data.CD_V_MEANING, key: data.CD_V
-                            }));
-                        switch (contractTpBody) {
-                            case 'R1':
-                                setContractTpVals(arr);
-                                break;
-                            case 'R2':
-                                setContractTpVals(arr);
-                                break;
-                            case 'R3':
-                                setContractTpVals(arr);
-                                break;
-                            case 'FI':
-                                setContractTpVals(arr);
-                                break;
-                            case 'FL':
-                                setContractTpVals(arr);
-                                break;
-                            case 'FR':
-                                setContractTpVals(arr);
-                                break;
-                        }//switch
+                    response.data.rows.map((data) =>
+                        arr.push({
+                            value: data.CD_V_MEANING, key: data.CD_V
+                        }));
+                    switch (contractTpBody) {
+                        case 'R1':
+                            setContractTpVals(arr);
+                            break;
+                        case 'R2':
+                            setContractTpVals(arr);
+                            break;
+                        case 'R3':
+                            setContractTpVals(arr);
+                            break;
+                        case 'FI':
+                            setContractTpVals(arr);
+                            break;
+                        case 'FL':
+                            setContractTpVals(arr);
+                            break;
+                        case 'FR':
+                            setContractTpVals(arr);
+                            break;
+                    }//switch
 
-                        if (contractTpBody === 'FI' || contractTpBody === 'FL') {
-                            axios.post('/api/s010100010/roomLockerHier')
-                                .then(response => {
-                                    if (response.data.success) {
-                                        //console.log('roomLocker', response.data.rows);
-                                        let arr = [{ key: '선택', value: '선택' }]
-                                        response.data.rows.map((data) =>
-                                            arr.push({
-                                                value: data.CD_V_MEANING, key: data.CD_V
-                                            }));
-                                        setRoomLockers(arr);
-                                    } else {
-                                        alert('사물함정보를 불러오는데 실패하였습니다.');
-                                    }
-                                })//axios
-                        } else {
-                            let arr = [{ key: '선택', value: '선택' }];
-                            setRoomLockers(arr);
-                        }
-
-
-                        let monthlyMoney = {
-                            contractTpBody: contractTpBody
-                        }
-                        axios.post('/api/s010100010/monthlyMoney', monthlyMoney)
+                    if (contractTpBody === 'FI' || contractTpBody === 'FL') {
+                        axios.post('/api/s010100010/roomLockerHier')
                             .then(response => {
                                 if (response.data.success) {
-                                    //console.log(response.data.rows[0].ATTRIBUTE3);
-                                    setContractMoney(response.data.rows[0].ATTRIBUTE3);
-
+                                    //console.log('roomLocker', response.data.rows);
+                                    let arr = [{ key: '선택', value: '선택' }]
+                                    response.data.rows.map((data) =>
+                                        arr.push({
+                                            value: data.CD_V_MEANING, key: data.CD_V
+                                        }));
+                                    setRoomLockers(arr);
                                 } else {
                                     alert('사물함정보를 불러오는데 실패하였습니다.');
                                 }
-                            })
-
-                    }//if문
-                    else {
-                        alert('호실 정보를 불러오는데 실패하였습니다.');
+                            })//axios
+                    } else {
+                        let arr = [{ key: '선택', value: '선택' }];
+                        setRoomLockers(arr);
                     }
 
-                })//axios,then
-       
+
+                    let monthlyMoney = {
+                        contractTpBody: contractTpBody
+                    }
+                    axios.post('/api/s010100010/monthlyMoney', monthlyMoney)
+                        .then(response => {
+                            if (response.data.success) {
+                                //console.log(response.data.rows[0].ATTRIBUTE3);
+                                setContractMoney(response.data.rows[0].ATTRIBUTE3);
+
+                            } else {
+                                alert('사물함정보를 불러오는데 실패하였습니다.');
+                            }
+                        })
+
+                }//if문
+                else {
+                    alert('호실 정보를 불러오는데 실패하였습니다.');
+                }
+
+            })//axios,then
+
     }
 
     const onContractTpValHandler = (event) => {
@@ -511,14 +516,14 @@ function S010100010(props) {
 
 
     useEffect(() => {
-        return () => setRegNoCheckBtn('');   
-      }, []);
-      useEffect(() => {
-        return () => setEmpHpCheckBtn('');  
-      }, []);
-      useEffect(() => {
-        return () =>  setDateCheckBtn('');
-      }, []);
+        return () => setRegNoCheckBtn('');
+    }, []);
+    useEffect(() => {
+        return () => setEmpHpCheckBtn('');
+    }, []);
+    useEffect(() => {
+        return () => setDateCheckBtn('');
+    }, []);
 
 
       //첨부파일 서버로 보내는 함수
@@ -1004,7 +1009,7 @@ function S010100010(props) {
     const onEmpDetailAddressHandler = (event) => {
         setEmpDetailAddress(event.currentTarget.value);
     }
-    
+
 
     //종료
     const newEndHandler = (event) => {
@@ -1028,16 +1033,16 @@ function S010100010(props) {
 
         setUserStatus('');
         //alert(rNum);
-        
+
         axios.post(`/api/s010100010/memberDelete_by_id?id=${rNum}`)
-        .then(response => {
-            if (response.data.success) {
-                alert('삭제 하였습니다.')
-            } else {
-                alert('삭제에 실패하였습니다.')
-            }
-        })
-    
+            .then(response => {
+                if (response.data.success) {
+                    alert('삭제 하였습니다.')
+                } else {
+                    alert('삭제에 실패하였습니다.')
+                }
+            })
+
     }
 
     const onRegNoCheckHandler = (event) => {
@@ -1045,7 +1050,7 @@ function S010100010(props) {
 
         setRegNoCheckBtn('check');
 
-        console.log('regNoCheckBtn2.',regNoCheckBtn);
+        console.log('regNoCheckBtn2.', regNoCheckBtn);
 
         const body = {
             //회원정보
@@ -1068,7 +1073,7 @@ function S010100010(props) {
                 }
             })
 
-            console.log('regNoCheckBtn3.',regNoCheckBtn);
+        console.log('regNoCheckBtn3.', regNoCheckBtn);
     }
 
     const onEmpHpChkHandler = (event) => {
@@ -1101,8 +1106,10 @@ function S010100010(props) {
     }
 
 
-    let finalMonth = ((startAsk_date.getMonth()*1 + contractTerm*1 ) % 12 ) + 1 ;
-    let finalYear  = ((startAsk_date.getMonth()*1 + contractTerm*1 ) / 12 ) + startAsk_date.getFullYear();
+
+
+    let finalMonth = ((startAsk_date.getMonth() * 1 + contractTerm * 1) % 12) + 1;
+    let finalYear = ((startAsk_date.getMonth() * 1 + contractTerm * 1) / 12) + startAsk_date.getFullYear();
 
     let dateEnd = Math.floor(finalYear) + '.' + finalMonth + '.' + startAsk_date.getDate();
 
@@ -1162,13 +1169,11 @@ function S010100010(props) {
         setIdCardFileName(event.currentTarget.value);
     }
 
-    const  registCardHandleFileChange = (event) => {
+    const registCardHandleFileChange = (event) => {
         // file: event.currentTarget.registCardFiles[0];
         setRegistCardFile(event.currentTarget.files[0]);
         setRegistCardFileName(event.currentTarget.value);
     }
-   
-  
 
     return (
 
@@ -1442,15 +1447,15 @@ function S010100010(props) {
                             {contractTerm}개월 &nbsp;
                             
                                 <DatePicker
-                                    locale="ko"
-                                    selected={startAsk_date.setHours(9, 0, 0, 0)}//Front = 한국시 BackEnd = 표준시 9시간차이
-                                    onChange={date => setStartAsk_date(date)}
-                                    selectsStart
-                                    startDate={startAsk_date.setHours(9, 0, 0, 0)}
-                                    endDate={endAsk_date}
-                                    dateFormat="yyyy.MM.dd"
+                                locale="ko"
+                                selected={startAsk_date.setHours(9, 0, 0, 0)}//Front = 한국시 BackEnd = 표준시 9시간차이
+                                onChange={date => setStartAsk_date(date)}
+                                selectsStart
+                                startDate={startAsk_date.setHours(9, 0, 0, 0)}
+                                endDate={endAsk_date}
+                                dateFormat="yyyy.MM.dd"
 
-                                />&nbsp;
+                            />&nbsp;
                             ~ &nbsp;
                             <input type="text" disabled={true} value={dateEnd} size="8" />
                             {/* 신규계약 중복확인 */}
@@ -1500,7 +1505,7 @@ function S010100010(props) {
                              {contractMoney} 
                         </td>
                     </tr>
-            
+
                     <tr>
                         <th className="info">특약사항</th>
                         <td colSpan="9" className="alignLeft" id="infoPadding" hidden = {forPrint}>
@@ -1534,15 +1539,15 @@ function S010100010(props) {
                         <td colSpan="2" className="basicInfo">070-4355-2312</td>
 
                         <th className="basicInfoTitle">E-mail</th>
-                        <td colSpan="2"className="basicInfo">swonbiz@s-onetech.com</td>
+                        <td colSpan="2" className="basicInfo">swonbiz@s-onetech.com</td>
                     </tr>
 
                     <tr>
                         <th className="basicInfoTitle">성명</th>
                         <td className="basicInfo">이정희</td>
 
-                        <th  className="basicInfoTitle">FAX번호</th>
-                        <td  colSpan="2" className="basicInfo">070-4015-3344/02-6203-4433</td>
+                        <th className="basicInfoTitle">FAX번호</th>
+                        <td colSpan="2" className="basicInfo">070-4015-3344/02-6203-4433</td>
 
                         <th colSpan="2"className="info">계약접근경로</th>
                         <td hidden = {forPrint}>
@@ -1586,7 +1591,7 @@ function S010100010(props) {
 
                         </td>
                         <td colSpan="4" className="alignLeft" id="sndTextSpacing">
-                            을 :&nbsp; &nbsp; &nbsp; 
+                            을 :&nbsp; &nbsp; &nbsp;
                             {zipcode} {empAddress} {empDetailAddress}<br />
                             &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; {memberNm} {empIdName} (인)<br />
                             <span id="hidden">spacing</span>
