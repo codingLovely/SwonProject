@@ -41,7 +41,7 @@ function S010100050(props) {
     const [detailZipcode, setDetailZipcode] = useState('');
     const [detailDetailAddress, setDetailDetailAddress] = useState('');
 
-    const [startAsk_date, setStartAsk_date] = useState(new Date());
+    //const [startAsk_date, setStartAsk_date] = useState(new Date());
     const [endDateTest, setEndDateTest] = useState('');
 
     
@@ -64,6 +64,25 @@ function S010100050(props) {
     const [currentPage, setCurrentPage] = useState(1);
     const [postsPerPage, setPostsPerPage] = useState(3);
     const indexOfLastPost = currentPage * postsPerPage;
+
+    //첨부파일업로드
+    const [idCardFile,setIdCardFile] = useState(null);
+    const [idCardFileName,setIdCardFileName] = useState('');
+
+    const [registCardFile,setRegistCardFile] = useState(null);
+    const [registCardFileName,setRegistCardFileName] = useState('');
+ 
+    const idCardHandleFileChange = (event) => {
+        // file: event.currentTarget.idCardFiles[0];
+        setIdCardFile(event.currentTarget.files[0]);
+        setIdCardFileName(event.currentTarget.value);
+    }
+
+    const  registCardHandleFileChange = (event) => {
+        // file: event.currentTarget.registCardFiles[0];
+        setRegistCardFile(event.currentTarget.files[0]);
+        setRegistCardFileName(event.currentTarget.value);
+    }
  
 
     useEffect(() => {
@@ -112,15 +131,17 @@ function S010100050(props) {
                     const modalEndDate = response.data.rows[0].END_DATE;
                     const modalIdImg = response.data.rows[0].CEO_IMAGE_ID;
                     const modalRegistImg = response.data.rows[0].CEO_IMAGE_REGISTER;
+                    const modalEndFlag = response.data.rows[0].END_FLAG;
+
                     const modalRegNos = modalRegNo.split('-');
                     const modalEmpHps = modalEmpHp.split('-');
                     const modalEmpEmails = modalEmpEmail.split('@');
 
-                    setDetailMemberId(memberId);
-                    setEndDateTest(modalEndDate);
-                    //console.log(modalRegistImg);
                     setDetailAllInfo(response.data.rows);
-                    //console.log(detailAllInfo);
+                    setDetailMemberId(memberId);
+
+                    setEndDateTest(modalEndDate);
+                       
                     setDetailMemberNm(modalMemberNm);
 
                     setDetailFstRegNo(modalRegNos[0]);
@@ -137,7 +158,7 @@ function S010100050(props) {
                     setDetailEmpEmail(modalEmpEmails[0]);
                     setDetailDomain(modalEmpEmails[1]);
 
-                    setStartAsk_date(new Date(modalEndDate));
+                    //setStartAsk_date(new Date(modalEndDate));
         
                     setDetailZipcode(modalZip);
                     setDetailAddress(modalAddr);
@@ -154,40 +175,44 @@ function S010100050(props) {
     useEffect(() => {
         detailMemberList();
     }, [])
-
+   
+    //회원정보수정 함수
     const tempAddMember = () => {
-        const url ='/api/s010100050/detailMemberModify';
+        const url ='/api/s010100050/modifyMember';
         const formData = new FormData();
+        //회원이름 및 전화번호
+        formData.append('dataName',dataName);
+        formData.append('dataEmpHp',dataEmpHp);
 
-        //let startDate = startAsk_date.getFullYear() + '-' + (startAsk_date.getMonth() + 1) + '-' + startAsk_date.getDate();
-        
         //첨부파일
-        // formData.append('idCardFile',idCardFile);
-        // formData.append('registCardFile',registCardFile);
-        // formData.append('idCardFileName',idCardFileName);
-        // formData.append('registCardFileName',registCardFileName);
+        formData.append('idCardFile',idCardFile);
+        formData.append('registCardFile',registCardFile);
+        formData.append('idCardFileName',idCardFileName);
+        formData.append('registCardFileName',registCardFileName);
 
-        // //회원명
-        // formData.append('memberNm',memberNm);
-        // //사업자번호
-        // formData.append('firstRegNo',firstRegNo);
-        // formData.append('secondRegNo',secondRegNo);
-        // formData.append('thirdRegNo',thirdRegNo);
-        // //회원구분
-        // formData.append('memberTp',memberTp);
-        // //성명
-        // formData.append('empIdName',empIdName);
-        // //연락처
-        // formData.append('firstEmpHp',firstEmpHp);
-        // formData.append('secondEmpHp',secondEmpHp);
-        // formData.append('thirdEmpHp',thirdEmpHp);
-        // //email
-        // formData.append('zipcode', zipcode);
-        // formData.append('empEmailId', empEmailId);
-        // //주소
-        // formData.append('domainAddress', domainAddress);
-        // formData.append('empAddress', empAddress);
-        // formData.append('empDetailAddress', empDetailAddress);
+        console.log('idCardFile',idCardFile);
+        console.log('idCardFileName',typeof idCardFileName);
+        //회원명
+        formData.append('detailMemberNm',detailMemberNm);
+        //사업자번호
+        formData.append('detailFstRegNo',detailFstRegNo);
+        formData.append('detailSndRegNo',detailSndRegNo);
+        formData.append('detailThdRegNo',detailThdRegNo);
+        //회원구분
+        formData.append('detailMemberTp',detailMemberTp);
+        //성명
+        formData.append('detailName',detailName);
+        //연락처
+        formData.append('detailFstEmpHp',detailFstEmpHp);
+        formData.append('detailSndEmpHp',detailSndEmpHp);
+        formData.append('detailThdEmpHp',detailThdEmpHp);
+        //email
+        formData.append('detailDomain', detailDomain);
+        formData.append('detailEmpEmail', detailEmpEmail);
+        //주소
+        formData.append('detailZipcode', detailZipcode);
+        formData.append('detailAddress', detailAddress);
+        formData.append('detailDetailAddress', detailDetailAddress);
        
 
         const config = {
@@ -196,35 +221,16 @@ function S010100050(props) {
             }
         }
         return post(url, formData, config);
-
     }
+
     //회원정보 수정
     const onModifyHandler = (event) => {
         event.preventDefault();
+        tempAddMember().then((response) => {
+            alert('정상적으로 수정 되었습니다.');
+            detailMemberList();
 
-        let body = {
-            dataName:dataName,
-            dataEmpHp:dataEmpHp,
-
-            detailMemberNm:detailMemberNm,
-            detailFstRegNo:detailFstRegNo,
-            detailSndRegNo:detailSndRegNo,
-            detailThdRegNo:detailThdRegNo,
-
-            detailMemberTp:detailMemberTp,
-            endDateTest:endDateTest
-        }
-
-        axios.post('/api/s010100050/detailMemberModify',body)
-            .then(response => {
-                if (response.data.success) {
-                    //console.log('memberId', response.data.rows[0].MEMBER_ID);
-                    alert('회원정보를 수정하였습니다.');
-                } else {
-                    alert('수정에 실패하였습니다.');
-                }
-            })
-
+        })
     }
 
     const onDetailMemberNmHandler = (event) => {
@@ -245,7 +251,6 @@ function S010100050(props) {
     const onDetailMemberTpHandler = (event) => {
         setDetailMemberTp(event.currentTarget.value);
     }
-
 
     const onDetailNameHandler = (event) => {
         setDetailName(event.currentTarget.value);
@@ -291,7 +296,7 @@ function S010100050(props) {
         num = event.target.innerHTML;
         rNum = parseInt(num);
         setNameForDetailCModal(rNum);
-        console.log(rNum);
+        //console.log(rNum);
         setConOpen(true);
     }
 
@@ -302,7 +307,6 @@ function S010100050(props) {
     const onConContractHandler = (event) => {
         setConOpen(false);
         detailMemberList();
-
     }
 
     //신규계약 닫기
@@ -349,6 +353,7 @@ function S010100050(props) {
             })
     }
 
+
     const s010100050R = detailAllInfo.map((detailAllInfo, index) => {
         return (
             <tr>
@@ -364,7 +369,18 @@ function S010100050(props) {
                 <td>{detailAllInfo.END_FLAG}</td>
             </tr>
         )
+
     });
+
+    const [a,setA]= useState([]);
+
+    if(detailAllInfo.END_FLAG == 'N'){
+        detailAllInfo.map(item => (
+            setA(item.END_DATE)
+           )
+        )
+       
+    }
 
     const indexOfFirstPost = indexOfLastPost - postsPerPage;
     const currentPosts = s010100050R.slice(indexOfFirstPost, indexOfLastPost);
@@ -381,6 +397,7 @@ function S010100050(props) {
             alignItems: 'center',
             width: '100%'
         }}
+            encType='multipart/form-data'
             onSubmit={onSubmitDetailHandler}
         >
             <div className="memberInfoWrapper">
@@ -414,9 +431,8 @@ function S010100050(props) {
                             <td> 
                                 <input type = "text" value = {endDateTest} size = "6" disabled></input>
                             </td>
-
                         </tr>
-
+{/* {detailAllInfo.map(item => (item.END_DATE))} */}
                         <tr>
                             <th rowSpan="2">대표자</th>
 
@@ -457,17 +473,28 @@ function S010100050(props) {
                                 onChange={onDetailDetailAddressHandler} />
                         </td>
                         <tr>
+                     
                             <th rowSpan="2">첨부파일</th>
                             <td colSpan="7">
                                 <a href = '#' onClick={onIdDownloadHandler} >{detailCeoIdCardImg}</a>&nbsp;
-                                <input type = "file"/>
+                                <input type='file'
+                                    file = {idCardFile}
+                                    name ='idCardFile'
+                                    value = {idCardFileName}
+                                    onChange = {idCardHandleFileChange}
+                                    /> 
                             </td>    
-                            {/* onClick={onIdDownloadHandler} */}
+                                
                         </tr>
                         <tr>
                             <td colSpan="7">
                                 <a href = '#' onClick={onRegDownloadHandler}>{detailRegistCardImg}</a>&nbsp;
-                                <input type = "file"/>        
+                                <input type='file' 
+                                    file = {registCardFile} 
+                                    name='registCardFile'
+                                    value = {registCardFileName}
+                                    onChange = {registCardHandleFileChange}
+                                    />        
                             </td>
                         </tr>
 

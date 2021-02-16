@@ -2,6 +2,36 @@ import React, { Fragment, useEffect, useState } from 'react';
 import Navbar from './Navbar';
 import S010100070 from "./S010100070";
 import Pagination from "./utils/Pagination";
+
+import clsx from 'clsx';
+import { makeStyles } from '@material-ui/core/styles';
+import CssBaseline from '@material-ui/core/CssBaseline';
+import Drawer from '@material-ui/core/Drawer';
+import Box from '@material-ui/core/Box';
+import AppBar from '@material-ui/core/AppBar';
+import Toolbar from '@material-ui/core/Toolbar';
+import List from '@material-ui/core/List';
+import Typography from '@material-ui/core/Typography';
+import Divider from '@material-ui/core/Divider';
+import IconButton from '@material-ui/core/IconButton';
+import Badge from '@material-ui/core/Badge';
+import Container from '@material-ui/core/Container';
+import Grid from '@material-ui/core/Grid';
+import Paper from '@material-ui/core/Paper';
+import MenuIcon from '@material-ui/icons/Menu';
+import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
+import NotificationsIcon from '@material-ui/icons/Notifications';
+import { mainListItems, secondaryListItems } from './listItems';
+import Button from '@material-ui/core/Button';
+import Form from 'react-bootstrap/Form';
+
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
+import Title from './Title';
+
 //엑셀다운로드
 import xlsx from 'xlsx';
 
@@ -10,9 +40,94 @@ import DatePicker, { registerLocale } from "react-datepicker";
 import ko from 'date-fns/locale/ko';
 import axios from "axios";
 import Dialog from "@material-ui/core/Dialog";
-import S010100010 from "./S010100010";
 import DialogActions from "@material-ui/core/DialogActions";
 registerLocale("ko", ko);
+
+
+const drawerWidth = 240;
+
+const useStyles = makeStyles((theme) => ({
+    root: {
+        display: 'flex',
+    },
+    toolbar: {
+        paddingRight: 24, // keep right padding when drawer closed
+    },
+    toolbarIcon: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        padding: '0 8px',
+        ...theme.mixins.toolbar,
+    },
+    appBar: {
+        zIndex: theme.zIndex.drawer + 1,
+        transition: theme.transitions.create(['width', 'margin'], {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.leavingScreen,
+        }),
+    },
+    appBarShift: {
+        marginLeft: drawerWidth,
+        width: `calc(100% - ${drawerWidth}px)`,
+        transition: theme.transitions.create(['width', 'margin'], {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.enteringScreen,
+        }),
+    },
+    menuButton: {
+        marginRight: 36,
+    },
+    menuButtonHidden: {
+        display: 'none',
+    },
+    title: {
+        flexGrow: 1,
+    },
+    drawerPaper: {
+        position: 'relative',
+        whiteSpace: 'nowrap',
+        width: drawerWidth,
+        transition: theme.transitions.create('width', {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.enteringScreen,
+        }),
+    },
+    drawerPaperClose: {
+        overflowX: 'hidden',
+        transition: theme.transitions.create('width', {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.leavingScreen,
+        }),
+        width: theme.spacing(7),
+        [theme.breakpoints.up('sm')]: {
+            width: theme.spacing(9),
+        },
+    },
+    appBarSpacer: theme.mixins.toolbar,
+    content: {
+        flexGrow: 1,
+        height: '100vh',
+        overflow: 'auto',
+    },
+    container: {
+        paddingTop: theme.spacing(4),
+        paddingBottom: theme.spacing(4),
+    },
+    paper: {
+        padding: theme.spacing(2),
+        display: 'flex',
+        overflow: 'auto',
+        flexDirection: 'column',
+    },
+    fixedHeight: {
+        height: 240,
+    },
+
+}));
+
+
+
 
 //켈린더 라이브러리 끝-->
 let paymentState = [{ key: '전체', value: '전체' },
@@ -20,6 +135,15 @@ let paymentState = [{ key: '전체', value: '전체' },
 { key: 'N', value: 'N' }]
 
 function S010100060(props) {
+
+    const classes = useStyles();
+    const [open, setOpen] = React.useState(true);
+    const handleDrawerOpen = () => {
+        setOpen(true);
+    };
+    const handleDrawerClose = () => {
+        setOpen(false);
+    };
 
     const [userName, setUserName] = useState('');
     const [paymentStatus, setPaymentStatus] = useState('');
@@ -60,7 +184,7 @@ function S010100060(props) {
             })
     }, [])
 
-    const paymentSearchHandler = (event) => {
+    const paymentSearchHandler = () => {
 
         let startDates = startDate.getFullYear() + '.' + (startDate.getMonth() + 1) + '.' + startDate.getDate();
         let endDates = endDate.getFullYear() + '.' + (endDate.getMonth() + 1) + '.' + endDate.getDate();
@@ -72,8 +196,7 @@ function S010100060(props) {
             paymentStatus: paymentStatus
         }
 
-        
-    
+
         axios.post('/api/s010100060/list', body)
             .then(response => {
                 if (response.data.success) {
@@ -100,7 +223,6 @@ function S010100060(props) {
         setPaymentStatus(event.currentTarget.value);
     }
 
-
     const onPayHandleClickClose = () => {
         setStoreOpen(false);
     }
@@ -119,14 +241,9 @@ function S010100060(props) {
         }
 
         setChecked(newChecked);
-        //빽주고
-        //state를 넣어준다
-        //e.target.checked = false;
 
-        console.log('currentIndex', currentIndex);
-        console.log('checked', checked);
-
-        // handleFilters(filters,tb_s10_ask010);
+        // console.log('currentIndex', currentIndex);
+        // console.log('checked', checked);
 
     }
 
@@ -166,24 +283,23 @@ function S010100060(props) {
 
     }
 
-    const s010100060R = payStatusList.map((payStatusList, index) => {
+    const s010100060R =payStatusList.map((payStatusList, index) => {
         return (
-            <tr class='dataTable'>
-                <td><input type="checkbox" onChange={handleToggle} id={payStatusList.CONTRACT_ID} /></td>
-                <td name="uname" variant="outlined" color="primary">
-                    {payStatusList.CONTRACT_ID}
-                </td>
-                <td>{payStatusList.MEMBER_NM}</td>
-                <td>{payStatusList.PAY_PLAN_DATE}</td>
-                <td>{payStatusList.PAYED_FLAG}</td>
-                <td>{payStatusList.PAYED_DATE}</td>
-                <td>{payStatusList.START_DATE} ~ {payStatusList.END_DATE}</td>
-                <td>{payStatusList.NAME}</td>
-                <td>{payStatusList.EMP_HP}</td>
-                <td>{payStatusList.EMP_EMAIL}</td>
-            </tr>
-        )
+            <TableRow key={payStatusList.CONTRACT_ID}>
+                <TableCell><input type="checkbox" onChange={handleToggle} id={payStatusList.CONTRACT_ID} /></TableCell>
+                <TableCell>{payStatusList.CONTRACT_ID}</TableCell>
+                <TableCell>{payStatusList.MEMBER_NM}</TableCell>
+                <TableCell>{payStatusList.PAY_PLAN_DATE}</TableCell>
+                <TableCell>{payStatusList.PAYED_FLAG}</TableCell>
+                <TableCell>{payStatusList.PAYED_DATE}</TableCell>
+                <TableCell>{payStatusList.START_DATE} ~ {payStatusList.END_DATE}</TableCell>
+                <TableCell>{payStatusList.NAME}</TableCell>
+                <TableCell>{payStatusList.EMP_HP}</TableCell>
+                <TableCell>{payStatusList.EMP_EMAIL}</TableCell>
+            </TableRow>
+         )
     });
+
 
     const indexOfFirstPost = indexOfLastPost - postsPerPage;
     const currentPosts = s010100060R.slice(indexOfFirstPost, indexOfLastPost);
@@ -192,114 +308,196 @@ function S010100060(props) {
 
     return (
         <Fragment>
-            <Navbar />
-            <form style={{
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-                width: '100%'
-            }}
-                onSubmit={onSubmitHandler}
-            >
 
-                <h1>고객납부현황</h1>
-                <div id="search">
+            <div className={classes.root}>
+                {/* 백그라운드 */}
+                <CssBaseline />
+                {/* 상단파란툴바 */}
+                <AppBar position="absolute" className={clsx(classes.appBar, open && classes.appBarShift)}>
+                    <Toolbar className={classes.toolbar}>
+                        <IconButton
+                            edge="start"
+                            color="inherit"
+                            aria-label="open drawer"
+                            onClick={handleDrawerOpen}
+                            className={clsx(classes.menuButton, open && classes.menuButtonHidden)}
+                        >
+                            <MenuIcon />
+                        </IconButton>
+                        <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
+                            Dashboard
+          </Typography>
+                        <IconButton color="inherit">
+                            <Badge badgeContent={4} color="secondary">
+                                <NotificationsIcon />
+                            </Badge>
+                        </IconButton>
+                    </Toolbar>
+                </AppBar>
+                {/* 왼쪽 메뉴바 */}
+                <Drawer
+                    variant="permanent"
+                    classes={{
+                        paper: clsx(classes.drawerPaper, !open && classes.drawerPaperClose),
+                    }}
+                    open={open}
+                >
+                    <div className={classes.toolbarIcon}>
+                        <IconButton onClick={handleDrawerClose}>
+                            <ChevronLeftIcon />
+                        </IconButton>
+                    </div>
+                    <Divider />
+                    <List>{mainListItems}</List>
+                    <Divider />
+                    <List>{secondaryListItems}</List>
+                </Drawer>
+                <main className={classes.content}>
+                    <div className={classes.appBarSpacer} />
+                    <Container maxWidth="lg" className={classes.container}>
+                        <Grid container spacing={3}>
+                            {/* Chart */}
+                            <Grid item xs={12}>
+                                <Paper className={classes.paper}>
+                                    <form
+                                        onSubmit={onSubmitHandler}
+                                    >
 
-                    납부예정일&nbsp;
+                                        납부예정일&nbsp;
                     {/* date클릭할 때 고정 */}
+                                        <DatePicker
+                                            selected={startDate}
+                                            onChange={date => setStartDate(date)}
+                                            selectsStart
+                                            startDate={startDate}
+                                            endDate={endDate}
+                                            dateFormat="yyyy.MM.dd"
+                                        /> &nbsp;~&nbsp;
                     <DatePicker
-                        selected={startDate}
-                        onChange={date => setStartDate(date)}
-                        selectsStart
-                        startDate={startDate}
-                        endDate={endDate}
-                        dateFormat="yyyy.MM.dd"
-                    /> ~&nbsp;
-                    <DatePicker
-                        selected={endDate}
-                        onChange={date => setEndDate(date)}
-                        selectsEnd
-                        startDate={startDate}
-                        endDate={endDate}
-                        minDate={startDate}
-                        dateFormat="yyyy.MM.dd"
-                    />
+                                            selected={endDate}
+                                            onChange={date => setEndDate(date)}
+                                            selectsEnd
+                                            startDate={startDate}
+                                            endDate={endDate}
+                                            minDate={startDate}
+                                            dateFormat="yyyy.MM.dd"
+                                        />
 
-                    {/* <input type="image" src="/examples/images/submit_icon.png" alt="제출버튼" height="30" width="30"/> */}
-                    &nbsp;
+                                        {/* <input type="image" src="/examples/images/submit_icon.png" alt="제출버튼" height="30" width="30"/> */}
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                     회원명&nbsp;
-                    <input
-                        type="text"
-                        value={userName}
-                        id="userName"
-                        name="userName"
-                        size="5"
-                        onChange={nameSearchHandler}
-                    />
-                    &nbsp;
-
-                    납부여부&nbsp;
-                    <select multiple={false} onChange={paymentStatusHandler} value={paymentStatus}>
-
-                        {paymentState.map(item => (
-                            <option key={item.key} value={item.key}>{item.value}</option>
-                        ))}
-
-                    </select>
+                    <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm" type="text"
+                                            value={userName}
+                                            id="userName"
+                                            name="userName"
+                                            onChange={nameSearchHandler} />
+                  
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 
-                    <input type="button" value="조회" onClick={paymentSearchHandler}></input>
-                </div>
+                    납부여부&nbsp;
+                    <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm" as="select"
+                                            multiple={false} onChange={paymentStatusHandler} value={paymentStatus}>
+                                            {paymentState.map(item => (
+                                                <option key={item.key} value={item.key}>{item.value}</option>
+                                            ))}
 
-                <table id="btn">
-                    <thead>
-                        <tr>
-                            <td id="btd">
-                                <button className='loginBtn' onClick={onPaymenthandler}> 납부</button>
-                            </td>
-                            <td id="btd2">
-                                <input type="button" onClick={excelHandler} value="엑셀다운로드"></input>
-                            </td>
-                        </tr>
-                    </thead>
-                </table>
+                                        </Form.Control>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <Button variant="contained" style={{ width: 80 }} color="primary" onClick={paymentSearchHandler}>
+                                            조회
+                    </Button>
 
-                <table id="list">
-                    <thead>
-                        <tr>
-                            <th rowSpan="2">선택</th>
-                            <th rowSpan="2">No</th>
-                            <th rowSpan="2">회원명</th>
-                            <th rowSpan="2">납부예정일</th>
-                            <th rowSpan="2">납부여부</th>
-                            <th rowSpan="2">납부일자</th>
-                            <th rowSpan="2">계약기간</th>
-                            <th colSpan="3">대표자</th>
-                        </tr>
-                        <tr>
-                            <th>성명</th>
-                            <th>연락처</th>
-                            <th>E-mail</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {currentPosts}
-                    </tbody>
-                </table>
-                <Pagination postsPerPage={postsPerPage} totalPosts={s010100060R.length} paginate={paginate} />
-                <Dialog
-                    maxWidth={"lg"}
-                    open={storeOpen}
-                    onClose={onPayHandleClickClose}>
-                    <S010100070 dataContracId={dataAllContract} />
-                    <DialogActions>
-                        <input type="button" onClick={onPayHandleClickClose} color="primary" value="닫기">
-                        </input>
-                    </DialogActions>
-                </Dialog>
+                                    </form>
 
-            </form>
+                                </Paper>
+                            </Grid>
+                            <table className="btn">
+                                <thead>
+                                    <tr>
+                                        <td>
+                                            <Button variant="contained" style={{ width: 80 }} color="primary" onClick={onPaymenthandler}> 납부 </Button>                                     
+                                            <Button variant="contained" style={{ width: 140 }} color="primary" >엑셀다운로드 </Button>
+                                        </td>
+                                    </tr>
+                                </thead>
+                            </table>
+
+                            {/* 결과 테이블 */}
+                            <Grid item xs={12}>
+                                <Paper className={classes.paper}>
+                                    <React.Fragment>
+                                            <Title>납부 현황</Title>
+                                            <Table size="small">
+
+                                            <TableHead>
+                                                <TableRow>
+                                                    <TableCell rowSpan="2">선택</TableCell>
+                                                    <TableCell rowSpan="2">No</TableCell>
+                                                    <TableCell rowSpan="2">회원명</TableCell>
+                                                    <TableCell rowSpan="2">납부예정일</TableCell>
+                                                    <TableCell rowSpan="2">납부여부</TableCell>
+                                                    <TableCell rowSpan="2">납부일자</TableCell>
+                                                    <TableCell rowSpan="2">계약기간</TableCell>
+                                                    <TableCell colSpan="3">대표자</TableCell>
+                                                </TableRow>
+                                                <TableRow>
+                                                    <TableCell>성명</TableCell>
+                                                    <TableCell>연락처</TableCell>
+                                                    <TableCell>E-mail</TableCell>
+                                                </TableRow>
+                                            </TableHead>
+                                            <TableBody>
+                                            {currentPosts}
+                                            </TableBody>
+                                            </Table>
+                                            
+                                        </React.Fragment>
+                                    {/* <table id="list">
+                                        <thead>
+                                            <tr>
+                                                <th rowSpan="2">선택</th>
+                                                <th rowSpan="2">No</th>
+                                                <th rowSpan="2">회원명</th>
+                                                <th rowSpan="2">납부예정일</th>
+                                                <th rowSpan="2">납부여부</th>
+                                                <th rowSpan="2">납부일자</th>
+                                                <th rowSpan="2">계약기간</th>
+                                                <th colSpan="3">대표자</th>
+                                            </tr>
+                                            <tr>
+                                                <th>성명</th>
+                                                <th>연락처</th>
+                                                <th>E-mail</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {currentPosts}
+                                        </tbody>
+                                    </table> */}
+                                    
+                                </Paper>
+                            </Grid>
+                        </Grid>
+                        <Box pt={4}>
+                        <Pagination postsPerPage={postsPerPage} totalPosts={s010100060R.length} paginate={paginate} />
+                        </Box>
+                    </Container>
+                </main>
+            </div>
+
+
+            <Dialog
+                maxWidth={"lg"}
+                open={storeOpen}
+                onClose={onPayHandleClickClose}>
+                <S010100070 dataContracId={dataAllContract} />
+                <DialogActions>
+                    <input type="button" onClick={onPayHandleClickClose} color="primary" value="닫기">
+                    </input>
+                </DialogActions>
+            </Dialog>
+
+
 
         </Fragment>
     );

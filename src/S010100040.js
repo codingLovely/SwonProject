@@ -1,5 +1,4 @@
 import React, { Fragment, useState, useEffect } from 'react';
-import Navbar from './Navbar';
 import S010100010 from './S010100010';
 import S010100050 from './S010100050';
 import './css/S010100040.css';
@@ -14,6 +13,116 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 //모달창 라이브러리 끝-->
 
+import clsx from 'clsx';
+import { makeStyles } from '@material-ui/core/styles';
+import CssBaseline from '@material-ui/core/CssBaseline';
+import Drawer from '@material-ui/core/Drawer';
+import Box from '@material-ui/core/Box';
+import AppBar from '@material-ui/core/AppBar';
+import Toolbar from '@material-ui/core/Toolbar';
+import List from '@material-ui/core/List';
+import Typography from '@material-ui/core/Typography';
+import Divider from '@material-ui/core/Divider';
+import IconButton from '@material-ui/core/IconButton';
+import Badge from '@material-ui/core/Badge';
+import Container from '@material-ui/core/Container';
+import Grid from '@material-ui/core/Grid';
+import Paper from '@material-ui/core/Paper';
+import MenuIcon from '@material-ui/icons/Menu';
+import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
+import NotificationsIcon from '@material-ui/icons/Notifications';
+import { mainListItems, secondaryListItems } from './listItems';
+import Button from '@material-ui/core/Button';
+import Form from 'react-bootstrap/Form';
+
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
+import Title from './Title';
+
+const drawerWidth = 240;
+
+const useStyles = makeStyles((theme) => ({
+    root: {
+        display: 'flex',
+    },
+    toolbar: {
+        paddingRight: 24, // keep right padding when drawer closed
+    },
+    toolbarIcon: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        padding: '0 8px',
+        ...theme.mixins.toolbar,
+    },
+    appBar: {
+        zIndex: theme.zIndex.drawer + 1,
+        transition: theme.transitions.create(['width', 'margin'], {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.leavingScreen,
+        }),
+    },
+    appBarShift: {
+        marginLeft: drawerWidth,
+        width: `calc(100% - ${drawerWidth}px)`,
+        transition: theme.transitions.create(['width', 'margin'], {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.enteringScreen,
+        }),
+    },
+    menuButton: {
+        marginRight: 36,
+    },
+    menuButtonHidden: {
+        display: 'none',
+    },
+    title: {
+        flexGrow: 1,
+    },
+    drawerPaper: {
+        position: 'relative',
+        whiteSpace: 'nowrap',
+        width: drawerWidth,
+        transition: theme.transitions.create('width', {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.enteringScreen,
+        }),
+    },
+    drawerPaperClose: {
+        overflowX: 'hidden',
+        transition: theme.transitions.create('width', {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.leavingScreen,
+        }),
+        width: theme.spacing(7),
+        [theme.breakpoints.up('sm')]: {
+            width: theme.spacing(9),
+        },
+    },
+    appBarSpacer: theme.mixins.toolbar,
+    content: {
+        flexGrow: 1,
+        height: '100vh',
+        overflow: 'auto',
+    },
+    container: {
+        paddingTop: theme.spacing(4),
+        paddingBottom: theme.spacing(4),
+    },
+    paper: {
+        padding: theme.spacing(2),
+        display: 'flex',
+        overflow: 'auto',
+        flexDirection: 'column',
+    },
+    fixedHeight: {
+        height: 240,
+    },
+
+}));
 
 let memberName = '';
 let memberEmpHp = '';
@@ -32,19 +141,28 @@ function S010100040(props) {
     const [tbMember, setTbMember] = useState([])
 
     //select박스
-    const [memberStatus,setMemberStatus] = useState([{}]);
-    const [memberType,setMemberType] = useState([{}]);
+    const [memberStatus, setMemberStatus] = useState([{}]);
+    const [memberType, setMemberType] = useState([{}]);
 
     //<!--모달창 속성 및 이벤트
-    const [open, setOpen] = React.useState(false);
+    const [open, setOpen] = React.useState(true);
     const [storeOpen, setStoreOpen] = React.useState(false);
 
     //페이징
     const [currentPage, setCurrentPage] = useState(1);
-    const [postsPerPage, setPostsPerPage] = useState(10);
+    const [postsPerPage, setPostsPerPage] = useState(20);
     const indexOfLastPost = currentPage * postsPerPage;
 
-    const [memberIdModal,setMemberIdModal] = useState(0);
+    const [memberIdModal, setMemberIdModal] = useState(0);
+
+    const classes = useStyles();
+    const [modalOpen, setModalOpen] = React.useState(false);
+    const handleDrawerOpen = () => {
+        setOpen(true);
+    };
+    const handleDrawerClose = () => {
+        setOpen(false);
+    };
 
     //select박스
     useEffect(() => {
@@ -62,7 +180,7 @@ function S010100040(props) {
 
                         }));
 
-                        setMemberType(arr);
+                    setMemberType(arr);
 
                 } else {
                     alert("회원상태 데이터를 불러오는데 실패하였습니다.");
@@ -70,9 +188,9 @@ function S010100040(props) {
             })
     }, [])
 
-    const endStatus = [ { key: '전체', value: '전체'  },
-                        { key: 'Y', value: 'Y' },
-                        { key: 'N', value: 'N' } ]
+    const endStatus = [{ key: '전체', value: '전체' },
+    { key: 'Y', value: 'Y' },
+    { key: 'N', value: 'N' }]
 
     useEffect(() => {
 
@@ -89,7 +207,7 @@ function S010100040(props) {
 
                         }));
 
-                        setMemberStatus(arr);
+                    setMemberStatus(arr);
 
                 } else {
                     alert("회원상태 데이터를 불러오는데 실패하였습니다.");
@@ -107,7 +225,7 @@ function S010100040(props) {
             contractStatus,
             memberSt
         }
-        
+
         axios.post('/api/s010100040/searchMember', body)
             .then(response => {
                 if (response.data.success) {
@@ -119,7 +237,7 @@ function S010100040(props) {
             })
     }
 
-    useEffect(() => {    
+    useEffect(() => {
         memberList();
     }, [])
 
@@ -169,12 +287,12 @@ function S010100040(props) {
         setEmpHpForDetailModal(memberEmpHp);
         setNumForDetailModal(memberName);
         setMemberIdModal(memberIdM);
-        setOpen(true);
+        setModalOpen(true);
     }
 
     const onHandleDetailClickClose = () => {
         memberList();
-        setOpen(false);
+        setModalOpen(false);
     }
 
     const onSNSHandler = (event) => {
@@ -193,35 +311,37 @@ function S010100040(props) {
         const ws = xlsx.utils.json_to_sheet(tbMember);
         //console.log(tbMember);
 
-        ['NO','사업자번호','회원명','회원구분','상태','대표자 성명','대표자 연락처','대표자 E-mail','종료여부']
-        .forEach((x,idx) => {
-            const cellAdd = xlsx.utils.encode_cell({c:idx,r:0});
-            ws[cellAdd].v = x;
-        })
+        ['NO', '사업자번호', '회원명', '회원구분', '상태', '대표자 성명', '대표자 연락처', '대표자 E-mail', '종료여부']
+            .forEach((x, idx) => {
+                const cellAdd = xlsx.utils.encode_cell({ c: idx, r: 0 });
+                ws[cellAdd].v = x;
+            })
 
         ws['!cols'] = [];
-        ws['!cols'][0] = {hidden:true};
+        ws['!cols'][0] = { hidden: true };
 
         const wb = xlsx.utils.book_new();
 
-        xlsx.utils.book_append_sheet(wb,ws,"Sheet1");
-        xlsx.writeFile(wb,"회원현황.xlsx");
+        xlsx.utils.book_append_sheet(wb, ws, "Sheet1");
+        xlsx.writeFile(wb, "회원현황.xlsx");
     }
 
-    const s010100040R = tbMember.map((tbMember, index) => {
+
+
+    const s010100040R =tbMember.map((tbMember, index) => {
         return (
-            <tr className='dataTable'>
-                <td name="uname" variant="outlined" color="primary" id={tbMember.MEMBER_ID}> {index + 1}</td>
-                <td >{tbMember.MEMBER_NM}</td>
-                <td id={tbMember.REG_NO}>{tbMember.REG_NO}</td>
-                <td onClick={onHandleDetailClickOpen} className={tbMember.MEMBER_ID} id={tbMember.EMP_HP}>{tbMember.NAME}</td>
-                <td >{tbMember.EMP_HP}</td>
-                <td >{tbMember.EMP_EMAIL}</td>
-                <td >{tbMember.MEMBER_TP}</td>
-                <td >{tbMember.MEMBER_ST}</td>
-                <td >{tbMember.END_FLAG}</td>
-            </tr>
-        )
+            <TableRow key={tbMember.MEMBER_ID}>
+            <TableCell id={tbMember.MEMBER_ID} >{index + 1}</TableCell>
+            <TableCell>{tbMember.MEMBER_NM}</TableCell>
+            <TableCell>{tbMember.REG_NO}</TableCell>
+            <TableCell onClick={onHandleDetailClickOpen} className={tbMember.MEMBER_ID} id={tbMember.EMP_HP}>{tbMember.NAME}</TableCell>
+            <TableCell>{tbMember.EMP_HP}</TableCell>
+            <TableCell>{tbMember.EMP_EMAIL}</TableCell>
+            <TableCell>{tbMember.MEMBER_TP}</TableCell>
+            <TableCell>{tbMember.MEMBER_ST}</TableCell>
+            <TableCell>{tbMember.END_FLAG}</TableCell>
+            </TableRow>
+         )
     });
 
 
@@ -233,128 +353,213 @@ function S010100040(props) {
     return (
 
         <Fragment>
-            <Navbar />
 
-            <form style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    width: '100%',
-                }} 
-            onSubmit={onSearchSubmitHandler}>
+            <div className={classes.root}>
+                {/* 백그라운드 */}
+                <CssBaseline />
+                {/* 상단파란툴바 */}
+                <AppBar position="absolute" className={clsx(classes.appBar, open && classes.appBarShift)}>
+                    <Toolbar className={classes.toolbar}>
+                        <IconButton
+                            edge="start"
+                            color="inherit"
+                            aria-label="open drawer"
+                            onClick={handleDrawerOpen}
+                            className={clsx(classes.menuButton, open && classes.menuButtonHidden)}
+                        >
+                            <MenuIcon />
+                        </IconButton>
+                        <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
+                            Dashboard
+                        </Typography>
+                        <IconButton color="inherit">
+                            <Badge badgeContent={4} color="secondary">
+                                <NotificationsIcon />
+                            </Badge>
+                        </IconButton>
+                    </Toolbar>
+                </AppBar>
+                {/* 왼쪽 메뉴바 */}
+                <Drawer
+                    variant="permanent"
+                    classes={{
+                        paper: clsx(classes.drawerPaper, !open && classes.drawerPaperClose),
+                    }}
+                    open={open}
+                >
+                    <div className={classes.toolbarIcon}>
+                        <IconButton onClick={handleDrawerClose}>
+                            <ChevronLeftIcon />
+                        </IconButton>
+                    </div>
+                    <Divider />
+                    <List>{mainListItems}</List>
+                    <Divider />
+                    <List>{secondaryListItems}</List>
+                </Drawer>
+                <main className={classes.content}>
+                    <div className={classes.appBarSpacer} />
+                    <Container maxWidth="lg" className={classes.container}>
+                        <Grid container spacing={3}>
+                            {/* Chart */}
+                            <Grid item xs={12}>
+                                <Paper style={{ padding: 16 }}>
+                                    <form onSubmit={onSearchSubmitHandler}>
+                                        회원명&nbsp;
+                                            <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm" type="text"
+                                            value={memberNm} id="memberNm" name="memberNm" onChange={memberNmHandler} />
 
-                <h1>회원현황</h1>
-                <div id="search">
-
-                    회원명&nbsp;
-                    <input type="text" value={memberNm} id="memberNm" name="memberNm" size="5"
-                        onChange={memberNmHandler} />
-                    &nbsp;
+                   &nbsp;&nbsp;&nbsp;&nbsp;
 
 
                     사업자번호 &nbsp;
-                    <input type="text" value={regNo} id="regNo" name="regNo" size="10"
-                        onChange={regNoHandler} />
-                    &nbsp;
+                    <Form.Control style={{ width: 10 + 'em', display: 'inline' }} size="sm" type="text"
+                                            value={regNo} id="regNo" name="regNo"
+                                            onChange={regNoHandler} />
+
+                   &nbsp;&nbsp;&nbsp;&nbsp;
 
 
                     대표자명 &nbsp;
-                    <input type="text" value={name} id="name" name="name" size="5"
-                        onChange={nameHandler} />
-                    &nbsp;
-
-                    회원구분 &nbsp;
-                    <select multiple={false} onChange={memberTpHandler} value={memberTp}>
-                        {memberType.map(item => (
-                            <option key={item.key} value={item.key}>{item.value}</option>
-                        ))}
-                    </select>
-                    &nbsp;
-
-                    종료 &nbsp;
-                    <select multiple={false} onChange={contractStatusHandler} value={contractStatus}>
-                        {endStatus.map(item => (
-                            <option key={item.key} value={item.key}>{item.value}</option>
-                        ))}
-                    </select>
-                    &nbsp;
-
-                    상태 &nbsp;
-                    <select multiple={false} onChange={memberStHandler} value={memberSt}>
-
-                        {memberStatus.map(item => (
-                            <option key={item.key} value={item.key}>{item.value}</option>
-                        ))}
-                    </select>
+                    <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm" type="text"
+                                            value={name} id="name" name="name"
+                                            onChange={nameHandler} />
 
                     &nbsp;&nbsp;&nbsp;&nbsp;
 
-                    <input type="button" onClick={onSearchSubmitHandler} value="조회"></input>
-                </div>
+                    회원구분 &nbsp;
+                    <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm" as="select"
+                                            multiple={false} onChange={memberTpHandler} value={memberTp}>
+                                            {memberType.map(item => (
+                                                <option key={item.key} value={item.key}>{item.value}</option>
+                                            ))}
 
-                <Dialog
-                    maxWidth={"lg"}
-                    open={open}
-                    onClose={onHandleDetailClickClose}>
-                    <S010100050 dataMemId = {memberIdModal} dataName={numForDetailModal} dataForm={"U"} dataEmpHp={empHpForDetailModal} />
-                    <DialogActions>
-                        <input type="button" id="contractBtn" onClick={onHandleDetailClickClose} color="primary" value='닫기' />
-                    </DialogActions>
-                </Dialog>
+                                        </Form.Control>
+
+                                            &nbsp;&nbsp;&nbsp;&nbsp;
+
+                    종료 &nbsp;
+                    <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm" as="select"
+                                            multiple={false} onChange={contractStatusHandler} value={contractStatus}>
+                                            {endStatus.map(item => (
+                                                <option key={item.key} value={item.key}>{item.value}</option>
+                                            ))}
+
+                                        </Form.Control>
+
+                                            &nbsp;&nbsp;&nbsp;&nbsp;
+
+                    상태 &nbsp;
+                    <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm" as="select"
+                                            multiple={false} onChange={memberStHandler} value={memberSt}>
+                                            {memberStatus.map(item => (
+                                                <option key={item.key} value={item.key}>{item.value}</option>
+                                            ))}
+
+                                        </Form.Control>
 
 
-                <table className="btn">
-                    <thead>
-                        <tr>
-                            <td colSpan="5">
-                                <input type="button" onClick={onHandleClickOpen} value="신규회원"></input>
-                                <input type="button" onClick={onSNSHandler} value="SNS" />
-                                <input type="button" onClick={onEmailHandler} value="메일전송" />
-                            </td>
-                            <td id="alignRight">
-                                <input type="button" onClick = {excelHandler} value="엑셀다운로드"></input>
-                            </td>
-                        </tr>
-                    </thead>
-                </table>
+                                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 
-                <table id="list">
-                    <thead>
-                        <tr>
-                            <th rowSpan="2">No</th>
-                            <th rowSpan="2">회원명</th>
-                            <th rowSpan="2">사업자번호</th>
-                            <th colSpan="3">대표자</th>
-                            <th rowSpan="2">회원구분</th>
-                            <th rowSpan="2">상태</th>
-                            <th rowSpan="2">종료여부</th>
-                        </tr>
+                                    <Button variant="contained" style={{ width: 80 }} color="primary" onClick={onSearchSubmitHandler}>
+                                            조회
+                                    </Button>
+                                    </form>
+                                </Paper>
+                            </Grid>
 
-                        <tr>
-                            <th>성명</th>
-                            <th>연락처</th>
-                            <th>E-mail</th>
-                        </tr>
-                    </thead>
+                            <table className="btn">
+                                <thead>
+                                    <tr>
+                                        <td colSpan="5">
+                                            <Button variant="contained" style={{ width: 100 }} color="primary" onClick={onHandleClickOpen} >
+                                                신규회원
+                                            </Button>
+                                            <Button variant="contained" style={{ width: 100 }} color="primary" onClick={onSNSHandler} >
+                                                SNS
+                                            </Button>
+                                            <Button variant="contained" style={{ width: 100 }} color="primary" onClick={onEmailHandler} >
+                                                메일전송
+                                            </Button>
+                                        </td>
+                                    
+                                        <td  id="alignRight">
+                                           
+                                        </td>
+                                        <td  id="alignRight">
+                                           
+                                        </td>
+                                        <td colSpan = "5" id="alignRight">
+                                            <Button variant="contained" style={{ width: 140 }} color="primary" onClick={excelHandler}>
+                                                엑셀다운로드
+                                            </Button>
+                                        </td>
+                                    </tr>
+                                </thead>
+                            </table>
 
-                    <tbody>
-                        {currentPosts}
-                    </tbody>
+                            {/* 결과 테이블 */}
+                            <Grid item xs={12}>
+                                <Paper className={classes.paper}>
+                                    <React.Fragment>
+                                            <Title>회원 현황</Title>
+                                            <Table size="small">
 
-                </table>
+                                            <TableHead>
+                                                <TableRow>
+                                                    <TableCell rowSpan="2">No</TableCell>
+                                                    <TableCell rowSpan="2">회원명</TableCell>
+                                                    <TableCell rowSpan="2">사업자번호</TableCell>
+                                                    <TableCell colSpan="3">대표자</TableCell>
+                                                    <TableCell rowSpan="2">회원구분</TableCell>
+                                                    <TableCell rowSpan="2">상태</TableCell>
+                                                    <TableCell rowSpan="2">종료여부</TableCell>
+                                                </TableRow>
+                                                <TableRow>
+                                                    <TableCell>성명</TableCell>
+                                                    <TableCell>연락처</TableCell>
+                                                    <TableCell>E-mail</TableCell>
+                                                </TableRow>
+                                            </TableHead>
+                                            <TableBody>
+                                            {currentPosts}
+                                            </TableBody>
+                                            </Table>
+                                            
+                                        </React.Fragment>
 
-                <Pagination postsPerPage={postsPerPage} totalPosts={s010100040R.length} paginate={paginate} />
+                                </Paper>
+                            </Grid>
+                        </Grid>
+                        <Box pt={4}>
+                        <Pagination postsPerPage={postsPerPage} totalPosts={s010100040R.length} paginate={paginate} />
+                        </Box>
+                    </Container>
+                </main>
+            </div>
 
-            </form>
+
+
+            <Dialog
+                maxWidth={"lg"}
+                open={modalOpen}
+                onClose={onHandleDetailClickClose}>
+                <S010100050 dataMemId={memberIdModal} dataName={numForDetailModal} dataForm={"U"} dataEmpHp={empHpForDetailModal} />
+                <DialogActions>
+                    <input type="button" id="contractBtn" onClick={onHandleDetailClickClose} color="primary" value='닫기' />
+                </DialogActions>
+            </Dialog>
+
+
+
 
             <Dialog
                 maxWidth={"lg"}
                 open={storeOpen}
                 onClose={onHandleClickClose}>
-                <S010100010/>
+                <S010100010 />
                 <DialogActions>
-                    <input type="button" onClick={onHandleClickClose} color="primary" value="닫기"/>
+                    <input type="button" onClick={onHandleClickClose} color="primary" value="닫기" />
                 </DialogActions>
             </Dialog>
 
