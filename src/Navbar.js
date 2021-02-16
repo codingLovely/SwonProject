@@ -22,7 +22,8 @@ class Navbar extends Component {
                         </li>
                         <li><Link to ="/login">로그인/로그아웃</Link>
                         </li>
-                        
+                        <li><Link to ="/Dashboard">로그인/로그아웃</Link>
+                        </li>
                     </ul>
                 </nav>
              </header>

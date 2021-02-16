@@ -24,6 +24,7 @@
 
 .btn-center{text-align: center;}
 .btn-center #btnWidth{width: 150px;}
+
 .react-datepicker-wrapper input{width: 100px;}
 #fstTextSpacing.alignLeft {line-height:200%;border-top:none; border-bottom: none; border-right: none;}
 #sndTextSpacing.alignLeft {line-height:200%; border-top:none; border-bottom: none;  border-left: none;}

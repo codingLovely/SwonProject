@@ -1,12 +1,7 @@
-table.btn{margin: 0 auto; padding: 0;}
-.btn td{padding: 0;}
-.btn{width: 1222px; height: 55px; border: none;}
-.btn td{text-align: left;border: none;}
-.btn td button{height: 25px;margin: 5px;}
-td#alignRight{width: 300px;height: 50px;text-align: right;}
-td#alignRight button{width: 100px; height: 25px;}
-.btn button {border : none; outline : none; border-radius: 5px; background: #9cc3e6; text-align: center; color : #000000; font-size : 12px;
-font-family:"Adobe Caslon Pro";}
+
+td #alignRight{text-align: right;}
+
+
 
 #contractBtn{margin: 0px 100px 20px 0px;}
 .dataTable:nth-child(2n){

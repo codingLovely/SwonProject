@@ -188,23 +188,6 @@ const makeYYMMDD = (value) => {
     return year+'.'+month+'.'+date;
 }
 
-const changePayDateHandler = () => {
-
-    // // date => {setPaymentStatusList(
-    // //     paymentStatusList.map(changePaymentStatus =>
-    // //         changePaymentStatus.PAY_PLAN_DATE === paymentStatus.PAY_PLAN_DATE ?
-    // //         {...changePaymentStatus, PAYED_DATE : makeYYMMDD(date)}
-    // //         : changePaymentStatus
-    // // ))}
-
-    // payDateRef.current.focus()
-
-   
-    
-}
-
-//useRef();
-const payDateRef = useRef();
 
 //뿌려주는 곳
 const s010100070R = paymentStatusList.map((paymentStatus, index) => {
@@ -222,9 +205,9 @@ const s010100070R = paymentStatusList.map((paymentStatus, index) => {
                 <td>{paymentStatus.PAY_PLAN_DATE}</td>
                 <td>{paymentStatus.PAYED_FLAG}</td>
                 <td key = {paymentStatus.PAY_PLAN_DATE} id={paymentStatus.PAY_PLAN_DATE}>
-                    {/* api보고 바뀐이벤트값들고오는거 찾아서 했어요 */}
+                    {/* api보고 바뀐 이벤트 값 들고오는거 찾아서 했어요 */}
                     <DatePicker
-                        ref = {payDateRef}
+                        //ref = {payDateRef}
                         id = {paymentStatus.PAY_PLAN_DATE}
                         locale="ko"
                         selected={insertPayDate.setHours(9, 0, 0, 0)}
@@ -284,8 +267,7 @@ const s010100070R = paymentStatusList.map((paymentStatus, index) => {
                     alignItems: 'center',
                     width: '100%'
                 }}>
-                    {/* */}
-
+                    
 
                     <h1>고객납부등록</h1>
                     <div id='list'>
