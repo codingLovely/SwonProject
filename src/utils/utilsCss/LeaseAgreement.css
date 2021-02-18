@@ -26,6 +26,6 @@
     padding:20px 0px 20px 70px;
 }
 
-#finalSign{
-    padding-left: 20px;
-}
+ul{
+    list-style:none;
+    }

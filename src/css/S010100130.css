@@ -1,4 +1,6 @@
 .gridInline{text-align: left;}
+.btn {width: 860px;}
+.btn tr #alignRigth{text-align: right;}
 .btn thead tr #btd Button{margin-left: 10px;}
 .btn thead tr td{margin-left: 10px;}
 #list thead tr th{background-color: #D6BCB0; padding: 10px;}
@@ -22,4 +24,58 @@ div#datePickerArea input {width: 110px; text-align:center; position: static;}
 div#searchArea{margin: 10px 0px 0px 18px;}
 div#searchArea input#ask_name {width: 98px;}
 
-/*.react-datepicker-wrapper.react-datepicker__input-container{position:static;}*/
+#reactPage{margin-top: 20px; margin-left: 100px; }
+.paginationBtns{
+  width: 80%;
+  height: 20px;
+  list-style: none;
+  display: flex;
+  justify-content: center;
+}
+
+.MuiTableHead-root{
+  background-color:rgba(63,81,181, 0.9);
+  box-shadow: 0px 3px 1px -2px rgb(0 0 0 / 20%), 
+              0px 2px 2px 0px rgb(0 0 0 / 14%), 
+              0px 1px 5px 0px rgb(0 0 0 / 12%);
+
+}
+
+.MuiTableHead-root th{
+ text-align: center;
+}
+.MuiTableBody-root tr td{
+  text-align: center;
+ }
+
+
+.paginationBtns a{
+  color: #3f51b5;
+  padding:10px;
+  margin: 8px;
+  border-radius: 5px;
+  border: 1px solid #3f51b5;
+  cursor: pointer;
+}
+
+.paginationBtns a:hover {
+  color: white;
+  background-color: #3f51b5;
+
+}
+
+.paginationActive a {
+  color: white;
+  background-color: #3f51b5;
+}
+
+.underLineForDetail{
+  text-decoration: underline;
+}
+
+.underLineForDetail:hover{
+  color: white;
+  background-color: #f1f3f5;
+  text-decoration: none;
+  cursor: pointer;
+}

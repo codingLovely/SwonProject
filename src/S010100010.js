@@ -4,33 +4,33 @@ import axios from 'axios';
 import { post } from 'axios';
 import './css/S010100010.css';
 import LeaseAgreement from './utils/LeaseAgreement';
+import Table from 'react-bootstrap/Table'
 
-
-//모달창 라이브러리
+// 모달창 라이브러리
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 
-//켈린더 라이브러리
+// 켈린더 라이브러리
 import DatePicker, { registerLocale } from 'react-datepicker';
 import ko from 'date-fns/locale/ko';
 registerLocale('ko', ko);
 
-//select박스
+// select박스
 let valueArr = [[], [], [], [], []];
 let queryArr = [['MEMBER_TP', ''], ['CONTRACT_TP', 'ASK'], ['PAY_METHOD', '']];
 let payDates = [];
 
-//출력용
+// 출력용
 let forPrint;
-//확정-가계약
+// 확정-가계약
 let forMemberStatus;
-//계약 수정하기 이용기간 중복확인
+// 계약 수정하기 이용기간 중복확인
 let existingStartDate;
 let existingEndDate;
 
 function S010100010(props) {
 
-    //회원정보
+    // 회원정보
     const [memberNm, setMemberNm] = useState('');
     const [firstRegNo, setFisrtRegNo] = useState('');
     const [secondRegNo, setSecondRegNo] = useState('');
@@ -48,7 +48,7 @@ function S010100010(props) {
     const [ceoIdCardImg, setCeoIdCardImg] = useState('');
     const [ceoRegistCardImg, setCeoRegistCardImg] = useState('');
 
-    //계약정보
+    // 계약정보
     const [contractTp, setContractTp] = useState('');
     const [contractTpVal, setContractTpVal] = useState([{ key: '', value: '선택' }]);
     const [roomLockerTp, setRoomLockerTp] = useState(0);
@@ -64,44 +64,38 @@ function S010100010(props) {
     const [contractEnd, setContractEnd] = useState('');
     const [userStatus, setUserStatus] = useState('');
 
-    //중복확인
+    // 중복확인
     const [regNoCheckBtn, setRegNoCheckBtn] = useState('');
     const [empHpCheckBtn, setEmpHpCheckBtn] = useState('');
     const [dateCheckBtn, setDateCheckBtn] = useState('');
-    const [roomCheck, setRoomCheck] = useState('');
+ 
 
-    //dialog open
+    // dialog open
     const [printSheetOpen, setPrintSheetOpen] = useState(false);
     const [leaseAgreementOpen, setLeaseAgreementOpen] = useState(false);
 
-    //cd_v_meaning for printing
+    // cd_v_meaning for printing
     const [memberTpPrint, setMemberTpPrint] = useState('');
     const [contractTpPrint, setContractTpPrint] = useState('');
     const [payMethodPrint, setPayMethodPrint] = useState('');
     const [accessPrint, setAccessPrint] = useState('');
 
-    //첨부파일업로드
+    // 첨부파일업로드
     const [idCardFile, setIdCardFile] = useState(null);
     const [idCardFileName, setIdCardFileName] = useState('');
 
     const [registCardFile, setRegistCardFile] = useState(null);
     const [registCardFileName, setRegistCardFileName] = useState('');
 
-    // const onHandleClickClose = (event) => {
-    //     setOpen(false);
-    // }
-
-    //  //주소api
-    //  const [open, setOpen] = React.useState(false);
-    //  const [isPostOpen, setIsPostOpen] = useState(false);
-    //  //hidden 이용해보기
+    // 확정/가계약구분
+    const [memberStFlag,setMemberStFlag] = useState('');
 
     const rNum = props.dataNum;
     const modalMemberId = props.dataMem;
 
     useEffect(() => {
         if (props.newDataForm === 'N') {
-            axios.get(`/api/s01010010/insert/tb_s10_contract010_by_id?id=${modalMemberId}&type=single`)
+            axios.get(`/api/memStList/insert/tb_s10_contract010_by_id?id=${modalMemberId}&type=single`)
                 .then(response => {
                     if (response.data.success) {
 
@@ -148,7 +142,7 @@ function S010100010(props) {
     useEffect(() => {
         if (props.cDataForm === 'I') {
             //계약상세정보 함수(contract_id이용)
-            axios.get(`/api/s01010010/tb_s10_contract010_by_id?id=${rNum}&type=single`)
+            axios.get(`/api/memStList/tb_s10_contract010_by_id?id=${rNum}&type=single`)
                 .then(response => {
                     if (response.data.success) {
 
@@ -194,6 +188,7 @@ function S010100010(props) {
                         const modalCEmpEmails = modalCEmpEmail.split("@");
 
                         setUserStatus(modalCMemberSt);
+                        setMemberStFlag(modalCMemberSt);
                         setMemberNm(modalCMemberNm);
                         setFisrtRegNo(modalCRegNos[0]);
                         setSecondRegNo(modalCRegNos[1]);
@@ -299,7 +294,7 @@ function S010100010(props) {
         //     script.async = "async";
         //     document.head.appendChild(script);
 
-        console.log('ggggg');
+        //console.log('ggggg');
 
         const postCodeStyle = {
             display: "block",
@@ -350,7 +345,7 @@ function S010100010(props) {
 
             let firstVal = queryArr[i][0];
             let secondVal = queryArr[i][1];
-            axios.post('/api/s010100140/selectTest', { firstVal: firstVal, secondVal: secondVal })
+            axios.post('/api/memStList/selectTest', { firstVal: firstVal, secondVal: secondVal })
                 .then(response => {
                     if (response.data.success) {
                         //console.log('ask_tp',response.data.rows);
@@ -372,7 +367,7 @@ function S010100010(props) {
     }, [])
 
     useEffect(() => {
-        axios.post('/api/s010100010/accessPath')
+        axios.post('/api/memStList/accessPath')
             .then(response => {
                 if (response.data.success) {
                     let arr = [{ key: '선택', value: '선택' }]
@@ -407,7 +402,7 @@ function S010100010(props) {
         let contractTpBody = event.currentTarget.value;
 
 
-        axios.post('/api/s010100010/contHier', { contractTpBody: contractTpBody })
+        axios.post('/api/memStList/contHier', { contractTpBody: contractTpBody })
             .then(response => {
                 if (response.data.success) {
                     //console.log('ContractTpVal', response.data.rows);
@@ -439,7 +434,7 @@ function S010100010(props) {
                     }//switch
 
                     if (contractTpBody === 'FI' || contractTpBody === 'FL') {
-                        axios.post('/api/s010100010/roomLockerHier')
+                        axios.post('/api/memStList/roomLockerHier')
                             .then(response => {
                                 if (response.data.success) {
                                     //console.log('roomLocker', response.data.rows);
@@ -462,7 +457,7 @@ function S010100010(props) {
                     let monthlyMoney = {
                         contractTpBody: contractTpBody
                     }
-                    axios.post('/api/s010100010/monthlyMoney', monthlyMoney)
+                    axios.post('/api/memStList/monthlyMoney', monthlyMoney)
                         .then(response => {
                             if (response.data.success) {
                                 //console.log(response.data.rows[0].ATTRIBUTE3);
@@ -526,7 +521,7 @@ function S010100010(props) {
     }, []);
 
 
-    //첨부파일 서버로 보내는 함수
+    // 첨부파일 서버로 보내는 함수
     const addMember = () => {
         const url = '/api/s010100010/insertMember010';
         const formData = new FormData();
@@ -596,10 +591,7 @@ function S010100010(props) {
         //     return alert("연락처를 입력하세요.");
         // }
         //
-        // //E-mail NUll체크
-        // if (empEmailId == null || empEmailId == '' || domainAddress == null || domainAddress == '') {
-        //     return alert("E-mail을 입력하세요.");
-        // }
+       
         //
         // //계약구분 NUll체크
         // if (contractTp == null || contractTp == '') {
@@ -626,19 +618,7 @@ function S010100010(props) {
         //     return alert("납부방법을 선택하세요.");
         // }
         //
-        // //월회비 NUll체크
-        // if (contractMoney == null || contractMoney == '') {
-        //     return alert("월회비를 입력하세요.");
-        // }
-        //
-        // //납부액 NUll체크
-        // if (contractMoney == null || contractMoney == '') {
-        //     return alert("납부액을 입력하세요.");
-        // }
-        // //계약접근경로 NUll체크
-        // if (contractPath == null || contractPath == '') {
-        //     return alert("계약접근경로를 선택하세요.");
-        // }
+      
 
         //중복확인
         if (regNoCheckBtn == '') {
@@ -659,6 +639,18 @@ function S010100010(props) {
     const temporaryStorage = (event) => {
         event.preventDefault();
         forMemberStatus = "T";
+        
+        // //대표자 NUll체크
+        // if (empIdName == null || empIdName == '') {
+        //     return alert("대표자를 입력하세요.");
+        // }
+        //
+        // //연락처 NUll체크
+        // if (firstEmpHp == null || firstEmpHp == '' || secondEmpHp == null || secondEmpHp == '' || thirdEmpHp == null || thirdEmpHp == '') {
+        //     return alert("연락처를 입력하세요.");
+        // }
+        //
+      
 
         //중복확인
         if (regNoCheckBtn == '') {
@@ -739,11 +731,11 @@ function S010100010(props) {
             comment: comment
         }
 
-        axios.post('/api/s010100050/detailNewContract_by_id', body)
+        axios.post('/api/memStList/detailNewContract_by_id', body)
             .then(response => {
                 if (response.data.success) {
                     alert('신규계약에 성공 하였습니다');
-                    
+
                 } else {
                     alert('신규계약에 실패 하였습니다');
                 }
@@ -751,15 +743,16 @@ function S010100010(props) {
     }
 
 
-    //가계약을 확정으로 + 수정하기
+    // 가계약을 확정으로 + 수정하기
     const newContractIdStorage = (event) => {
-
-        // //if(memberSt가 가계약이라면 ){
-        //     //가계약을 확정으로
+        
+        // console.log('memberStFlag',memberStFlag);
+        if(memberStFlag == 'T' ){
+            //가계약을 확정으로
             let memberBody = {
                 rNum: rNum
             }
-            axios.post('/api/s010100010/modifymemberSt', memberBody)
+            axios.post('/api/memStList/modifymemberSt', memberBody)
                 .then(response => {
                     if (response.data.success) {
                         alert('확정되었습니다');
@@ -767,7 +760,7 @@ function S010100010(props) {
                         alert('확정실패 하였습니다');
                     }
                 })
-        // //}
+        }
 
         //수정하기
         let modifyDataNum = props.dataNum;
@@ -789,7 +782,8 @@ function S010100010(props) {
             contractPath: contractPath,
             comment: comment
         }
-
+        
+        console.log('comment',comment);
         let dateChangeChk = props.dataNum;
 
         let dataChk = {
@@ -798,8 +792,8 @@ function S010100010(props) {
         }
 
 
-        //이용기간 중복확인 할 때 (기존 db에 있는)startDate,endDate 가져오는 api 
-        axios.post('/api/s010100010/contractModify/dateChangeSt', dataChk)
+        // 이용기간 중복확인 할 때 (기존 db에 있는)startDate,endDate 가져오는 api 
+        axios.post('/api/memStList/contractModify/dateChangeSt', dataChk)
             .then(response => {
                 if (response.data.success) {
                     //console.log('response.data.row',response.data.row);
@@ -820,24 +814,27 @@ function S010100010(props) {
                     existingEndDate = wasteEndYearDay + '.' + parseInt(wasteEndMonthDay) + '.' + (parseInt(wasteEndDateDay) + 1);
 
                     //날짜 수정x
-                    if (startDate === existingStartDate && dateEnd === existingEndDate && contractTerm === wastedContractTerm) {
+                    if (dateEnd === existingEndDate || contractTerm === wastedContractTerm) {
+
                         setDateCheckBtn('check');
-                        // axios.post('/api/s010100050/detailModifyContracId', body)
-                        //     .then(response => {
-                        //         if (response.data.success) {
-                        //             alert('이용계약서를 수정하였습니다');
-                        //         } else {
-                        //             alert('이용계약서 수정을 실패 하였습니다');
-                        //         }
-                        //     })
+
+                        axios.post('/api/memStList/detailModifyContracId', body)
+                            .then(response => {
+                                if (response.data.success) {
+                                    alert('이용계약서를 수정하였습니다');
+                                } else {
+                                    alert('이용계약서 수정을 실패 하였습니다');
+                                }
+                            })
                         alert('날짜 수정안했음');
-                    //날짜 수정o
+
+                        //날짜 수정o
                     } else {
-                        console.log('contractTerm != wastedContractTerm', contractTerm != wastedContractTerm);
+                        //console.log('contractTerm != wastedContractTerm', contractTerm != wastedContractTerm);
                         alert('날짜 수정했음');
                         if (dateCheckBtn == 'check') {
 
-                            axios.post('/api/s010100050/detailModifyContracId', body)
+                            axios.post('/api/memStList/detailModifyContracId', body)
                                 .then(response => {
                                     if (response.data.success) {
                                         alert('이용계약서를 수정하였습니다');
@@ -849,16 +846,13 @@ function S010100010(props) {
                         } else if (dateCheckBtn == '') {
                             alert('날짜 중복확인 하세요');
                         }
-
+                        setDateCheckBtn('');
                     }
 
                 } else {
 
                 }
             })
-
-
-
 
     }
 
@@ -956,7 +950,7 @@ function S010100010(props) {
             //계약정보
             rNum: rNum
         }
-        axios.post('/api/s010100140/endFlag', body)
+        axios.post('/api/memStList/endFlag', body)
             .then(response => {
                 if (response.data.success) {
                     alert('종료처리 하였습니다.')
@@ -971,7 +965,7 @@ function S010100010(props) {
 
         setUserStatus('');
 
-        axios.post(`/api/s010100010/memberDelete_by_id?id=${rNum}`)
+        axios.post(`/api/memStList/memberDelete_by_id?id=${rNum}`)
             .then(response => {
                 if (response.data.success) {
                     alert('삭제 하였습니다.')
@@ -996,7 +990,7 @@ function S010100010(props) {
             thirdRegNo: thirdRegNo,
         }
 
-        axios.post('/api/s010100140/regNoCheck', body)
+        axios.post('/api/memStList/regNoCheck', body)
             .then(response => {
                 if (response.data.success) {
                     if (response.data.number[0].RowNum >= 1) {
@@ -1025,7 +1019,7 @@ function S010100010(props) {
         }
 
 
-        axios.post('/api/s010100140/empHpCheck', body)
+        axios.post('/api/memStList/empHpCheck', body)
             .then(response => {
                 if (response.data.success) {
                     if (response.data.number[0].RowNum >= 1) {
@@ -1043,13 +1037,13 @@ function S010100010(props) {
     let finalYear = ((startAsk_date.getMonth() * 1 + contractTerm * 1) / 12) + startAsk_date.getFullYear();
 
     let finalMonth = ((startAsk_date.getMonth() * 1 + contractTerm * 1) % 12) + 1;
-        finalMonth = finalMonth < 10 ? '0' + finalMonth : finalMonth;
+    finalMonth = finalMonth < 10 ? '0' + finalMonth : finalMonth;
 
-    let finalDate =  new Date(finalYear, finalMonth, 0).getDate() > startAsk_date.getDate() 
-                   ? startAsk_date.getDate()
-                   : new Date(finalYear, finalMonth, 0).getDate();
-    let dateEnd =  Math.floor(finalYear) + '.' + finalMonth + '.' + finalDate;
-    
+    let finalDate = new Date(finalYear, finalMonth, 0).getDate() > startAsk_date.getDate()
+        ? startAsk_date.getDate()
+        : new Date(finalYear, finalMonth, 0).getDate();
+    let dateEnd = Math.floor(finalYear) + '.' + finalMonth + '.' + finalDate;
+
 
     //이용기간 중복체크
     const funcDateChk = () => {
@@ -1070,7 +1064,7 @@ function S010100010(props) {
 
         //console.log(modalMemberId);
 
-        axios.post('/api/s010100140/dateCheck', body)
+        axios.post('/api/memStList/dateCheck', body)
             .then(response => {
                 if (response.data.success) {
                     if (response.data.number[0].STARTENDDATE >= 1) {
@@ -1125,7 +1119,7 @@ function S010100010(props) {
             encType='multipart/form-data'
         >
             <h1 id="useContractTitle">이용계약서</h1>
-            <table className="useContractTable">
+            <Table striped bordered hover className="useContractTable">
                 {/* 회원정보란 */}
                 <tbody>
                     <tr>
@@ -1539,7 +1533,7 @@ function S010100010(props) {
                         </td>
                     </tr>
                 </tbody>
-            </table>
+            </Table>
 
             <div className="btn-center" hidden={forPrint}>
                 {/* 신규계약 */}
@@ -1590,7 +1584,7 @@ function S010100010(props) {
                 onClose={onleaseAgreementClose}>
                 <LeaseAgreement dataNum={rNum} />
                 <DialogActions>
-                    <input type="button" onClick={onleaseAgreementClose} color="primary" value="닫기" hidden={forPrint} />
+                    {/* <input type="button" onClick={onleaseAgreementClose} color="primary" value="닫기" hidden={forPrint} /> */}
                 </DialogActions>
             </Dialog>
 

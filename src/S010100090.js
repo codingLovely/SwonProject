@@ -29,11 +29,14 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Title from './Title';
 
-//<!--켈린더 라이브러리시작
-import DatePicker, { registerLocale } from "react-datepicker";
-import ko from 'date-fns/locale/ko';
-registerLocale("ko", ko);
-//켈린더 라이브러리 끝-->
+import { DatePicker } from "antd";
+import "antd/dist/antd.css";
+
+// //<!--켈린더 라이브러리시작
+// import DatePicker, { registerLocale } from "react-datepicker";
+// import ko from 'date-fns/locale/ko';
+// registerLocale("ko", ko);
+// //켈린더 라이브러리 끝-->
 
 const drawerWidth = 240;
 

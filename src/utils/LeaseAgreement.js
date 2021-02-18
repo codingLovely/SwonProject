@@ -4,74 +4,117 @@ import './utilsCss/LeaseAgreement.css';
 
 function LeaseAgreement (props){
 
+    // 계약시작년도,월,일
+    const [startYear,setStartYear] = useState('');
+    const [startMonth,setStartMonth] = useState('');
+    const [startDay,setStartDay] = useState('');
+    
+    // 계약종료년도,월,일
+    const [endYear,setEndYear] = useState('');
+    const [endMonth,setEndMonth] = useState('');
+    const [endDay,setEndDay] = useState('');
 
-    const [contractStart,setContractStart] = useState('');
-    const [contractEnd,setContractEnd] = useState('');
     const [contractMoney,setContractMoney] = useState('');
     const [roomLockerTp,setRoomLockerTp] = useState('');
     const [contractPayDate,setContractPayDate] = useState('');
     const [vatMoney, setVatMoney] = useState(0);
 
+    const [companyName,setCompanyName] = useState('');
+    const [ceoName,setCeoName] = useState('');
+    const [bLicenseNum,setBLicenseNum] = useState('');
+    const [companyAddr,setCompanyAddr] = useState('');
+    const [ceoTel,setCeoTel] = useState('');
+
 
     useEffect(() => {
       const rNum = props.dataNum;
-      axios.get(`/api/s01010010/tb_s10_contract010_by_id?id=${rNum}&type=single`)
+      axios.get(`/api/memStList/tb_s10_contract010_by_id?id=${rNum}&type=single`)
           .then(response => {
               if (response.data.success) {
-                  
-                //   const modalCMemberNm = response.data.rows[0].MEMBER_NM;
-                //   const modalCRegNo = response.data.rows[0].REG_NO;
-                //   const modalCMemberTp = response.data.rows[0].MEMBER_TP;
-                //   const modalCName = response.data.rows[0].NAME;
-                //   const modalCEmpHp = response.data.rows[0].EMP_HP;
-                //   const modalCEmpEmail = response.data.rows[0].EMP_EMAIL;
-                //   const modalCZipCode = response.data.rows[0].ZIP_CODE;
-                //   const modalCAddress = response.data.rows[0].ADDRESS;
-                //   const modalCDetailAddress = response.data.rows[0].DETAIL_ADDRESS;
-                 
 
                 const modalCContractDate = response.data.rows[0].CONTRACT_DATE;
                 const modalCContractMoney = response.data.rows[0].PAYED_PLAN_MONEY;
-                const modalCEndDate = response.data.rows[0].END_DATE;
+               
                 const modalCContractTpValM = response.data.rows[0].CONTRACT_ROOM_M;
                 const modalCPayDate = response.data.rows[0].PAY_DATE;
 
                 //VAT(10%)적용한 modalCContractMoney 값
                 let VatMoney = modalCContractMoney-(modalCContractMoney*(10/100));
-                //   setRegNo(modalCRegNos);
-                //   setEmpIdName(modalCName);
-                //   setEmpHp(modalCEmpHps);
-                //   setEmpEmail(modalCEmpEmails);
-                //   setZipcode(modalCZipCode);
-                //   setEmpAddress(modalCAddress);
-                //   setEmpDetailAddress(modalCDetailAddress);
+               
+                const modalCStartDate = response.data.rows[0].START_DATE;
+                const modalCEndDate = response.data.rows[0].END_DATE;
+                
+                let wasteStartYear = modalCStartDate.substring(0, 4);
+                let wasteStartMonth = modalCStartDate.substring(5, 7);
+                let wasteStartDay = modalCStartDate.substring(8, 10);
 
-                  setContractStart(modalCContractDate);
-                  setContractEnd(modalCEndDate);
-                  setContractMoney(modalCContractMoney);
-                  setVatMoney(VatMoney);
-                  setRoomLockerTp(modalCContractTpValM);
-                  setContractPayDate(modalCPayDate);
+                let wasteEndYear = modalCEndDate.substring(0, 4);
+                let wasteEndMonth = modalCEndDate.substring(5, 7);
+                let wasteEndDay = modalCEndDate.substring(8, 10);
+
+                const modalCMemberNm = response.data.rows[0].MEMBER_NM;
+                const modalCRegNo = response.data.rows[0].REG_NO;
+                const modalCName = response.data.rows[0].NAME;
+                const modalCEmpHp = response.data.rows[0].EMP_HP;
+            
+                const modalCZipCode = response.data.rows[0].ZIP_CODE;
+                const modalCAddress = response.data.rows[0].ADDRESS;
+                const modalCDetailAddress = response.data.rows[0].DETAIL_ADDRESS;
+                
+                
+                setStartYear(wasteStartYear);
+                setStartMonth(wasteStartMonth);
+                setStartDay(wasteStartDay);
+
+                setEndYear(wasteEndYear);
+                setEndMonth(wasteEndMonth);
+                setEndDay(wasteEndDay);
+
+                setContractMoney(modalCContractMoney);
+                setVatMoney(VatMoney);
+                setRoomLockerTp(modalCContractTpValM);
+                setContractPayDate(modalCPayDate);
+
+                setCompanyName(modalCMemberNm);
+                setCeoName(modalCName);
+
+                setBLicenseNum(modalCRegNo);
+                setCompanyAddr(modalCZipCode + ' ' + modalCAddress + ' ' + modalCDetailAddress);
+                setCeoTel(modalCEmpHp);
 
               } else {
                   alert("상세 정보 가져오기를 실패하였습니다.")
               }
           })
         }, [])
-  
+
+        // 현재날짜 출력
+        let today = new Date();
+        let dd = today.getDate();
+        let mm = today.getMonth()+1; 
+        let yyyy = today.getFullYear();
+
+        if(dd<10) {
+            dd='0'+dd
+        } 
+
+        if(mm<10) {
+            mm='0'+mm
+        } 
 
     return(
              <div>
                     <Fragment>
                         <div className = "agreementWrapper">
                         <h1> 임 대 차 계 약 서 </h1>
+                        <br/>
                             <div className = "paragraph">
                             <h3> 갑 : ㈜에스원테크   최현수</h3>								
-                            <h3> 을 : 		</h3>							
+                            <h3> 을 : {companyName}	{ceoName}	</h3>							
                             </div>     
 
                             <div className = "paragraph">                                
-                                위 '갑'과 '을'은  20    년     월     일 다음과 같이 회원 가입을 체결 한다.									
+                                위 '갑'과 '을'은  {yyyy}년 {mm}월 {dd}일 다음과 같이 회원 가입을 체결 한다.									
                             </div>   
 
                             <div className = "paragraph">
@@ -89,7 +132,7 @@ function LeaseAgreement (props){
                                         </li>
                                         <li>
                                             2) '을'이 사용 할 수 있는 사무실의 내역은 다음과 같다.<br/>								
-                                            &emsp;&nbsp;대상 : 서울시 강남구 봉은사로63길 11,3,4층      {roomLockerTp}호(삼성동,명화빌딩)<br/>									
+                                            &emsp;&nbsp;대상 : 서울시 강남구 봉은사로63길 11, 3,4층      {roomLockerTp}(삼성동,명화빌딩)<br/>									
                                             &emsp;&nbsp;용도 : 업무용<br/>									
                                             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;월회비  :         {contractMoney}원<br/>									
                                             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VAT     :         {vatMoney}원<br/>									
@@ -118,7 +161,7 @@ function LeaseAgreement (props){
                                 <h3>3. 계약기간</h3>									
                                 <ul>
                                     <li>
-                                        1) 본 계약의 계약기간은 20   년   월   일부터 20   년  월   일까지로 한다.									
+                                        1) 본 계약의 계약기간은 {startYear}년 {startMonth}월 {startDay}일부터 {endYear}년 {endMonth}월 {endDay}일까지로 한다.									
                                     </li>            
                                 </ul>
                                 </div>  
@@ -127,7 +170,7 @@ function LeaseAgreement (props){
                                 <h3>4. 예치금</h3>									
                                 <ul>
                                     <li>
-                                        1) '을'은 본 계약서에 서명함과 동시에 예치금 {contractMoney} 원을 '갑'에게 지급하여야 한다.									
+                                        1) '을'은 본 계약서에 서명함과 동시에 예치금 {contractMoney}원을 '갑'에게 지급하여야 한다.									
                                     </li>
                                     <li>            
                                         2) 위 제1항에 명시된 예치금은 본 계약기간 동안 '갑'이 보유하며, 계약기간 만료 또는 종료 시 '을'이									
@@ -268,36 +311,56 @@ function LeaseAgreement (props){
                                         </li>        
                                     </ul>
                                 </div>                                    
-                                                                    
                                 <div className = "paragraph">
                                 이상과 같은 합의를 증명하기 위하여 본 계약을 체결하며, 양 당사자는 계약서에 각기 서명 날인하여 1부씩									
                                 이를 보관 한다.		
                                 </div>							
                                                                     
-                                <div className = "paragraph" id = "processOfSign">                                    
-                                센터매니저&emsp;&emsp;상기내용을 잘 주지시켰음 &nbsp;&nbsp;&nbsp;&nbsp;&emsp;&emsp;서명<br/>								
-                                이용자&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&emsp;&emsp; 상기내용을 완전히 숙지하였음 &emsp;   서명									
+                                <div className = "paragraph" id = "processOfSign">      
+                                    <table>
+                                        <tbody>
+                                            <tr>
+                                                <td>센터매니저</td>
+                                                <td></td>
+                                                <td></td>
+                                                <td>상기내용을 잘 주지시켰음</td>
+                                                <td></td>
+                                                <td></td>
+                                                <td>서명</td>
+                                            </tr> 
+                                            <tr>
+                                                <td>이용자</td>
+                                                <td></td>
+                                                <td></td>
+                                                <td>상기내용을 완전히 숙지하였음</td>
+                                                <td></td>
+                                                <td></td>
+                                                <td>서명</td>
+                                            </tr>                             
+                                													
+                                        </tbody>        
+                                    </table>            
                                 </div>                                    
                                                                     
                                                                     
                                 <div className = "paragraph">                                    
-                                임대인 : ㈜에스원테크 &emsp;&emsp;&emsp;서명(인)<br/>             									
-                                &emsp;&emsp;&emsp;&nbsp;                  최현수<br/>									
+                                임대인 : ㈜에스원테크 &emsp;&emsp;서명(인)<br/>             									
+                                &emsp;&emsp;&emsp;&nbsp;&nbsp; 최현수<br/>									
                                 법인등록번호 110111-4806381<br/>           									
                                 사업등록번호 105-87-68698<br/>              									
                                 주소 : 서울시 강남구 봉은사로63길 11, 3,4층<br/>  									
                                 연락처 : 070-4355-2312<br/>                 									
                                 </div>                                   
-                            
+                                <br/>
                                 <div className = "paragraph">                                   
-                                임차인 : <span id = "finalSign">서명(인)</span><br/>									
+                                임차인 : {companyName} &emsp;&emsp;서명(인)<br/>									
+                                &emsp;&emsp;&emsp;&nbsp;&nbsp; {ceoName}
                                 <br/>                        
-                                법인등록번호 :									<br/>
-                                사업자등록번호 : 								<br/>	
-                                주소 :									<br/>
-                                <br/>                                    
-                                                                    
-                                연락처 : <br/>
+                                법인등록번호 :								<br/>
+                                사업자등록번호 : 	{bLicenseNum}								<br/>	
+                                주소 : {companyAddr}									<br/>
+                                <br/>                                                    
+                                연락처 : {ceoTel} <br/>
                                 </div>
                         </div>                                    
                     </Fragment>

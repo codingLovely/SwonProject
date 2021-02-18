@@ -49,9 +49,8 @@ function S010100050(props) {
     const [detailRegistCardImg, setDetailRegistCardImg] = useState('')
 
 
-    const dataName = props.dataName;
-    const dataEmpHp = props.dataEmpHp;
-    //console.log('dataEmpHp',dataEmpHp); dataMemId = {memberIdModal}
+    // const dataName = props.dataName;
+    // const dataEmpHp = props.dataEmpHp;
     const dataMemId = props.dataMemId;
   
 
@@ -87,7 +86,7 @@ function S010100050(props) {
 
     useEffect(() => {
 
-        axios.get('/api/s010100150/memberTpDetail')
+        axios.get('/api/memDetail/memberTpDetail')
             .then(response => {
                 if (response.data.success) {
                     let arr = [{ key: '선택', value: '선택' }]
@@ -106,16 +105,18 @@ function S010100050(props) {
 
 
     }, [])
+
     const detailMemberList = () =>{
         let body = {
-            dataName:dataName,
-            dataEmpHp:dataEmpHp
+            // dataName:dataName,
+            // dataEmpHp:dataEmpHp
+            dataMemId:dataMemId
         }
-
-        axios.post('/api/s010100050/detailMember_by_id',body)
+        
+        axios.post('/api/memDetail/detailMember_by_id',body)
             .then(response => {
                 if (response.data.success) {
-                    //console.log('memberId', response.data.rows[0].MEMBER_ID);
+                    //console.log('memberId', response.data.rows[0]);
 
                     const memberId = response.data.rows[0].MEMBER_ID;
                     const modalMemberNm = response.data.rows[0].MEMBER_NM;
@@ -176,40 +177,44 @@ function S010100050(props) {
         detailMemberList();
     }, [])
    
-    //회원정보수정 함수
+    // 회원정보수정 함수
     const tempAddMember = () => {
         const url ='/api/s010100050/modifyMember';
         const formData = new FormData();
-        //회원이름 및 전화번호
-        formData.append('dataName',dataName);
-        formData.append('dataEmpHp',dataEmpHp);
-
-        //첨부파일
+        // console.log('memberId',memberId);
+        const dataMemId = props.dataMemId;
+        console.log('dataMemId',dataMemId);
+       
+        // 회원이름 및 전화번호 memberId
+        // formData.append('dataName',dataName);
+        // formData.append('dataEmpHp',dataEmpHp);
+        formData.append('dataMemId',dataMemId);
+        // 첨부파일
         formData.append('idCardFile',idCardFile);
         formData.append('registCardFile',registCardFile);
         formData.append('idCardFileName',idCardFileName);
         formData.append('registCardFileName',registCardFileName);
 
-        console.log('idCardFile',idCardFile);
-        console.log('idCardFileName',typeof idCardFileName);
-        //회원명
+        // console.log('idCardFile',idCardFile);
+        // console.log('idCardFileName',typeof idCardFileName);
+        // 회원명
         formData.append('detailMemberNm',detailMemberNm);
-        //사업자번호
+        // 사업자번호
         formData.append('detailFstRegNo',detailFstRegNo);
         formData.append('detailSndRegNo',detailSndRegNo);
         formData.append('detailThdRegNo',detailThdRegNo);
-        //회원구분
+        // 회원구분
         formData.append('detailMemberTp',detailMemberTp);
-        //성명
+        // 성명
         formData.append('detailName',detailName);
-        //연락처
+        // 연락처
         formData.append('detailFstEmpHp',detailFstEmpHp);
         formData.append('detailSndEmpHp',detailSndEmpHp);
         formData.append('detailThdEmpHp',detailThdEmpHp);
-        //email
+        // email
         formData.append('detailDomain', detailDomain);
         formData.append('detailEmpEmail', detailEmpEmail);
-        //주소
+        // 주소
         formData.append('detailZipcode', detailZipcode);
         formData.append('detailAddress', detailAddress);
         formData.append('detailDetailAddress', detailDetailAddress);
@@ -226,10 +231,9 @@ function S010100050(props) {
     //회원정보 수정
     const onModifyHandler = (event) => {
         event.preventDefault();
-        tempAddMember().then((response) => {
+         tempAddMember().then((response) => {
             alert('정상적으로 수정 되었습니다.');
             detailMemberList();
-
         })
     }
 
@@ -296,7 +300,6 @@ function S010100050(props) {
         num = event.target.innerHTML;
         rNum = parseInt(num);
         setNameForDetailCModal(rNum);
-        //console.log(rNum);
         setConOpen(true);
     }
 
@@ -332,6 +335,7 @@ function S010100050(props) {
             .then(response => {
                 if (response) {
                     alert('res');
+                    console.log(response);
                    
           } else {
                     alert("다운로드에 실패하였습니다.");
@@ -340,24 +344,25 @@ function S010100050(props) {
     }
 
     const onRegDownloadHandler = (event) => {
-        event.preventDefault();
+        // event.preventDefault();
 
-        axios.get(`/api/s01010050/download/tb_s10_member010_by_id?id=${dataMemId}&type=single`)
-            .then(response => {
-                if (response) {
-                    alert('res');
+        // axios.get('/api/s010100150/regDownload')
+        //     .then(response => {
+        //         if (response) {
+        //             alert('res');
+                  
                 
-        } else {
-                    alert("다운로드에 실패하였습니다.");
-                }
-            })
+        // } else {
+        //             alert("다운로드에 실패하였습니다.");
+        //         }
+        //     })
     }
 
 
     const s010100050R = detailAllInfo.map((detailAllInfo, index) => {
         return (
             <tr>
-                <td onClick={onDetailClickOpen} id={detailAllInfo.CONTRACT_ID}>{detailAllInfo.CONTRACT_ID}</td>
+                <td onClick={onDetailClickOpen} className='underLineForDetail' id={detailAllInfo.CONTRACT_ID}>{detailAllInfo.CONTRACT_ID}</td>
                 <td>{detailAllInfo.CONTRACT_DATE}</td>
                 <td>{detailAllInfo.CONTRACT_TP}</td>
                 <td>{detailAllInfo.CONTRACT_ROOM}</td>
@@ -403,7 +408,7 @@ function S010100050(props) {
             <div className="memberInfoWrapper">
                 <div className="memberInfoWrap">
                     {/* 회원정보란 */}
-                    <h2 id="infoTitle">회원정보</h2>
+                    <h3 id="infoTitle">회원정보</h3>
 
                     <table id = "memberDetailTable">
                         <tr>
@@ -421,7 +426,7 @@ function S010100050(props) {
                             </td>
                             <th>회원구분</th>
                             <td>
-                                <select onChange={onDetailMemberTpHandler} value={detailMemberTp}>
+                                <select multiple={false} onChange={onDetailMemberTpHandler} value={detailMemberTp}>
                                     {memberTpDetail.map(item => (
                                         <option key={item.key} value={item.key}>{item.value}</option>
                                     ))}
@@ -500,7 +505,7 @@ function S010100050(props) {
 
                     </table>
 
-                    <h6 id="conInfoTitle">계약정보</h6>
+                    <h3 id="conInfoTitle">계약정보</h3>
                     <table id = "conInfoDetialTable">
                         <tr>
                             <th>계약ID</th>
@@ -518,8 +523,9 @@ function S010100050(props) {
                         {currentPosts}
                         </tbody>
                     </table>
-                    <Pagination postsPerPage={postsPerPage} totalPosts={s010100050R.length} paginate={paginate} />
-
+                    <div className = "pageCenter">
+                        <Pagination postsPerPage={postsPerPage} totalPosts={s010100050R.length} paginate={paginate} />
+                    </div>                       
                     <div id="btnAlign">
                         <input type="button" id="btn-centerN" onClick={onNewOpenContractHandler} value="신규계약" />
                         <input type="button" id="btn-centerN" onClick={onModifyHandler} value="수정하기" />

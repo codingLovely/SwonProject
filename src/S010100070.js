@@ -6,13 +6,14 @@ import xlsx from 'xlsx';
 
 import Pagination from'./utils/Pagination';
 
+
 import DatePicker, {registerLocale} from 'react-datepicker';
 import ko from 'date-fns/locale/ko';
 registerLocale("ko", ko);
 
 
 
-
+let payDateSt = '';
 function S010100070(props) {
 
     const [paymentMemberNm, setPaymentMemberNm] = useState('');
@@ -57,7 +58,7 @@ function S010100070(props) {
 
      //데이터 들고오는 API
      const paymentStList = () =>{
-        axios.get(`/api/s01010070/insert/tb_s10_contract020_by_id?id=${dataContracId}`)
+        axios.get(`/api/payStList/insert/tb_s10_contract020_by_id?id=${dataContracId}`)
             .then(response => {
                 if (response.data.success) {
                     //초기값 세팅
@@ -91,7 +92,9 @@ function S010100070(props) {
 
      let newChecked;
 
+    
      const toggleHandler = (event) => {
+      
         const currentIndex = checked.indexOf(event.target.id);
         // const currentIndex = checked.findIndex((items,idx) => 
         // {return items.PAY_PLAN_DATE !== event.target.id});
@@ -108,15 +111,16 @@ function S010100070(props) {
         setChecked(newChecked);
         
         console.log('newChecked',newChecked);
-    }
+     }
+
 
     //납부 버튼
     const payBtnHandler = (event) => {
 
         let modalContractId = props.dataContracId;
         let modalPayPlanDate = checked;
-        //console.log(checked);
-        //console.log('modalContractId',modalContractId);
+        console.log(checked);
+        console.log('modalContractId',modalContractId);
 
         let body = {
             //id -> date
@@ -129,17 +133,18 @@ function S010100070(props) {
         }
         console.log('newChecked', body);
 
-        axios.post('/api/s01010070/paymentUpdate',body)
+        axios.post('/api/payStList/paymentUpdate',body)
            .then(response => {
                 if (response.data.success) {
-                    alert('왼료되었습니다.');
+                    alert('완료되었습니다.');
                } else {
                    alert('실패하였습니다.');
                }
            })
             //paymentStList();
+            newChecked=[];
         }
-
+        
     const snsBtnHandler = (event) => {
 
     }
@@ -218,6 +223,8 @@ const s010100070R = paymentStatusList.map((paymentStatus, index) => {
                              {...changePaymentStatus, PAYED_DATE : makeYYMMDD(date)}
                              : changePaymentStatus
                              ))}
+                             
+                            
                             }
                         selectsStart
                         startDate={insertPayDate}

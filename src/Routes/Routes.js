@@ -10,15 +10,13 @@ import S010100140 from '../S010100140';
 import S010100150 from '../S010100150';
 import Dashboard from '../Dashboard';
 
-
-import Navbar from '../Navbar';
 import LeaseAgreement from '../utils/LeaseAgreement';
 //export default
  function Routes (){
    return(
   <Router>
           {/* 메인 */}
-          <Route exact path = "/" component = {Navbar}></Route>
+          <Route exact path = "/" component = {S010100130}></Route>
 
 
           {/* 회원현황 */}
@@ -40,7 +38,7 @@ import LeaseAgreement from '../utils/LeaseAgreement';
           <Route exact path = "/memberDetails" component = {S010100050}></Route>
           {/* 임대차계약서 */}
           <Route exact path = "/leasAgreement" component = {LeaseAgreement}></Route>
-          <Route exact path = "/Dashboard" component = {Dashboard}></Route>
+          
           
 
   </Router>

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { addDays } from 'date-fns';
+
 import './css/S010100140.css';
 //datepicker 시작
 import DatePicker, { registerLocale } from "react-datepicker";
@@ -12,10 +12,7 @@ registerLocale("ko", ko);
 
 
 
-
-
 function S010100140(props) {
-
     //console.log(props.dataForm);
     //console.log(props.num);
 
@@ -29,7 +26,7 @@ function S010100140(props) {
 
         if (props.dataForm === 'U') {
 
-            axios.get(`/api/s010100140/tb_s10_ask010_by_id?id=${rNum}&type=single`)
+            axios.get(`/api/askStList/tb_s10_ask010_by_id?id=${rNum}&type=single`)
                 .then(response => {
                     if (response.data.success) {
                         //console.log(response.data)
@@ -58,12 +55,6 @@ function S010100140(props) {
 
     }, [])
 
-
-
-
-
-    //<Lov(List of Value)를 데이터 베이스에서 가져오기
-
     //select-option
     const [modalAskTp, setModalAskTp] = useState('')
     const [modalAskMethod, setModalAskMethod] = useState('')
@@ -89,12 +80,13 @@ function S010100140(props) {
     const getAccessPathLov = () => {
         getLovByCdTp('ACCESS_PATH', 'ASK');
     };
+
     /**
      * desc : LOV에 필요한 항목을 받아 DB조회 후 조회값을 반환하는 로직
      * */
     async function getLovByCdTp(cdTp, attribute2) {
         let arr = [{ key: '선택', value: '선택' }];
-        return await axios.post('/api/s010100140/selectTest', { firstVal: cdTp, secondVal: attribute2 })
+        return await axios.post('/api/askStList/selectTest', { firstVal: cdTp, secondVal: attribute2 })
             .then(response => {
                 if (response.data.success) {
                     //console.log('modalAskTp',response.data.rows);
@@ -121,11 +113,9 @@ function S010100140(props) {
         console.log('arr', arr);
     }
 
-    //<Lov끝>
-
 
     //datepicker속성 및 이벤트 시작
-    const [modalAskDate, setModalAskDate] = useState(new Date());
+    //const [modalAskDate, setModalAskDate] = useState(new Date());
     const [startDate, setStartDate] = useState(new Date());
     //datepicker속성 및 이벤트 끝
 
@@ -137,7 +127,7 @@ function S010100140(props) {
 
     //select-option 이벤트들
     const onAskTpHandler = (event) => {
-        console.log(event.currentTarget.value);
+        //console.log(event.currentTarget.value);
         setModalAskTp(event.currentTarget.value);
     }
 
@@ -179,7 +169,7 @@ function S010100140(props) {
             modalAskContent: modalAskContent
         }
 
-        axios.post('/api/s010100140/modify', body)
+        axios.post('/api/askStList/modify', body)
             .then(response => {
                 if (response.data.success) {
                     alert('정상적으로 수정되었습니다.')
@@ -225,7 +215,7 @@ function S010100140(props) {
         //console.log('setModalAskDate',setModalAskDate);
 
 
-        axios.post("/api/s010100140", body)
+        axios.post('/api/askStList/insert', body)
             .then(response => {
                 if (response.data.success) {
                     alert('정상적으로 등록되었습니다.')
@@ -235,9 +225,9 @@ function S010100140(props) {
             })
 
     }
-    // console.log(startDate);
-
+  
     return (
+        
         <form onSubmit={onHandleSubmit} id="formWrapper">
             {/* <h1>상담등록</h1> */}
             <div id="wrapper">

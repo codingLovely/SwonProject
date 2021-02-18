@@ -3,7 +3,7 @@ import S010100010 from './S010100010';
 import S010100050 from './S010100050';
 import './css/S010100040.css';
 import axios from "axios";
-import Pagination from "./utils/Pagination";
+import ReactPaginate from 'react-paginate';
 
 //엑셀다운로드
 import xlsx from 'xlsx';
@@ -17,7 +17,6 @@ import clsx from 'clsx';
 import { makeStyles } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Drawer from '@material-ui/core/Drawer';
-import Box from '@material-ui/core/Box';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import List from '@material-ui/core/List';
@@ -124,9 +123,9 @@ const useStyles = makeStyles((theme) => ({
 
 }));
 
-let memberName = '';
-let memberEmpHp = '';
-let memberIdM = '';
+// let memberName = '';
+// let memberEmpHp = '';
+let memberId = '';
 
 function S010100040(props) {
 
@@ -138,7 +137,7 @@ function S010100040(props) {
     const [name, setName] = useState('')
     const [numForDetailModal, setNumForDetailModal] = useState('')
     const [empHpForDetailModal, setEmpHpForDetailModal] = useState('')
-    const [tbMember, setTbMember] = useState([])
+    const [tbMember, setTbMember] = useState([].slice(0,5))
 
     //select박스
     const [memberStatus, setMemberStatus] = useState([{}]);
@@ -147,11 +146,6 @@ function S010100040(props) {
     //<!--모달창 속성 및 이벤트
     const [open, setOpen] = React.useState(true);
     const [storeOpen, setStoreOpen] = React.useState(false);
-
-    //페이징
-    const [currentPage, setCurrentPage] = useState(1);
-    const [postsPerPage, setPostsPerPage] = useState(20);
-    const indexOfLastPost = currentPage * postsPerPage;
 
     const [memberIdModal, setMemberIdModal] = useState(0);
 
@@ -167,7 +161,7 @@ function S010100040(props) {
     //select박스
     useEffect(() => {
 
-        axios.get('/api/s010100140/selectMemberTp')
+        axios.get('/api/memStList/selectMemberTp')
             .then(response => {
                 if (response.data.success) {
                     //console.log('ask_tp',response.data.rows);
@@ -194,7 +188,7 @@ function S010100040(props) {
 
     useEffect(() => {
 
-        axios.get('/api/s010100140/selectMemberSt')
+        axios.get('/api/memStList/selectMemberSt')
             .then(response => {
                 if (response.data.success) {
                     //console.log('ask_tp',response.data.rows);
@@ -226,7 +220,7 @@ function S010100040(props) {
             memberSt
         }
 
-        axios.post('/api/s010100040/searchMember', body)
+        axios.post('/api/memStList/searchMember', body)
             .then(response => {
                 if (response.data.success) {
                     //console.log('tb_member',response.data.rows);
@@ -244,7 +238,6 @@ function S010100040(props) {
     const onSearchSubmitHandler = (event) => {
         memberList();
     }
-
 
     const onHandleClickOpen = () => {
         setStoreOpen(true);
@@ -280,13 +273,14 @@ function S010100040(props) {
     }
 
     const onHandleDetailClickOpen = (event) => {
-        memberEmpHp = event.target.id;
-        memberName = event.target.innerHTML;
-        memberIdM = event.target.className;
+        memberId = event.target.id;
+        //memberName = event.target.innerHTML;
+        //memberIdM = event.target.className;
 
-        setEmpHpForDetailModal(memberEmpHp);
-        setNumForDetailModal(memberName);
-        setMemberIdModal(memberIdM);
+        //setEmpHpForDetailModal(memberEmpHp);
+        //setNumForDetailModal(memberName);
+        setMemberIdModal(memberId);
+        //console.log();
         setModalOpen(true);
     }
 
@@ -303,13 +297,11 @@ function S010100040(props) {
 
     }
 
-    //엑셀다운로드
+    // 엑셀다운로드
     const excelHandler = (event) => {
-
         event.preventDefault();
 
         const ws = xlsx.utils.json_to_sheet(tbMember);
-        //console.log(tbMember);
 
         ['NO', '사업자번호', '회원명', '회원구분', '상태', '대표자 성명', '대표자 연락처', '대표자 E-mail', '종료여부']
             .forEach((x, idx) => {
@@ -326,15 +318,17 @@ function S010100040(props) {
         xlsx.writeFile(wb, "회원현황.xlsx");
     }
 
-
-
-    const s010100040R =tbMember.map((tbMember, index) => {
+    const [pageNumber,setPageNumber] = useState(0);
+    const usersPerPage = 20;
+    const pagesVisited = pageNumber * usersPerPage;
+    
+    const displayMemSt = tbMember.slice(pagesVisited,pagesVisited + usersPerPage).map((tbMember, index) => {
         return (
-            <TableRow key={tbMember.MEMBER_ID}>
+            <TableRow key={index}>
             <TableCell id={tbMember.MEMBER_ID} >{index + 1}</TableCell>
             <TableCell>{tbMember.MEMBER_NM}</TableCell>
             <TableCell>{tbMember.REG_NO}</TableCell>
-            <TableCell onClick={onHandleDetailClickOpen} className={tbMember.MEMBER_ID} id={tbMember.EMP_HP}>{tbMember.NAME}</TableCell>
+            <TableCell onClick={onHandleDetailClickOpen} className='underLineForDetail' id={tbMember.MEMBER_ID}>{tbMember.NAME}</TableCell>
             <TableCell>{tbMember.EMP_HP}</TableCell>
             <TableCell>{tbMember.EMP_EMAIL}</TableCell>
             <TableCell>{tbMember.MEMBER_TP}</TableCell>
@@ -344,11 +338,12 @@ function S010100040(props) {
          )
     });
 
+ 
 
-    const indexOfFirstPost = indexOfLastPost - postsPerPage;
-    const currentPosts = s010100040R.slice(indexOfFirstPost, indexOfLastPost);
-    //Change page
-    const paginate = pageNumber => setCurrentPage(pageNumber);
+    const pageCount = Math.ceil(tbMember.length/usersPerPage);
+    const changePage = ({selected}) => {
+        setPageNumber(selected);
+    }
 
     return (
 
@@ -522,36 +517,42 @@ function S010100040(props) {
                                                 </TableRow>
                                             </TableHead>
                                             <TableBody>
-                                            {currentPosts}
+                                            {displayMemSt}
                                             </TableBody>
                                             </Table>
                                             
                                         </React.Fragment>
 
+                                        <div id = "reactPage">
+                                                <ReactPaginate
+                                                    previousLabel = {"Previous"}
+                                                    nextLabel = {"Next"}
+                                                    pageCount = {pageCount}
+                                                    onPageChange = {changePage}
+                                                    containerClassName={"paginationBtns"}
+                                                    previousLinkClassName={"previousBtn"}
+                                                    nextLinkClassName={"nextBtn"}
+                                                    disabledClassName={"paginationDisabled"}
+                                                    activeClassName={"paginationActive"}   
+                                                />
+                                            </div>
                                 </Paper>
                             </Grid>
                         </Grid>
-                        <Box pt={4}>
-                        <Pagination postsPerPage={postsPerPage} totalPosts={s010100040R.length} paginate={paginate} />
-                        </Box>
                     </Container>
                 </main>
             </div>
-
-
 
             <Dialog
                 maxWidth={"lg"}
                 open={modalOpen}
                 onClose={onHandleDetailClickClose}>
-                <S010100050 dataMemId={memberIdModal} dataName={numForDetailModal} dataForm={"U"} dataEmpHp={empHpForDetailModal} />
+                <S010100050 dataMemId={memberIdModal} dataForm={"U"} />
+                {/* dataName={numForDetailModal} dataEmpHp={empHpForDetailModal} */}
                 <DialogActions>
                     <input type="button" id="contractBtn" onClick={onHandleDetailClickClose} color="primary" value='닫기' />
                 </DialogActions>
             </Dialog>
-
-
-
 
             <Dialog
                 maxWidth={"lg"}

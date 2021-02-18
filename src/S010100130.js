@@ -3,8 +3,10 @@ import React, { Fragment, useEffect, useState } from 'react';
 import './css/S010100130.css';
 import axios from 'axios';
 import S010100140 from './S010100140';
-import Pagination from "./utils/Pagination";
 import 'react-datepicker/dist/react-datepicker.css';
+import 'react-datepicker/dist/react-datepicker-cssmodules.min.css';
+import moment from 'moment';
+import ReactPaginate from 'react-paginate';
 
 import clsx from 'clsx';
 import { makeStyles } from '@material-ui/core/styles';
@@ -24,8 +26,9 @@ import MenuIcon from '@material-ui/icons/Menu';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import NotificationsIcon from '@material-ui/icons/Notifications';
 import { mainListItems, secondaryListItems } from './listItems';
-import Orders from './Orders';
 import Button from '@material-ui/core/Button';
+
+import Form from 'react-bootstrap/Form';
 
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -34,7 +37,14 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Title from './Title';
 
-import Form from 'react-bootstrap/Form';
+import { DatePicker } from "antd";
+import "antd/dist/antd.css";
+
+//<!--켈린더 라이브러리시작
+// import DatePicker, { registerLocale } from "react-datepicker";
+//import ko from 'date-fns/locale/ko';
+//registerLocale("ko", ko);
+//켈린더 라이브러리 끝-->
 
 //엑셀다운로드
 import xlsx from 'xlsx';
@@ -44,14 +54,6 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogTitle from '@material-ui/core/DialogTitle';
 //모달창 라이브러리 끝-->
-
-//<!--켈린더 라이브러리시작
-import DatePicker, { registerLocale } from "react-datepicker";
-import ko from 'date-fns/locale/ko';
-registerLocale("ko", ko);
-
-// import 'react-datepicker/dist/react-datepicker-cssmodules.min.css';
-//켈린더 라이브러리 끝-->
 
 
 const drawerWidth = 240;
@@ -143,12 +145,16 @@ const useStyles = makeStyles((theme) => ({
     fixedHeight: {
         height: 240,
     },
-
+    
+    // TableHead:{
+    //     backgroundColor:'#3f51b5'
+    // },
 }));
 
 
 let num = '';
 let rNum = 0;
+let chkSt = '';
 
 function S010100130(props) {
 
@@ -157,32 +163,27 @@ function S010100130(props) {
     const [mOpen, setMOpen] = React.useState(false);
     const [storeOpen, setStoreOpen] = React.useState(false);
 
-
     const handleDrawerOpen = () => {
         setOpen(true);
     };
+
     const handleDrawerClose = () => {
         setOpen(false);
     };
 
-
     const [data] = useState('I');
-    //console.log(data);
-    const [numForDetail, setNumForDetail] = useState('')
-    //TB_S10_ASK010 테이블 조회
-    const [tb_s10_ask010, setTb_s10_ask010] = useState([])
+
+    const [numForDetail, setNumForDetail] = useState('');
+    const [tb_s10_ask010, setTb_s10_ask010] = useState([].slice(0,5));
     const [deleteAskOpen, setDeleteAskOpen] = React.useState(false);
-
-    //페이징
-    const [currentPage, setCurrentPage] = useState(1);
-    const [postsPerPage, setPostsPerPage] = useState(20);
-
     const [ask_tps, setAsk_tps] = useState([{}])
+
+    const [startAsk_date, setStartAsk_date] = useState(new Date());
+    const [endAsk_date, setEndAsk_date] = useState(new Date());
 
     useEffect(() => {
         searchAsk();
-    }, [])
-
+    }, []);
 
     const searchAsk = () => {
         const body = {
@@ -191,8 +192,10 @@ function S010100130(props) {
             ask_tp,
             endAsk_date
         }
+        console.log('startAsk_date',startAsk_date);
+        console.log('endAsk_date',endAsk_date);
 
-        axios.post("/api/s010100130/search", body).then(response => {
+        axios.post("/api/askStList/search", body).then(response => {
             if (response.data.success) {
                 //console.log('검색결과:'+response.data.rows);
                 setTb_s10_ask010(response.data.rows);
@@ -201,14 +204,13 @@ function S010100130(props) {
             }
         })
     }
-    //<Lov(List of Value)를 데이터 베이스에서 가져오기
 
     //select-option
     const [ask_tp, setAsk_tp] = useState('')
 
     //문의 구분
     useEffect(() => {
-        axios.post('/api/s010100130/ask_tp')
+        axios.post('/api/askStList/ask_tp')
             .then(response => {
                 if (response.data.success) {
                     //console.log('Lov-ask_tp',response.data);
@@ -226,24 +228,22 @@ function S010100130(props) {
                 }
             })
     }, [])
-    //lov 끝>
+    
 
-    //<상담등록 모달
+    //상담등록 모달
     const onHandleClickOpen = (event) => {
         //console.log('상담열기');
         setStoreOpen(true);
 
     };
 
-    //상담등록 닫기 할 때 새로고침해서 가져오는 것
     const onHandleClickClose = (event) => {
         setStoreOpen(false);
         searchAsk();
     };
-    //상담등록 모달 끝>
+    
 
-
-    // //<상세보기 모달
+    //상세보기 모달
     const onDetailHandleClickOpen = (event) => {
         //console.log('target',event.target.id);
         num = event.target.id;
@@ -257,10 +257,7 @@ function S010100130(props) {
         searchAsk();
 
     };
-    //상세보기 모달 끝>
-    //모달창 속성 및 이벤트 끝--!>
-
-
+    
     const [checkForDelete, setCheckForDelete] = useState(true);
 
     const onDeleteHandle = () => {
@@ -289,6 +286,10 @@ function S010100130(props) {
         }
         setChecked(newChecked);
 
+        newChecked.length > 0 ? chkSt = 'check' : chkSt = ''; 
+        console.log('chkSt',chkSt);
+        console.log('newChecked.length',newChecked.length);
+
     }
 
     //문의자명 속성
@@ -304,60 +305,42 @@ function S010100130(props) {
         setAsk_name(event.currentTarget.value);
     }
 
-    const onHandleDelete = (event) => {
-        setDeleteAskOpen(true);
-    }
-
     const handleClose = (event) => {
         setDeleteAskOpen(false);
     }
 
+    const onHandleDelete = (event) => {
+        if(chkSt == 'check'){
+            setDeleteAskOpen(true);
+        }else{
+            alert('삭제할 사용자를 선택하세요.');
+        }
+    }
+  
     const deleteHandle = (event) => {
         let askIdArray = checked;
-        //console.log(askIdArray);
-        //'/api/s010100130/delete'
-        axios.post('/api/s010100130/delete', askIdArray)
-            .then(response => {
-                if (response.data.success) {
-                    // //console.log('상담닫기',response.data.rows)
-                    // setTb_s10_ask010(response.data.rows)
-                } else {
-                    alert("error")
-                }
-
-            })
-
+       
+            axios.post('/api/askStList/delete', askIdArray)
+                .then(response => {
+                    if (response.data.success) {
+                            alert('삭제하였습니다.');
+                            searchAsk();
+                    } else {
+                        alert("error")
+                        
+                    }
+                })
+        chkSt = '';        
         setDeleteAskOpen(false);
-
-        const body = {
-            startAsk_date,
-            ask_name,
-            ask_tp,
-            endAsk_date
-        }
-
-        axios.post("/api/s010100130/search", body).then(response => {
-            if (response.data.success) {
-                //console.log('검색결과:'+response.data.rows);
-                setTb_s10_ask010(response.data.rows);
-            } else {
-                alert('검색에 실패하였습니다.')
-            }
-        })
 
         setChecked([]);
         onBackHandle();
     }
 
 
-    //캘린더 속성
-    const [startAsk_date, setStartAsk_date] = useState(new Date());
-    const [endAsk_date, setEndAsk_date] = useState(new Date());
 
-
-    // 조회 <!--onSubmit
+    // 조회 
     const onHandleFormSubmit = (event) => {
-        //console.log('조회', event);
 
         event.preventDefault();
 
@@ -381,7 +364,7 @@ function S010100130(props) {
         // alert(endAsk_date.getFullYear() + '/' + (endAsk_date.getMonth()+1) +'/'+endAsk_date.getDate());
         // alert('startDate:'+startAsk_date.getMonth());
 
-        axios.post("/api/s010100130/search", body).then(response => {
+        axios.post("/api/askStList/search", body).then(response => {
             if (response.data.success) {
                 //console.log('검색결과:'+response.data.rows);
                 setTb_s10_ask010(response.data.rows);
@@ -417,13 +400,18 @@ function S010100130(props) {
 
     }
 
-    const s010100130R =tb_s10_ask010.map((tb_s10_ask010, index) => {
+
+    const [pageNumber,setPageNumber] = useState(0);
+    const usersPerPage = 20;
+    const pagesVisited = pageNumber * usersPerPage;
+    
+    const displayUsers = tb_s10_ask010.slice(pagesVisited,pagesVisited + usersPerPage).map((tb_s10_ask010, index) => {
         return (
             <TableRow key={tb_s10_ask010.ASK_ID}>
-            <TableCell id="chkLine" hidden={checkForDelete}>
+            <TableCell>
             <input type="checkbox" onChange={handleToggle} id={tb_s10_ask010.ASK_ID} />
             </TableCell>
-            <TableCell  onClick={onDetailHandleClickOpen} id={tb_s10_ask010.ASK_ID} >{index + 1}</TableCell>
+            <TableCell onClick={onDetailHandleClickOpen} id={tb_s10_ask010.ASK_ID} className='underLineForDetail'>{index + 1}</TableCell>
             <TableCell>{tb_s10_ask010.ASK_TP}</TableCell>
             <TableCell>{tb_s10_ask010.ASK_DATE}</TableCell>
             <TableCell>{tb_s10_ask010.ASK_METHOD}</TableCell>
@@ -431,36 +419,14 @@ function S010100130(props) {
             <TableCell>{tb_s10_ask010.ASK_INFO}</TableCell>
             <TableCell>{tb_s10_ask010.ASK_PATH}</TableCell>
             </TableRow>
-         )
+        );
     });
-    // const s010100130R = tb_s10_ask010.map((tb_s10_ask010, index) => {
-    //     return (
-    //         <tr className='dataTable'>
-    //             <td id="chkLine" hidden={checkForDelete}>
-    //                 {/*밑줄처리*/}
-    //                 <span id="underLine"><input type="checkbox" onChange={handleToggle} id={tb_s10_ask010.ASK_ID} /></span></td>
+   
+    const pageCount = Math.ceil(tb_s10_ask010.length/usersPerPage);
+    const changePage = ({selected}) => {
+        setPageNumber(selected);
+    }
 
-    //             {/*<input type = "checkbox" onChange={onCheckboxHandler} id={tb_s10_ask010.ASK_ID}/>*/}
-    //             <td className="cname" name="cname" variant="outlined" color="primary" onClick={onDetailHandleClickOpen} id={tb_s10_ask010.ASK_ID}>
-    //                 {index + 1}</td>
-    //             <td>{tb_s10_ask010.ASK_TP}</td>
-    //             <td >{tb_s10_ask010.ASK_DATE}</td>
-    //             <td>{tb_s10_ask010.ASK_METHOD}</td>
-    //             <td>{tb_s10_ask010.ASK_NAME}</td>
-    //             <td >{tb_s10_ask010.ASK_INFO}</td>
-    //             <td>{tb_s10_ask010.ASK_PATH}</td>
-    //         </tr>
-    //     )
-    // });
-
-    //Get current tb_s10_ask010;
-    const indexOfLastPost = currentPage * postsPerPage;
-    const indexOfFirstPost = indexOfLastPost - postsPerPage;
-    const currentPosts = s010100130R.slice(indexOfFirstPost, indexOfLastPost);
-
-
-    //Change page
-    const paginate = pageNumber => setCurrentPage(pageNumber);
     return (
         <Fragment>
 
@@ -525,6 +491,7 @@ function S010100130(props) {
 
                                             문의일자
                                             &nbsp;
+                                        
                                         {/* date클릭할 때 고정 */}
                                             <DatePicker
                                                 locale="ko"
@@ -532,9 +499,12 @@ function S010100130(props) {
                                                 onChange={date => setStartAsk_date(date)}
                                                 selectsStart
                                                 startDate={startAsk_date}
-                                                endDate={endAsk_date.setHours(9, 0, 0, 0)}
+                                                // endDate={endAsk_date.setHours(9, 0, 0, 0)}
+                                                endDate={endAsk_date}
                                                 dateFormat="yyyy.MM.dd"
-                                            />&nbsp;
+                                                defaultValue={moment(moment(),'YYYY-MM-DD')}
+                                            />
+                                          &nbsp;
                                         ~ &nbsp;
                                         <DatePicker
                                                 locale="ko"
@@ -544,7 +514,7 @@ function S010100130(props) {
                                                 startDate={startAsk_date}
                                                 endDate={endAsk_date}
                                                 minDate={startAsk_date}
-                                                dateFormat="yyyy.MM.dd"
+                                                defaultValue={moment(moment(),'YYYY-MM-DD')}
                                             />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 
 
@@ -584,13 +554,9 @@ function S010100130(props) {
                                                 <Button variant="contained" color="primary" style={{ width: 100 }} onClick={onHandleClickOpen} >
                                                     상담등록
                                                 </Button>
-                                                <Button variant="contained" color="primary" hidden={!checkForDelete} style={{ width: 100 }} onClick={onDeleteHandle}
+                                                <Button variant="contained" color="primary"  style={{ width: 100 }} onClick={onHandleDelete}
                                                     value="삭제하기" >
                                                     삭제하기
-                                                        </Button>
-                                                <Button variant="contained" color="primary" onClick={onHandleDelete} value="삭제"
-                                                    hidden={checkForDelete} >
-                                                    삭제
                                                         </Button>
                                                 <Dialog
                                                     open={deleteAskOpen}
@@ -606,7 +572,7 @@ function S010100130(props) {
                                                     </DialogActions>
                                                 </Dialog>
                                             </td>
-                                            <td  id="alignRight"><Button variant="contained" style={{ width: 150 }} color="primary">엑셀다운로드</Button></td>
+                                            <td  id="alignRight"><Button variant="contained" style={{ width: 150 }} color="primary" onClick={excelHandler}>엑셀다운로드</Button></td>
                                         </tr>
                                     </thead>
                                 </table>
@@ -621,9 +587,8 @@ function S010100130(props) {
 
                                             <TableHead>
                                                 <TableRow>
-                                                <TableCell id='chkWidth' hidden={checkForDelete}></TableCell>
-                                                <TableCell id='chkWidth' hidden={checkForDelete}>No</TableCell>
-                                                <TableCell id='chkWidth' hidden={!checkForDelete} >No</TableCell>
+                                                <TableCell>선택</TableCell>
+                                                <TableCell>No</TableCell>
                                                 <TableCell>문의구분</TableCell>
                                                 <TableCell>문의일자</TableCell>
                                                 <TableCell>문의방법</TableCell>
@@ -632,18 +597,27 @@ function S010100130(props) {
                                                 <TableCell>접근경로</TableCell>
                                                 </TableRow>
                                             </TableHead>
-
                                             <TableBody>
-                                            {currentPosts}
+                                            {/* {currentPosts} */}{ displayUsers}
                                             </TableBody>
                                             </Table>
-                                            
+                                            <div id = "reactPage">
+                                                <ReactPaginate
+                                                    previousLabel = {"Previous"}
+                                                    nextLabel = {"Next"}
+                                                    pageCount = {pageCount}
+                                                    onPageChange = {changePage}
+                                                    containerClassName={"paginationBtns"}
+                                                    previousLinkClassName={"previousBtn"}
+                                                    nextLinkClassName={"nextBtn"}
+                                                    disabledClassName={"paginationDisabled"}
+                                                    activeClassName={"paginationActive"}   
+                                                />
+                                            </div>
                                         </React.Fragment>
-
                                     </Paper>
                                 </Grid>
                             </Grid>
-                            <Pagination postsPerPage={postsPerPage} totalPosts={s010100130R.length} paginate={paginate} /> 
 
                         </Container>
                     </form>

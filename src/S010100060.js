@@ -1,7 +1,8 @@
 import React, { Fragment, useEffect, useState } from 'react';
-import Navbar from './Navbar';
-import S010100070 from "./S010100070";
-import Pagination from "./utils/Pagination";
+import axios from 'axios';
+import S010100070 from './S010100070';
+import ReactPaginate from 'react-paginate';
+import moment from 'moment';
 
 import clsx from 'clsx';
 import { makeStyles } from '@material-ui/core/styles';
@@ -35,13 +36,16 @@ import Title from './Title';
 //엑셀다운로드
 import xlsx from 'xlsx';
 
-//<!--켈린더 라이브러리시작
-import DatePicker, { registerLocale } from "react-datepicker";
-import ko from 'date-fns/locale/ko';
-import axios from "axios";
-import Dialog from "@material-ui/core/Dialog";
-import DialogActions from "@material-ui/core/DialogActions";
-registerLocale("ko", ko);
+import { DatePicker } from 'antd';
+import 'antd/dist/antd.css';
+
+// //<!--켈린더 라이브러리시작
+// import DatePicker, { registerLocale } from 'react-datepicker';
+// import ko from 'date-fns/locale/ko';
+// registerLocale('ko', ko);
+
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
 
 
 const drawerWidth = 240;
@@ -150,35 +154,33 @@ function S010100060(props) {
     const [checked, setChecked] = useState([]);
 
     //<!--캘린더 속성 
-    const [startDate, setStartDate] = useState(new Date('2021/02/01'));
-    const [endDate, setEndDate] = useState(new Date('2021/03/01'));
+    const [startDate, setStartDate] = useState(new Date(moment().date('01')));
+    const [endDate, setEndDate] = useState(new Date());
     //캘린더 속성 끝--> 
 
-    const [payStatusList, setPayStatusList] = useState([]);
+    const [payStatusList, setPayStatusList] = useState([].slice(0, 5));
     const [storeOpen, setStoreOpen] = useState(false);
     const [dataAllContract, setDataAllContract] = useState('');
 
-    //페이징
-    const [currentPage, setCurrentPage] = useState(1);
-    const [postsPerPage, setPostsPerPage] = useState(10);
-    const indexOfLastPost = currentPage * postsPerPage;
-
-
     useEffect(() => {
-        let startDates = startDate.getFullYear() + '.' + (startDate.getMonth() + 1) + '.' + startDate.getDate();
-        let endDates = endDate.getFullYear() + '.' + (endDate.getMonth() + 1) + '.' + endDate.getDate();
+        // let startDates = startDate.getFullYear() + '.' + (startDate.getMonth() + 1) + '.' + startDate.getDate();
+        // let endDates = endDate.getFullYear() + '.' + (endDate.getMonth() + 1) + '.' + endDate.getDate();
 
         let body = {
-            startDate: startDates,
-            endDate: endDates
+            startDate: startDate,
+            endDate: endDate
         }
-        axios.post('/api/s010100060/list', body)
+
+        console.log('startDate',startDate);
+        console.log('endDate',endDate);
+
+        axios.post('/api/payStList/list', body)
             .then(response => {
                 if (response.data.success) {
-                    console.log('list60', response.data.rows);
+                    // console.log('list60', response.data.rows);
                     setPayStatusList(response.data.rows);
                 } else {
-                    alert("데이터 조회를 실패하였습니다.")
+                    alert('데이터 조회를 실패하였습니다.')
                 }
 
             })
@@ -186,24 +188,24 @@ function S010100060(props) {
 
     const paymentSearchHandler = () => {
 
-        let startDates = startDate.getFullYear() + '.' + (startDate.getMonth() + 1) + '.' + startDate.getDate();
-        let endDates = endDate.getFullYear() + '.' + (endDate.getMonth() + 1) + '.' + endDate.getDate();
+        // let startDates = startDate.getFullYear() + '.' + (startDate.getMonth() + 1) + '.' + startDate.getDate();
+        // let endDates = endDate.getFullYear() + '.' + (endDate.getMonth() + 1) + '.' + endDate.getDate();
 
         let body = {
-            startDate: startDates,
-            endDate: endDates,
+            startDate: startDate,
+            endDate: endDate,
             userName: userName,
             paymentStatus: paymentStatus
         }
 
-
-        axios.post('/api/s010100060/list', body)
+        console.log(body);
+        axios.post('/api/payStList/list', body)
             .then(response => {
                 if (response.data.success) {
-                    console.log('list60', response.data.rows);
+                    //console.log('list60', response.data.rows);
                     setPayStatusList(response.data.rows);
                 } else {
-                    alert("데이터 조회를 실패하였습니다.")
+                    alert('데이터 조회를 실패하였습니다.')
                 }
 
             })
@@ -225,11 +227,12 @@ function S010100060(props) {
 
     const onPayHandleClickClose = () => {
         setStoreOpen(false);
+        paymentSearchHandler();
     }
 
 
     const handleToggle = (e) => {
-        console.log('event', e.target.id);
+        //console.log('event', e.target.id);
         const currentIndex = checked.indexOf(e.target.id);
         //전체 Checked된 State에서 현재 누를 Checkbox가 있는지 확인
         const newChecked = checked;
@@ -278,15 +281,20 @@ function S010100060(props) {
 
         const wb = xlsx.utils.book_new();
 
-        xlsx.utils.book_append_sheet(wb, ws, "Sheet1");
-        xlsx.writeFile(wb, "고객납부현황.xlsx");
+        xlsx.utils.book_append_sheet(wb, ws, 'Sheet1');
+        xlsx.writeFile(wb, '고객납부현황.xlsx');
 
     }
+   
 
-    const s010100060R =payStatusList.map((payStatusList, index) => {
+    const [pageNumber, setPageNumber] = useState(0);
+    const usersPerPage = 20;
+    const pagesVisited = pageNumber * usersPerPage;
+
+    const displayPayStList = payStatusList.slice(pagesVisited, pagesVisited + usersPerPage).map((payStatusList, index) => {
         return (
             <TableRow key={payStatusList.CONTRACT_ID}>
-                <TableCell><input type="checkbox" onChange={handleToggle} id={payStatusList.CONTRACT_ID} /></TableCell>
+                <TableCell><input type='checkbox' onChange={handleToggle} id={payStatusList.CONTRACT_ID} /></TableCell>
                 <TableCell>{payStatusList.CONTRACT_ID}</TableCell>
                 <TableCell>{payStatusList.MEMBER_NM}</TableCell>
                 <TableCell>{payStatusList.PAY_PLAN_DATE}</TableCell>
@@ -297,14 +305,14 @@ function S010100060(props) {
                 <TableCell>{payStatusList.EMP_HP}</TableCell>
                 <TableCell>{payStatusList.EMP_EMAIL}</TableCell>
             </TableRow>
-         )
+        )
     });
 
 
-    const indexOfFirstPost = indexOfLastPost - postsPerPage;
-    const currentPosts = s010100060R.slice(indexOfFirstPost, indexOfLastPost);
-    //Change page
-    const paginate = pageNumber => setCurrentPage(pageNumber);
+    const pageCount = Math.ceil(payStatusList.length / usersPerPage);
+    const changePage = ({ selected }) => {
+        setPageNumber(selected);
+    }
 
     return (
         <Fragment>
@@ -313,22 +321,22 @@ function S010100060(props) {
                 {/* 백그라운드 */}
                 <CssBaseline />
                 {/* 상단파란툴바 */}
-                <AppBar position="absolute" className={clsx(classes.appBar, open && classes.appBarShift)}>
+                <AppBar position='absolute' className={clsx(classes.appBar, open && classes.appBarShift)}>
                     <Toolbar className={classes.toolbar}>
                         <IconButton
-                            edge="start"
-                            color="inherit"
-                            aria-label="open drawer"
+                            edge='start'
+                            color='inherit'
+                            aria-label='open drawer'
                             onClick={handleDrawerOpen}
                             className={clsx(classes.menuButton, open && classes.menuButtonHidden)}
                         >
                             <MenuIcon />
                         </IconButton>
-                        <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
+                        <Typography component='h1' variant='h6' color='inherit' noWrap className={classes.title}>
                             Dashboard
           </Typography>
-                        <IconButton color="inherit">
-                            <Badge badgeContent={4} color="secondary">
+                        <IconButton color='inherit'>
+                            <Badge badgeContent={4} color='secondary'>
                                 <NotificationsIcon />
                             </Badge>
                         </IconButton>
@@ -336,7 +344,7 @@ function S010100060(props) {
                 </AppBar>
                 {/* 왼쪽 메뉴바 */}
                 <Drawer
-                    variant="permanent"
+                    variant='permanent'
                     classes={{
                         paper: clsx(classes.drawerPaper, !open && classes.drawerPaperClose),
                     }}
@@ -354,7 +362,7 @@ function S010100060(props) {
                 </Drawer>
                 <main className={classes.content}>
                     <div className={classes.appBarSpacer} />
-                    <Container maxWidth="lg" className={classes.container}>
+                    <Container maxWidth='lg' className={classes.container}>
                         <Grid container spacing={3}>
                             {/* Chart */}
                             <Grid item xs={12}>
@@ -364,38 +372,40 @@ function S010100060(props) {
                                     >
 
                                         납부예정일&nbsp;
-                    {/* date클릭할 때 고정 */}
+                   
                                         <DatePicker
+                                            locale='ko'
                                             selected={startDate}
                                             onChange={date => setStartDate(date)}
                                             selectsStart
                                             startDate={startDate}
                                             endDate={endDate}
-                                            dateFormat="yyyy.MM.dd"
+                                            defaultValue={moment(moment().date('01'),'YYYY-MM-DD')}
                                         /> &nbsp;~&nbsp;
-                    <DatePicker
+                                        <DatePicker
+                                            locale='ko'
                                             selected={endDate}
                                             onChange={date => setEndDate(date)}
                                             selectsEnd
                                             startDate={startDate}
                                             endDate={endDate}
                                             minDate={startDate}
-                                            dateFormat="yyyy.MM.dd"
+                                            defaultValue={moment(moment(),'YYYY-MM-DD')}
                                         />
 
-                                        {/* <input type="image" src="/examples/images/submit_icon.png" alt="제출버튼" height="30" width="30"/> */}
+                                        {/* <input type='image' src='/examples/images/submit_icon.png' alt='제출버튼' height='30' width='30'/> */}
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                     회원명&nbsp;
-                    <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm" type="text"
+                    <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size='sm' type='text'
                                             value={userName}
-                                            id="userName"
-                                            name="userName"
+                                            id='userName'
+                                            name='userName'
                                             onChange={nameSearchHandler} />
-                  
+
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 
                     납부여부&nbsp;
-                    <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm" as="select"
+                    <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size='sm' as='select'
                                             multiple={false} onChange={paymentStatusHandler} value={paymentStatus}>
                                             {paymentState.map(item => (
                                                 <option key={item.key} value={item.key}>{item.value}</option>
@@ -403,7 +413,7 @@ function S010100060(props) {
 
                                         </Form.Control>
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    <Button variant="contained" style={{ width: 80 }} color="primary" onClick={paymentSearchHandler}>
+                    <Button variant='contained' style={{ width: 80 }} color='primary' onClick={paymentSearchHandler}>
                                             조회
                     </Button>
 
@@ -411,12 +421,12 @@ function S010100060(props) {
 
                                 </Paper>
                             </Grid>
-                            <table className="btn">
+                            <table className='btn'>
                                 <thead>
                                     <tr>
                                         <td>
-                                            <Button variant="contained" style={{ width: 80 }} color="primary" onClick={onPaymenthandler}> 납부 </Button>                                     
-                                            <Button variant="contained" style={{ width: 140 }} color="primary" >엑셀다운로드 </Button>
+                                            <Button variant='contained' style={{ width: 80 }} color='primary' onClick = {onPaymenthandler}> 납부 </Button>
+                                            <Button variant='contained' style={{ width: 140 }} color='primary' onClick = {excelHandler} >엑셀다운로드 </Button>
                                         </td>
                                     </tr>
                                 </thead>
@@ -426,19 +436,19 @@ function S010100060(props) {
                             <Grid item xs={12}>
                                 <Paper className={classes.paper}>
                                     <React.Fragment>
-                                            <Title>납부 현황</Title>
-                                            <Table size="small">
+                                        <Title>납부 현황</Title>
+                                        <Table size='small'>
 
                                             <TableHead>
                                                 <TableRow>
-                                                    <TableCell rowSpan="2">선택</TableCell>
-                                                    <TableCell rowSpan="2">No</TableCell>
-                                                    <TableCell rowSpan="2">회원명</TableCell>
-                                                    <TableCell rowSpan="2">납부예정일</TableCell>
-                                                    <TableCell rowSpan="2">납부여부</TableCell>
-                                                    <TableCell rowSpan="2">납부일자</TableCell>
-                                                    <TableCell rowSpan="2">계약기간</TableCell>
-                                                    <TableCell colSpan="3">대표자</TableCell>
+                                                    <TableCell rowSpan='2'>선택</TableCell>
+                                                    <TableCell rowSpan='2'>No</TableCell>
+                                                    <TableCell rowSpan='2'>회원명</TableCell>
+                                                    <TableCell rowSpan='2'>납부예정일</TableCell>
+                                                    <TableCell rowSpan='2'>납부여부</TableCell>
+                                                    <TableCell rowSpan='2'>납부일자</TableCell>
+                                                    <TableCell rowSpan='2'>계약기간</TableCell>
+                                                    <TableCell colSpan='3'>대표자</TableCell>
                                                 </TableRow>
                                                 <TableRow>
                                                     <TableCell>성명</TableCell>
@@ -447,52 +457,40 @@ function S010100060(props) {
                                                 </TableRow>
                                             </TableHead>
                                             <TableBody>
-                                            {currentPosts}
+                                                {displayPayStList}
                                             </TableBody>
-                                            </Table>
-                                            
-                                        </React.Fragment>
-                                    {/* <table id="list">
-                                        <thead>
-                                            <tr>
-                                                <th rowSpan="2">선택</th>
-                                                <th rowSpan="2">No</th>
-                                                <th rowSpan="2">회원명</th>
-                                                <th rowSpan="2">납부예정일</th>
-                                                <th rowSpan="2">납부여부</th>
-                                                <th rowSpan="2">납부일자</th>
-                                                <th rowSpan="2">계약기간</th>
-                                                <th colSpan="3">대표자</th>
-                                            </tr>
-                                            <tr>
-                                                <th>성명</th>
-                                                <th>연락처</th>
-                                                <th>E-mail</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {currentPosts}
-                                        </tbody>
-                                    </table> */}
-                                    
+                                        </Table>
+
+                                    </React.Fragment>
+                                    <div id='reactPage'>
+                                        <ReactPaginate
+                                            previousLabel={'Previous'}
+                                            nextLabel={'Next'}
+                                            pageCount={pageCount}
+                                            onPageChange={changePage}
+                                            containerClassName={'paginationBtns'}
+                                            previousLinkClassName={'previousBtn'}
+                                            nextLinkClassName={'nextBtn'}
+                                            disabledClassName={'paginationDisabled'}
+                                            activeClassName={'paginationActive'}
+                                        />
+                                    </div>
+
                                 </Paper>
                             </Grid>
                         </Grid>
-                        <Box pt={4}>
-                        <Pagination postsPerPage={postsPerPage} totalPosts={s010100060R.length} paginate={paginate} />
-                        </Box>
                     </Container>
                 </main>
             </div>
 
 
             <Dialog
-                maxWidth={"lg"}
+                maxWidth={'lg'}
                 open={storeOpen}
                 onClose={onPayHandleClickClose}>
                 <S010100070 dataContracId={dataAllContract} />
                 <DialogActions>
-                    <input type="button" onClick={onPayHandleClickClose} color="primary" value="닫기">
+                    <input type='button' onClick={onPayHandleClickClose} color='primary' value='닫기'>
                     </input>
                 </DialogActions>
             </Dialog>
