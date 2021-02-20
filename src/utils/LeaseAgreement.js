@@ -39,7 +39,7 @@ function LeaseAgreement (props){
                 const modalCPayDate = response.data.rows[0].PAY_DATE;
 
                 //VAT(10%)적용한 modalCContractMoney 값
-                let VatMoney = modalCContractMoney-(modalCContractMoney*(10/100));
+                let VatMoney = modalCContractMoney*(10/100);
                
                 const modalCStartDate = response.data.rows[0].START_DATE;
                 const modalCEndDate = response.data.rows[0].END_DATE;
@@ -311,6 +311,8 @@ function LeaseAgreement (props){
                                         </li>        
                                     </ul>
                                 </div>                                    
+                                <br/>
+                                                             
                                 <div className = "paragraph">
                                 이상과 같은 합의를 증명하기 위하여 본 계약을 체결하며, 양 당사자는 계약서에 각기 서명 날인하여 1부씩									
                                 이를 보관 한다.		

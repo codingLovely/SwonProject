@@ -1,17 +1,8 @@
 import React, { Fragment, useState, useEffect } from 'react';
+import axios from "axios";
+import './css/S010100040.css';
 import S010100010 from './S010100010';
 import S010100050 from './S010100050';
-import './css/S010100040.css';
-import axios from "axios";
-import ReactPaginate from 'react-paginate';
-
-//엑셀다운로드
-import xlsx from 'xlsx';
-
-//<!--모달창 라이브러리
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-//모달창 라이브러리 끝-->
 
 import clsx from 'clsx';
 import { makeStyles } from '@material-ui/core/styles';
@@ -32,14 +23,20 @@ import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import NotificationsIcon from '@material-ui/icons/Notifications';
 import { mainListItems, secondaryListItems } from './listItems';
 import Button from '@material-ui/core/Button';
-import Form from 'react-bootstrap/Form';
-
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Title from './Title';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+
+import Form from 'react-bootstrap/Form';
+
+import ReactPaginate from 'react-paginate';
+
+import xlsx from 'xlsx';
 
 const drawerWidth = 240;
 
@@ -48,7 +45,7 @@ const useStyles = makeStyles((theme) => ({
         display: 'flex',
     },
     toolbar: {
-        paddingRight: 24, // keep right padding when drawer closed
+        paddingRight: 24,
     },
     toolbarIcon: {
         display: 'flex',
@@ -123,11 +120,14 @@ const useStyles = makeStyles((theme) => ({
 
 }));
 
-// let memberName = '';
-// let memberEmpHp = '';
+
 let memberId = '';
 
-function S010100040(props) {
+function S010100040() {
+
+    const classes = useStyles();
+
+    const [modalOpen, setModalOpen] = React.useState(false);
 
     const [memberNm, setMemberNm] = useState('')
     const [regNo, setRegNo] = useState('')
@@ -135,22 +135,25 @@ function S010100040(props) {
     const [contractStatus, setContractStatus] = useState('')
     const [memberSt, setMemberSt] = useState('')
     const [name, setName] = useState('')
-    const [numForDetailModal, setNumForDetailModal] = useState('')
-    const [empHpForDetailModal, setEmpHpForDetailModal] = useState('')
-    const [tbMember, setTbMember] = useState([].slice(0,5))
+    const [tbMember, setTbMember] = useState([].slice(0, 5))
 
-    //select박스
     const [memberStatus, setMemberStatus] = useState([{}]);
     const [memberType, setMemberType] = useState([{}]);
 
-    //<!--모달창 속성 및 이벤트
     const [open, setOpen] = React.useState(true);
     const [storeOpen, setStoreOpen] = React.useState(false);
-
     const [memberIdModal, setMemberIdModal] = useState(0);
 
-    const classes = useStyles();
-    const [modalOpen, setModalOpen] = React.useState(false);
+    const [pageNumber, setPageNumber] = useState(0);
+    const usersPerPage = 20;
+    const pagesVisited = pageNumber * usersPerPage;
+    const pageCount = Math.ceil(tbMember.length / usersPerPage);
+
+    const changePage = ({ selected }) => {
+        setPageNumber(selected);
+    }
+
+
     const handleDrawerOpen = () => {
         setOpen(true);
     };
@@ -158,7 +161,7 @@ function S010100040(props) {
         setOpen(false);
     };
 
-    //select박스
+
     useEffect(() => {
 
         axios.get('/api/memStList/selectMemberTp')
@@ -209,7 +212,7 @@ function S010100040(props) {
             })
     }, [])
 
-    //조회
+    // 조회
     const memberList = () => {
         const body = {
             memberNm,
@@ -274,13 +277,7 @@ function S010100040(props) {
 
     const onHandleDetailClickOpen = (event) => {
         memberId = event.target.id;
-        //memberName = event.target.innerHTML;
-        //memberIdM = event.target.className;
-
-        //setEmpHpForDetailModal(memberEmpHp);
-        //setNumForDetailModal(memberName);
         setMemberIdModal(memberId);
-        //console.log();
         setModalOpen(true);
     }
 
@@ -297,7 +294,6 @@ function S010100040(props) {
 
     }
 
-    // 엑셀다운로드
     const excelHandler = (event) => {
         event.preventDefault();
 
@@ -318,32 +314,22 @@ function S010100040(props) {
         xlsx.writeFile(wb, "회원현황.xlsx");
     }
 
-    const [pageNumber,setPageNumber] = useState(0);
-    const usersPerPage = 20;
-    const pagesVisited = pageNumber * usersPerPage;
-    
-    const displayMemSt = tbMember.slice(pagesVisited,pagesVisited + usersPerPage).map((tbMember, index) => {
+    const displayMemSt = tbMember.slice(pagesVisited, pagesVisited + usersPerPage).map((tbMember, index) => {
         return (
             <TableRow key={index}>
-            <TableCell id={tbMember.MEMBER_ID} >{index + 1}</TableCell>
-            <TableCell>{tbMember.MEMBER_NM}</TableCell>
-            <TableCell>{tbMember.REG_NO}</TableCell>
-            <TableCell onClick={onHandleDetailClickOpen} className='underLineForDetail' id={tbMember.MEMBER_ID}>{tbMember.NAME}</TableCell>
-            <TableCell>{tbMember.EMP_HP}</TableCell>
-            <TableCell>{tbMember.EMP_EMAIL}</TableCell>
-            <TableCell>{tbMember.MEMBER_TP}</TableCell>
-            <TableCell>{tbMember.MEMBER_ST}</TableCell>
-            <TableCell>{tbMember.END_FLAG}</TableCell>
+                <TableCell id={tbMember.MEMBER_ID} >{index + 1}</TableCell>
+                <TableCell>{tbMember.MEMBER_NM}</TableCell>
+                <TableCell>{tbMember.REG_NO}</TableCell>
+                <TableCell onClick={onHandleDetailClickOpen} className='underLineForDetail' id={tbMember.MEMBER_ID}>{tbMember.NAME}</TableCell>
+                <TableCell>{tbMember.EMP_HP}</TableCell>
+                <TableCell>{tbMember.EMP_EMAIL}</TableCell>
+                <TableCell>{tbMember.MEMBER_TP}</TableCell>
+                <TableCell>{tbMember.MEMBER_ST}</TableCell>
+                <TableCell>{tbMember.END_FLAG}</TableCell>
             </TableRow>
-         )
+        )
     });
 
- 
-
-    const pageCount = Math.ceil(tbMember.length/usersPerPage);
-    const changePage = ({selected}) => {
-        setPageNumber(selected);
-    }
 
     return (
 
@@ -466,7 +452,7 @@ function S010100040(props) {
                             <table className="btn">
                                 <thead>
                                     <tr>
-                                        <td colSpan="5">
+                                        <td colSpan="5" id="alignLeft">
                                             <Button variant="contained" style={{ width: 100 }} color="primary" onClick={onHandleClickOpen} >
                                                 신규회원
                                             </Button>
@@ -477,14 +463,9 @@ function S010100040(props) {
                                                 메일전송
                                             </Button>
                                         </td>
-                                    
-                                        <td  id="alignRight">
-                                           
-                                        </td>
-                                        <td  id="alignRight">
-                                           
-                                        </td>
-                                        <td colSpan = "5" id="alignRight">
+
+
+                                        <td colSpan="5" id="alignRight">
                                             <Button variant="contained" style={{ width: 140 }} color="primary" onClick={excelHandler}>
                                                 엑셀다운로드
                                             </Button>
@@ -497,8 +478,8 @@ function S010100040(props) {
                             <Grid item xs={12}>
                                 <Paper className={classes.paper}>
                                     <React.Fragment>
-                                            <Title>회원 현황</Title>
-                                            <Table size="small">
+                                        <Title>회원 현황</Title>
+                                        <Table size="small">
 
                                             <TableHead>
                                                 <TableRow>
@@ -517,25 +498,25 @@ function S010100040(props) {
                                                 </TableRow>
                                             </TableHead>
                                             <TableBody>
-                                            {displayMemSt}
+                                                {displayMemSt}
                                             </TableBody>
-                                            </Table>
-                                            
-                                        </React.Fragment>
+                                        </Table>
 
-                                        <div id = "reactPage">
-                                                <ReactPaginate
-                                                    previousLabel = {"Previous"}
-                                                    nextLabel = {"Next"}
-                                                    pageCount = {pageCount}
-                                                    onPageChange = {changePage}
-                                                    containerClassName={"paginationBtns"}
-                                                    previousLinkClassName={"previousBtn"}
-                                                    nextLinkClassName={"nextBtn"}
-                                                    disabledClassName={"paginationDisabled"}
-                                                    activeClassName={"paginationActive"}   
-                                                />
-                                            </div>
+                                    </React.Fragment>
+
+                                    <div id="reactPage">
+                                        <ReactPaginate
+                                            previousLabel={"Previous"}
+                                            nextLabel={"Next"}
+                                            pageCount={pageCount}
+                                            onPageChange={changePage}
+                                            containerClassName={"paginationBtns"}
+                                            previousLinkClassName={"previousBtn"}
+                                            nextLinkClassName={"nextBtn"}
+                                            disabledClassName={"paginationDisabled"}
+                                            activeClassName={"paginationActive"}
+                                        />
+                                    </div>
                                 </Paper>
                             </Grid>
                         </Grid>
@@ -548,7 +529,6 @@ function S010100040(props) {
                 open={modalOpen}
                 onClose={onHandleDetailClickClose}>
                 <S010100050 dataMemId={memberIdModal} dataForm={"U"} />
-                {/* dataName={numForDetailModal} dataEmpHp={empHpForDetailModal} */}
                 <DialogActions>
                     <input type="button" id="contractBtn" onClick={onHandleDetailClickClose} color="primary" value='닫기' />
                 </DialogActions>

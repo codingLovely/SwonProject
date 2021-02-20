@@ -286,10 +286,12 @@ function S010100090(props) {
                             <table className="btn">
                                     <thead>
                                         <tr>
-                                            <td >
+                                            <td id="alignLeft">
                                                 <Button variant="contained" style={{ width: 100 }} color="primary" href="#contained-buttons"> 등록 </Button>
                                                 <Button variant="contained" style={{ width: 100 }} color="primary" href="#contained-buttons"> 수정 </Button>
                                                 <Button variant="contained" style={{ width: 100 }} color="primary" href="#contained-buttons"> 승인 </Button>
+                                            </td>
+                                            <td id="alignRight">
                                                 <Button variant="contained" style={{ width: 140 }} color="primary" href="#contained-buttons"> 엑셀다운로드 </Button>
                                             </td>
                                         </tr>

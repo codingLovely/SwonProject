@@ -1,15 +1,17 @@
 /* #btn-center{ margin-left: 500px;} */
-#infoTitle{text-align: center;}
+#infoTitle{text-align: left; color: #3f51b5;}
 #conInfoTitle{text-align: center;}
-.memberInfoWrapper{width: 1050px; height: 450px; padding:5px; margin-top: 20px;margin-right:10px;}
-.memberInfoWrap{width: 1000px; }
-#btnAlign{text-align: center;}
+.memberInfoWrapper{width: 1050px; height: 450px; padding:30px; 
+   }
+/* .memberInfoWrap{width: 1040px; } */
+#btnAlign{text-align: center; margin:10px;}
 
-#memberDetailTable {margin:10px; border: 1px solid; width: 104%;}
-#memberDetailTable th {border:1px solid;}
-#memberDetailTable td {border:1px solid; text-align: center;} 
+#memberDetailTable {border: 1px solid #e9ecef; width: 100%; margin-bottom: 10px;}
+#memberDetailTable th {border:1px solid #e9ecef; background-color: #f1f3f5;text-align: center; padding: 5px;}
+#memberDetailTable td {border:1px solid #e9ecef; text-align: left; padding: 5px;} 
 
-#conInfoDetialTable {margin:10px; border: 1px solid; width: 104%;}
+#conInfoDetialTable {margin:10px; border: 1px solid; width: 100%;}
 #conInfoDetialTable th{border:1px solid;}
 #conInfoDetialTable td {border:1px solid; text-align: center;} 
 .memberInfoWrapper #pageCenter{margin-left: 490px;}
+#__daum__layer_7{height: 600px;}

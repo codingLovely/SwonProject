@@ -1,16 +1,21 @@
-import React, { useState, useEffect, useRef } from 'react';
-import DaumPostcode from 'react-daum-postcode';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { post } from 'axios';
 import './css/S010100010.css';
 import LeaseAgreement from './utils/LeaseAgreement';
-import Table from 'react-bootstrap/Table'
 
-// 모달창 라이브러리
+import DaumPostcode from 'react-daum-postcode';
+
+import { makeStyles } from '@material-ui/core/styles';
+import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
+import Modal from '@material-ui/core/Modal';
+import Backdrop from '@material-ui/core/Backdrop';
+import Fade from '@material-ui/core/Fade';
 
-// 켈린더 라이브러리
+import Form from 'react-bootstrap/Form';
+
 import DatePicker, { registerLocale } from 'react-datepicker';
 import ko from 'date-fns/locale/ko';
 registerLocale('ko', ko);
@@ -27,6 +32,15 @@ let forMemberStatus;
 // 계약 수정하기 이용기간 중복확인
 let existingStartDate;
 let existingEndDate;
+
+
+const useStyles = makeStyles((theme) => ({
+    modal: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+}));
 
 function S010100010(props) {
 
@@ -68,7 +82,7 @@ function S010100010(props) {
     const [regNoCheckBtn, setRegNoCheckBtn] = useState('');
     const [empHpCheckBtn, setEmpHpCheckBtn] = useState('');
     const [dateCheckBtn, setDateCheckBtn] = useState('');
- 
+
 
     // dialog open
     const [printSheetOpen, setPrintSheetOpen] = useState(false);
@@ -87,8 +101,50 @@ function S010100010(props) {
     const [registCardFile, setRegistCardFile] = useState(null);
     const [registCardFileName, setRegistCardFileName] = useState('');
 
-    // 확정/가계약구분
-    const [memberStFlag,setMemberStFlag] = useState('');
+    // 확정-가계약구분
+    const [memberStFlag, setMemberStFlag] = useState('');
+
+    const [isPostOpen, setIsPostOpen] = useState(false);
+    const classes = useStyles();
+
+    const handleOpen = () => {
+        setIsPostOpen(true);
+    };
+
+    const handleClose = () => {
+        setIsPostOpen(false);
+    };
+
+
+    const postCodeStyle = {
+        display: "block",
+        // position: "absolute",
+        top: "50%",
+        width: "400px",
+        height: "500px",
+        padding: "10px",
+    };
+
+    const handleComplete = (data) => {
+        let fullAddress = data.address;
+        let extraAddress = "";
+
+        if (data.addressType === "R") {
+            if (data.bname !== "") {
+                extraAddress += data.bname;
+            }
+            if (data.buildingName !== "") {
+                extraAddress +=
+                    extraAddress !== "" ? `, ${data.buildingName}` : data.buildingName;
+            }
+            fullAddress += extraAddress !== "" ? ` (${extraAddress})` : "";
+        }
+
+
+        setZipcode(data.zonecode);
+        setEmpAddress(fullAddress);
+
+    };
 
     const rNum = props.dataNum;
     const modalMemberId = props.dataMem;
@@ -128,7 +184,6 @@ function S010100010(props) {
                         setEmpAddress(modalCAddress);
                         setEmpDetailAddress(modalCDetailAddress);
 
-                        //setEndFlag(modalEndFLag);
                     } else {
                         alert("상세 정보 가져오기를 실패하였습니다.")
                     }
@@ -136,7 +191,6 @@ function S010100010(props) {
         }
 
     }, []);
-
 
 
     useEffect(() => {
@@ -245,101 +299,6 @@ function S010100010(props) {
     }, [])
 
 
-    const findAddr = () => {
-        //     const script = document.createElement("script");
-        //     script.innerHTML = `         
-        //     new daum.Postcode({
-        //         oncomplete: function(data) {
-
-        //             var addr = ''; 
-        //             var extraAddr = ''; 
-
-
-        //             if (data.userSelectedType === 'R') { 
-        //                 addr = data.roadAddress;
-        //             } else {
-        //                 addr = data.jibunAddress;
-        //             }
-
-
-        //             if(data.userSelectedType === 'R'){
-
-        //                 if(data.bname !== '' && /[동|로|가]$/g.test(data.bname)){
-        //                     extraAddr += data.bname;
-        //                 }
-
-        //                 if(data.buildingName !== '' && data.apartment === 'Y'){
-        //                     extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName);
-        //                 }
-
-        //                 if(extraAddr !== ''){
-        //                     extraAddr = ' (' + extraAddr + ')';
-        //                 }
-
-        //                 document.getElementById("sample6_extraAddress").value = extraAddr;
-
-        //             } else {
-        //                 document.getElementById("sample6_extraAddress").value = '';
-        //             }
-
-
-        //             document.getElementById('sample6_postcode').value = data.zonecode;
-        //             document.getElementById("sample6_address").value = addr;
-
-        //             document.getElementById("sample6_detailAddress").focus();  
-        //         }
-        //     }).open();
-        //    `;
-        //     script.type = "text/javascript";
-        //     script.async = "async";
-        //     document.head.appendChild(script);
-
-        //console.log('ggggg');
-
-        const postCodeStyle = {
-            display: "block",
-            position: "absolute",
-            top: "26%",
-            right: "33%",
-            width: "1000px",
-            height: "1600px"
-
-        }
-
-        const handleComplete = (data) => {
-            let fullAddress = data.address;
-            let extraAddress = '';
-
-            if (data.addressType === 'R') {
-                if (data.bname !== '') {
-                    extraAddress += data.bname;
-                }
-                if (data.buildingName !== '') {
-                    extraAddress += (extraAddress !== '' ? `, ${data.buildingName}` : data.buildingName);
-                }
-                fullAddress += (extraAddress !== '' ? ` (${extraAddress})` : '');
-            }
-
-            console.log(fullAddress);  // e.g. '서울 성동구 왕십리로2길 20 (성수동1가)'
-            setZipcode(data.zonecode);
-            setEmpAddress(fullAddress);
-            alert('입력되었습니다.');
-        }
-
-        return (
-            <div>
-                {console.log(';/')}
-                <DaumPostcode
-                    onComplete={handleComplete}
-                    style={postCodeStyle}
-                    height={700}
-                />
-            </div>
-        );
-
-    }
-
-    //<Lov시작>
     useEffect(() => {
         for (let i = 0; i < queryArr.length; i++) {
 
@@ -382,7 +341,7 @@ function S010100010(props) {
             })
     }, [])
 
-    //날 일
+    // 날 일
     let arr = [{ key: '선택', value: '선택' }];
     for (let i = 1; i <= 31; i++) {
         arr.push({
@@ -397,15 +356,15 @@ function S010100010(props) {
     const [contractpaths, setContractPaths] = useState([{ key: '', value: '선택' }]);
 
     const onContractTpHandler = (event) => {
-
         setContractTp(event.currentTarget.value);
+
         let contractTpBody = event.currentTarget.value;
 
 
         axios.post('/api/memStList/contHier', { contractTpBody: contractTpBody })
             .then(response => {
                 if (response.data.success) {
-                    //console.log('ContractTpVal', response.data.rows);
+                    // console.log('ContractTpVal', response.data.rows);
                     let arr = [{ key: '선택', value: '선택' }]
 
                     response.data.rows.map((data) =>
@@ -431,13 +390,13 @@ function S010100010(props) {
                         case 'FR':
                             setContractTpVals(arr);
                             break;
-                    }//switch
+                    }// switch
 
                     if (contractTpBody === 'FI' || contractTpBody === 'FL') {
                         axios.post('/api/memStList/roomLockerHier')
                             .then(response => {
                                 if (response.data.success) {
-                                    //console.log('roomLocker', response.data.rows);
+                                    // console.log('roomLocker', response.data.rows);
                                     let arr = [{ key: '선택', value: '선택' }]
                                     response.data.rows.map((data) =>
                                         arr.push({
@@ -447,7 +406,7 @@ function S010100010(props) {
                                 } else {
                                     alert('사물함정보를 불러오는데 실패하였습니다.');
                                 }
-                            })//axios
+                            })// axios
                     } else {
                         let arr = [{ key: '선택', value: '선택' }];
                         setRoomLockers(arr);
@@ -460,7 +419,7 @@ function S010100010(props) {
                     axios.post('/api/memStList/monthlyMoney', monthlyMoney)
                         .then(response => {
                             if (response.data.success) {
-                                //console.log(response.data.rows[0].ATTRIBUTE3);
+                                // console.log(response.data.rows[0].ATTRIBUTE3);
                                 setContractMoney(response.data.rows[0].ATTRIBUTE3);
 
                             } else {
@@ -468,12 +427,12 @@ function S010100010(props) {
                             }
                         })
 
-                }//if문
+                }// if문
                 else {
                     alert('호실 정보를 불러오는데 실패하였습니다.');
                 }
 
-            })//axios,then
+            })// axios,then
 
     }
 
@@ -549,7 +508,7 @@ function S010100010(props) {
         formData.append('empAddress', empAddress);
         formData.append('empDetailAddress', empDetailAddress);
 
-        //계약정보
+        // 계약정보
         formData.append('contractTp', contractTp);
         formData.append('contractTpVal', contractTpVal);
         formData.append('roomLockerTp', roomLockerTp);
@@ -576,51 +535,47 @@ function S010100010(props) {
 
 
 
-    //저장-확정
+    // 저장-확정
     const onSubmitHandler = (event) => {
         event.preventDefault();
         forMemberStatus = "C";
 
-        // //대표자 NUll체크
-        // if (empIdName == null || empIdName == '') {
-        //     return alert("대표자를 입력하세요.");
-        // }
-        //
-        // //연락처 NUll체크
-        // if (firstEmpHp == null || firstEmpHp == '' || secondEmpHp == null || secondEmpHp == '' || thirdEmpHp == null || thirdEmpHp == '') {
-        //     return alert("연락처를 입력하세요.");
-        // }
-        //
-       
-        //
-        // //계약구분 NUll체크
-        // if (contractTp == null || contractTp == '') {
-        //     return alert("계약구분을 선택하세요.");
-        // }
-        //
-        // //호실 NUll체크
-        // if (contractTpVal == null || contractTpVal == '') {
-        //     return alert("호실을 선택하세요.");
-        // }
-        //
-        // //이용기간 NUll체크
-        // if (contractTerm == null || contractTerm == '') {
-        //     return alert("이용기간을 입력하세요.");
-        // }
-        //
-        // //입금일 NUll체크
-        // if (payDate == null || payDate == '') {
-        //     return alert("입금일을 하세요.");
-        // }
-        //
-        // //납부방법 NUll체크
-        // if (payMethod == null || payMethod == '') {
-        //     return alert("납부방법을 선택하세요.");
-        // }
-        //
-      
+        // 대표자 NUll체크
+        if (empIdName == null || empIdName == '') {
+            return alert("대표자를 입력하세요.");
+        }
 
-        //중복확인
+        // 연락처 NUll체크
+        if (firstEmpHp == null || firstEmpHp == '' || secondEmpHp == null || secondEmpHp == '' || thirdEmpHp == null || thirdEmpHp == '') {
+            return alert("연락처를 입력하세요.");
+        }
+
+        // 계약구분 NUll체크
+        if (contractTp == null || contractTp == '') {
+            return alert("계약구분을 선택하세요.");
+        }
+
+        // 호실 NUll체크
+        if (contractTpVal == null || contractTpVal == '') {
+            return alert("호실을 선택하세요.");
+        }
+
+        // 이용기간 NUll체크
+        if (contractTerm == null || contractTerm == '') {
+            return alert("이용기간을 입력하세요.");
+        }
+
+        // 입금일 NUll체크
+        if (payDate == null || payDate == '') {
+            return alert("입금일을 하세요.");
+        }
+
+        // 납부방법 NUll체크
+        if (payMethod == null || payMethod == '') {
+            return alert("납부방법을 선택하세요.");
+        }
+
+        // 중복확인
         if (regNoCheckBtn == '') {
             alert('사업자 번호 중복확인 하세요.');
         } else if (empHpCheckBtn == '') {
@@ -635,24 +590,22 @@ function S010100010(props) {
 
     }
 
-    //임시저장-가계약
+    // 임시저장-가계약
     const temporaryStorage = (event) => {
         event.preventDefault();
         forMemberStatus = "T";
-        
-        // //대표자 NUll체크
-        // if (empIdName == null || empIdName == '') {
-        //     return alert("대표자를 입력하세요.");
-        // }
-        //
-        // //연락처 NUll체크
-        // if (firstEmpHp == null || firstEmpHp == '' || secondEmpHp == null || secondEmpHp == '' || thirdEmpHp == null || thirdEmpHp == '') {
-        //     return alert("연락처를 입력하세요.");
-        // }
-        //
-      
 
-        //중복확인
+        // 대표자 NUll체크
+        if (empIdName == null || empIdName == '') {
+            return alert("대표자를 입력하세요.");
+        }
+
+        // 연락처 NUll체크
+        if (firstEmpHp == null || firstEmpHp == '' || secondEmpHp == null || secondEmpHp == '' || thirdEmpHp == null || thirdEmpHp == '') {
+            return alert("연락처를 입력하세요.");
+        }
+
+        // 중복확인
         if (regNoCheckBtn == '') {
             alert('사업자 번호 중복확인 하세요.');
         } else if (empHpCheckBtn == '') {
@@ -667,56 +620,41 @@ function S010100010(props) {
 
     }
 
-    //신규계약추가
+    // 신규계약추가
     const newMemberIdStorage = (event) => {
 
-        // //계약구분 NUll체크
-        // if (contractTp == null || contractTp == '') {
-        //     return alert("계약구분을 선택하세요.");
-        // }
-        //
-        // //호실 NUll체크
-        // if (contractTpVal == null || contractTpVal == '') {
-        //     return alert("호실을 선택하세요.");
-        // }
-        //
-        // //이용기간 NUll체크
-        // if (contractTerm == null || contractTerm == '') {
-        //     return alert("이용기간을 입력하세요.");
-        // }
-        //
-        // //입금일 NUll체크
-        // if (payDate == null || payDate == '') {
-        //     return alert("입금일을 하세요.");
-        // }
-        //
-        // //납부방법 NUll체크
-        // if (payMethod == null || payMethod == '') {
-        //     return alert("납부방법을 선택하세요.");
-        // }
-        //
-        // //월회비 NUll체크
-        // if (contractMoney == null || contractMoney == '') {
-        //     return alert("월회비를 입력하세요.");
-        // }
-        //
-        // //납부액 NUll체크
-        // if (contractMoney == null || contractMoney == '') {
-        //     return alert("납부액을 입력하세요.");
-        // }
+        // 계약구분 NUll체크
+        if (contractTp == null || contractTp == '') {
+            return alert("계약구분을 선택하세요.");
+        }
 
-        // //계약접근경로 NUll체크
-        // if (contractPath == null || contractPath == '') {
-        //     return alert("계약접근경로를 선택하세요.");
-        // }
+        // 호실 NUll체크
+        if (contractTpVal == null || contractTpVal == '') {
+            return alert("호실을 선택하세요.");
+        }
 
-        //memberId
+        // 이용기간 NUll체크
+        if (contractTerm == null || contractTerm == '') {
+            return alert("이용기간을 입력하세요.");
+        }
+
+        // 입금일 NUll체크
+        if (payDate == null || payDate == '') {
+            return alert("입금일을 하세요.");
+        }
+
+        // 납부방법 NUll체크
+        if (payMethod == null || payMethod == '') {
+            return alert("납부방법을 선택하세요.");
+        }
+
+        // memberId
         let memberIdForNew = props.dataMem;
-        //시작일자
+        // 시작일자
         let startDate = startAsk_date.getFullYear() + '-' + (startAsk_date.getMonth() + 1) + '-' + startAsk_date.getDate();
 
         let body = {
-            //계약정보
+            // 계약정보
             memberIdForNew: memberIdForNew,
             contractTp: contractTp,
             contractTpVal: contractTpVal,
@@ -745,10 +683,10 @@ function S010100010(props) {
 
     // 가계약을 확정으로 + 수정하기
     const newContractIdStorage = (event) => {
-        
+
         // console.log('memberStFlag',memberStFlag);
-        if(memberStFlag == 'T' ){
-            //가계약을 확정으로
+        if (memberStFlag == 'T') {
+            // 가계약을 확정으로
             let memberBody = {
                 rNum: rNum
             }
@@ -782,8 +720,8 @@ function S010100010(props) {
             contractPath: contractPath,
             comment: comment
         }
-        
-        console.log('comment',comment);
+
+        console.log('comment', comment);
         let dateChangeChk = props.dataNum;
 
         let dataChk = {
@@ -810,10 +748,10 @@ function S010100010(props) {
                     let wasteEndMonthDay = wastedEndDate.substring(5, 7);
                     let wasteEndYearDay = wastedEndDate.substring(0, 4);
 
-                    //endDate는 DatePicker(x) input-> '.'로 바로 설정했었음
+                    // endDate는 DatePicker(x) input-> '.'로 바로 설정했었음
                     existingEndDate = wasteEndYearDay + '.' + parseInt(wasteEndMonthDay) + '.' + (parseInt(wasteEndDateDay) + 1);
 
-                    //날짜 수정x
+                    // 날짜 수정x
                     if (dateEnd === existingEndDate || contractTerm === wastedContractTerm) {
 
                         setDateCheckBtn('check');
@@ -828,9 +766,9 @@ function S010100010(props) {
                             })
                         alert('날짜 수정안했음');
 
-                        //날짜 수정o
+                        // 날짜 수정o
                     } else {
-                        //console.log('contractTerm != wastedContractTerm', contractTerm != wastedContractTerm);
+                        // console.log('contractTerm != wastedContractTerm', contractTerm != wastedContractTerm);
                         alert('날짜 수정했음');
                         if (dateCheckBtn == 'check') {
 
@@ -856,27 +794,16 @@ function S010100010(props) {
 
     }
 
-    //출력버튼 모달 open
+    // 출력버튼 모달 open
     const onPrintHandler = (event) => {
         forPrint = true;
         setPrintSheetOpen(true);
     }
-    //출력버튼 모달 close
+    // 출력버튼 모달 close
     const onPrintSheetClose = (event) => {
         forPrint = false;
         setPrintSheetOpen(false);
     }
-
-    //const printArea = useRef();
-    //출력함수
-    // const onPrintSheetHandler = (event) => {
-    //     let printContents =printArea.current.focus; 
-    //     let originalContents = document.body.innerHTML;
-    //     document.body.innerHTML = printContents;
-    //     window.print();
-    //     document.body.innerHTML = originalContents;
-
-    // }
 
     const onleaseAgreementHandler = (event) => {
         setLeaseAgreementOpen(true);
@@ -943,11 +870,11 @@ function S010100010(props) {
     }
 
 
-    //종료
+    // 종료
     const newEndHandler = (event) => {
         event.preventDefault();
         const body = {
-            //계약정보
+            // 계약정보
             rNum: rNum
         }
         axios.post('/api/memStList/endFlag', body)
@@ -961,7 +888,7 @@ function S010100010(props) {
     }
 
 
-    const onDeleteHandler = (event) => {
+    const onDeleteHandler = () => {
 
         setUserStatus('');
 
@@ -981,7 +908,7 @@ function S010100010(props) {
 
         setRegNoCheckBtn('check');
 
-        //console.log('regNoCheckBtn2.', regNoCheckBtn);
+        // console.log('regNoCheckBtn2.', regNoCheckBtn);
 
         const body = {
             //회원정보
@@ -1003,7 +930,7 @@ function S010100010(props) {
                 }
             })
 
-        console.log('regNoCheckBtn3.', regNoCheckBtn);
+        //console.log('regNoCheckBtn3.', regNoCheckBtn);
     }
 
     const onEmpHpChkHandler = (event) => {
@@ -1012,7 +939,7 @@ function S010100010(props) {
         setEmpHpCheckBtn('check');
 
         const body = {
-            //회원정보
+            // 회원정보
             firstEmpHp: firstEmpHp,
             secondEmpHp: secondEmpHp,
             thirdEmpHp: thirdEmpHp,
@@ -1045,7 +972,7 @@ function S010100010(props) {
     let dateEnd = Math.floor(finalYear) + '.' + finalMonth + '.' + finalDate;
 
 
-    //이용기간 중복체크
+    // 이용기간 중복체크
     const funcDateChk = () => {
 
         // setDateCheckBtn('check');
@@ -1062,7 +989,7 @@ function S010100010(props) {
             contractId: rNum
         }
 
-        //console.log(modalMemberId);
+        // console.log(modalMemberId);
 
         axios.post('/api/memStList/dateCheck', body)
             .then(response => {
@@ -1115,456 +1042,535 @@ function S010100010(props) {
             alignItems: 'center',
             width: '100%'
         }}
-            //onSubmit={onSubmitHandler}
             encType='multipart/form-data'
         >
-            <h1 id="useContractTitle">이용계약서</h1>
-            <Table striped bordered hover className="useContractTable">
-                {/* 회원정보란 */}
-                <tbody>
-                    <tr>
-                        <th rowSpan="6" className="memberInfo">회원정보</th>
-                    </tr>
+            <div className="memInfoWrapper">
+                <div className="memInfoWrap">
+                    {/* 회원정보란 */}
+                    <h5 id="infoTitle">회원 정보</h5>
 
-                    <tr>
-                        <th className="memberInfo">회원명</th>
-                        <td hidden={forPrint}>
-                            <input type="text" value={memberNm} id="memberNm" name="memberNm" size="10"
-                                onChange={onMemberNmHandler} disabled={props.cDataForm === 'I' || props.newDataForm === 'N'}
-                            />
-                        </td>
+                    <table id="memberTable">
+                        {/* 회원정보란 */}
+                        <tbody>
+                            <tr>
+                                <th rowSpan="6" className="memberInfo">회원정보</th>
+                            </tr>
 
-                        {/* 회원명 출력 td */}
-                        <td hidden={!forPrint}>
-                            {memberNm}
-                        </td>
+                            <tr>
+                                <th className="memberInfo">회원명<span className="star">(*)</span></th>
+                                <td hidden={forPrint}>
 
-                        <th className="memberInfo">사업자 번호</th>
-                        <td colSpan="2" hidden={forPrint}>
+                                    <Form.Control style={{ width: 10 + 'em', display: 'inline' }} size="sm"
+                                        type="text" value={memberNm} id="memberNm" name="memberNm"
+                                        onChange={onMemberNmHandler} disabled={props.cDataForm === 'I' || props.newDataForm === 'N'} />
 
-                            <input type="text" value={firstRegNo} id="firstRegNo" name="firstRegNo" size="3"
-                                onChange={onFirstRegNoHandler} disabled={props.cDataForm === 'I' || props.newDataForm === 'N'} />
+                                </td>
+
+                                {/* 회원명 출력 td */}
+                                <td hidden={!forPrint}>
+                                    {memberNm}
+                                </td>
+
+                                <th className="memberInfo">사업자 번호<span className="star">(*)</span></th>
+                                <td colSpan="2" hidden={forPrint}>
+
+                                    <Form.Control style={{ width: 4 + 'em', display: 'inline' }} size="sm"
+                                        type="text" value={firstRegNo} id="firstRegNo" name="firstRegNo"
+                                        onChange={onFirstRegNoHandler} disabled={props.cDataForm === 'I' || props.newDataForm === 'N'} />
+
+
                         &nbsp;
                         -
                         &nbsp;
-                        <input type="text" value={secondRegNo} id="secondRegNo" name="secondRegNo" size="3"
-                                onChange={onSecondRegNoHandler} disabled={props.cDataForm === 'I' || props.newDataForm === 'N'} />
+
+                        <Form.Control style={{ width: 3 + 'em', display: 'inline' }} size="sm"
+                                        type="text" value={secondRegNo} id="secondRegNo" name="secondRegNo"
+                                        onChange={onSecondRegNoHandler} disabled={props.cDataForm === 'I' || props.newDataForm === 'N'} />
+
                         &nbsp;
                         -
                         &nbsp;
-                        <input type="text" value={thirdRegNo} id="thirdRegNo" name="thirdRegNo" size="3"
-                                onChange={onThirdRegNoHandler} disabled={props.cDataForm === 'I' || props.newDataForm === 'N'} />
 
-                            {/*신규회원 중복확인 */}
-                            <input type="button" className="useContractBtn" onClick={onRegNoCheckHandler}
-                                hidden={props.cDataForm === 'I' || props.newDataForm === 'N'} value="중복확인"></input>
-
-                        </td>
-                        {/*사업자 번호 출력용 */}
-                        <td colSpan="2" hidden={!forPrint} >{firstRegNo}-{secondRegNo}-{thirdRegNo}</td>
+                        <Form.Control style={{ width: 7 + 'em', display: 'inline' }} size="sm"
+                                        type="text" value={thirdRegNo} id="thirdRegNo" name="thirdRegNo"
+                                        onChange={onThirdRegNoHandler} disabled={props.cDataForm === 'I' || props.newDataForm === 'N'} />
 
 
-                        <th className="memberInfo" >회원구분</th>
-                        <td colSpan="2" hidden={forPrint}>
-                            <select multiple={false} onChange={onMemberTpHandler} value={memberTp} disabled={props.cDataForm === 'I' || props.newDataForm === 'N'}>
-                                {valueArr[0].map(item => (
-                                    <option key={item.key} value={item.key}>{item.value}</option>
-                                ))}
-                            </select>
-                        </td>
+                                    {/*신규회원 중복확인 */}
+                                    <Button variant="contained" color="primary" style={{ width: 100 }} className="useContractBtn" onClick={onRegNoCheckHandler}
+                                        hidden={props.cDataForm === 'I' || props.newDataForm === 'N'}> 중복확인</Button>
 
-                        {/*회원구분 출력용 */}
-                        <td colSpan="2" hidden={!forPrint} >{memberTpPrint}</td>
-                    </tr>
+                                </td>
 
-                    <tr>
-                        <th className="memberInfo">대표자<span className="star">(*)</span></th>
-                        <td hidden={forPrint}>
-                            <input type="text" value={empIdName} id="empIdName" name="empIdName" size="10"
-                                onChange={onEmpIdNameHandler} disabled={props.cDataForm === 'I' || props.newDataForm === 'N'} />
-                        </td>
+                                {/*사업자 번호 출력용 */}
+                                <td colSpan="2" hidden={!forPrint} >{firstRegNo}-{secondRegNo}-{thirdRegNo}</td>
 
-                        {/* 대표자(이름) 출력용 */}
-                        <td hidden={!forPrint} >{empIdName}</td>
 
-                        <th className="memberInfo">연락처<span className="star">(*)</span></th>
-                        <td colSpan="2" hidden={forPrint}>
+                                <th className="memberInfo" >회원구분</th>
+                                <td colSpan="2" hidden={forPrint}>
 
-                            <input type="text" value={firstEmpHp} id="firstEmpHp" name="firstEmpHp" size="5"
-                                onChange={onFirstEmpHpHandler} disabled={props.cDataForm === 'I' || props.newDataForm === 'N'} />
+                                    <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm" as="select" multiple={false} onChange={onMemberTpHandler} value={memberTp}
+                                        disabled={props.cDataForm === 'I' || props.newDataForm === 'N'}>
+                                        {valueArr[0].map(item => (
+                                            <option key={item.key} value={item.key}>{item.value}</option>
+                                        ))}
+
+                                    </Form.Control>
+
+                                </td>
+
+                                {/*회원구분 출력용 */}
+                                <td colSpan="2" hidden={!forPrint} >{memberTpPrint}</td>
+                            </tr>
+
+                            <tr>
+                                <th className="memberInfo">대표자<span className="star">(*)</span></th>
+                                <td hidden={forPrint}>
+
+                                    <Form.Control style={{ width: 7 + 'em', display: 'inline' }} size="sm"
+                                        type="text" value={empIdName} id="empIdName" name="empIdName"
+                                        onChange={onEmpIdNameHandler} disabled={props.cDataForm === 'I' || props.newDataForm === 'N'} />
+
+                                </td>
+
+                                {/* 대표자(이름) 출력용 */}
+                                <td hidden={!forPrint} >{empIdName}</td>
+
+                                <th className="memberInfo">연락처<span className="star">(*)</span></th>
+                                <td colSpan="2" hidden={forPrint}>
+
+                                    <Form.Control style={{ width: 5 + 'em', display: 'inline' }} size="sm"
+                                        type="text" value={firstEmpHp} id="firstEmpHp" name="firstEmpHp"
+                                        onChange={onFirstEmpHpHandler} disabled={props.cDataForm === 'I' || props.newDataForm === 'N'} />
+
+                        &nbsp;
                         -
                         &nbsp;
-                        <input type="text" value={secondEmpHp} id="secondEmpHp" name="secondEmpHp" size="5"
-                                onChange={onSecondEmpHpHandler} disabled={props.cDataForm === 'I' || props.newDataForm === 'N'} />
+                        <Form.Control style={{ width: 5 + 'em', display: 'inline' }} size="sm"
+                                        type="text" value={secondEmpHp} id="secondEmpHp" name="secondEmpHp" name="firstEmpHp"
+                                        onChange={onSecondEmpHpHandler} disabled={props.cDataForm === 'I' || props.newDataForm === 'N'} />
+
                         -
                         &nbsp;
-                        <input type="text" value={thirdEmpHp} id="thirdEmpHp" name="thirdEmpHp" size="5"
-                                onChange={onThirdEmpHpHandler} disabled={props.cDataForm === 'I' || props.newDataForm === 'N'} />
-                            <input type="button" onClick={onEmpHpChkHandler} hidden={props.cDataForm == 'I' || props.newDataForm === 'N'} value="중복확인" />
-                        </td>
+                        <Form.Control style={{ width: 5 + 'em', display: 'inline' }} size="sm"
+                                        type="text" value={thirdEmpHp} id="thirdEmpHp" name="thirdEmpHp"
+                                        onChange={onThirdEmpHpHandler} disabled={props.cDataForm === 'I' || props.newDataForm === 'N'} />
 
-                        {/* 대표자(전화번호) 출력용 */}
-                        <td colSpan="2" hidden={!forPrint} >{firstEmpHp}-{secondEmpHp}-{thirdEmpHp}</td>
+                                    <Button variant="contained" color="primary" style={{ width: 100 }} onClick={onEmpHpChkHandler} hidden={props.cDataForm == 'I' || props.newDataForm === 'N'} >중복확인</Button>
+                                </td>
 
+                                {/* 대표자(전화번호) 출력용 */}
+                                <td colSpan="2" hidden={!forPrint} >{firstEmpHp}-{secondEmpHp}-{thirdEmpHp}</td>
 
-                        <th className="memberInfo">E-mail<span className="star">(*)</span></th>
-                        <td colSpan="2" hidden={forPrint}>
+                                <th className="memberInfo">E-mail</th>
+                                <td colSpan="2" hidden={forPrint}>
 
-                            <input type="text" value={empEmailId} id="empEmailId" name="empEmailId" size="5"
-                                onChange={onEmpEmailIdHandler} disabled={props.cDataForm === 'I' || props.newDataForm === 'N'} />
+                                    <Form.Control style={{ width: 7 + 'em', display: 'inline' }} size="sm"
+                                        type="text" value={empEmailId} id="empEmailId" name="empEmailId"
+                                        onChange={onEmpEmailIdHandler} disabled={props.cDataForm === 'I' || props.newDataForm === 'N'} />
+
                         &nbsp;
                         @
                         &nbsp;
-                        <input type="text" value={domainAddress} id="domainAddress" name="domainAddress"
-                                size="5"
-                                onChange={onDomainAddressHandler} disabled={props.cDataForm === 'I' || props.newDataForm === 'N'} />
-                        </td>
 
-                        {/* 대표자(이메일) 출력용 */}
-                        <td colSpan="2" hidden={!forPrint} >{empEmailId}@{domainAddress}</td>
-                    </tr>
+                        <Form.Control style={{ width: 10 + 'em', display: 'inline' }} size="sm"
+                                        type="text" value={domainAddress} id="domainAddress" name="domainAddress"
+                                        onChange={onDomainAddressHandler} disabled={props.cDataForm === 'I' || props.newDataForm === 'N'} />
 
-                    <tr>
-                        <th rowSpan="2" className="memberInfo">대표자 주소</th>
+                                </td>
 
-                        <td colSpan="9" hidden={forPrint}>
+                                {/* 대표자(이메일) 출력용 */}
+                                <td colSpan="2" hidden={!forPrint} >{empEmailId}@{domainAddress}</td>
+                            </tr>
 
-                            <input type="text" value={zipcode} id="zipcode" name="zipcode" size="10"
-                                onChange={onZipcodeHandler} disabled={props.cDataForm === 'I' || props.newDataForm === 'N'} />
-                            <input type="button" className="useContractBtn" onClick={findAddr}
-                                disabled={props.cDataForm === 'I' || props.newDataForm === 'N'}
-                                value="우편"
-                            />
-                            <input type="text" value={empAddress} id="empAddress" name="empAddress" size="30"
-                                onChange={onEmpAddressHandler} disabled={props.cDataForm === 'I' || props.newDataForm === 'N'} />
-                        </td>
+                            <tr>
+                                <th rowSpan="2" className="memberInfo">대표자 주소</th>
 
-                        <td colSpan="9" hidden={!forPrint}>{zipcode}{empAddress}{empDetailAddress}</td>
+                                <td colSpan="9" hidden={forPrint}>
 
-                    </tr>
-                    <tr>
-                        <td colSpan="9" hidden={forPrint}>
-                            <input type="text"
-                                value={empDetailAddress}
-                                id="empDetailAddress"
-                                name="empDetailAddress" size="30"
-                                onChange={onEmpDetailAddressHandler}
-                                disabled={props.cDataForm === 'I' || props.newDataForm === 'N'} />
-                        </td>
-                    </tr>
+                                    <Form.Control style={{ width: 10 + 'em', display: 'inline' }} size="sm"
+                                        type="text" value={zipcode} id="zipcode" name="zipcode"
+                                        onChange={onZipcodeHandler} disabled={props.cDataForm === 'I' || props.newDataForm === 'N'} />
 
-                    <tr>
-                        <th className="memberInfo" >첨부파일</th>
-                        <td colSpan="4" hidden={forPrint || props.cDataForm === 'I' || props.newDataForm === 'N'}>
-                            <input type='file'
-                                file={idCardFile}
-                                name='idCardFile'
-                                value={idCardFileName}
-                                onChange={idCardHandleFileChange}
-                            />
-                        </td>
-                        <td colSpan="5" hidden={forPrint || props.cDataForm === 'I' || props.newDataForm === 'N'}>
-                            <input type='file'
-                                file={registCardFile}
-                                name='registCardFile'
-                                value={registCardFileName}
-                                onChange={registCardHandleFileChange}
-                            />
-                        </td>
+                        &nbsp;
+                            <Button variant="contained" color="primary" style={{ width: 70 }} className="useContractBtn" onClick={handleOpen}
+                                        disabled={props.cDataForm === 'I' || props.newDataForm === 'N'}
+                                    >우편</Button>
 
-                        {/* 출력용 */}
-                        <td colSpan="4" hidden={!forPrint && props.cDataForm === 'I' && props.newDataForm === 'N'}>
-                            {ceoIdCardImg}
-                        </td>
+                                    <Modal
+                                        className={classes.modal}
+                                        open={isPostOpen}
+                                        onClose={handleClose}
+                                        closeAfterTransition
+                                        BackdropComponent={Backdrop}
+                                        BackdropProps={{
+                                            timeout: 500,
+                                        }}
+                                    >
+                                        <Fade in={isPostOpen}>
+                                            <div className={classes.paper}>
+                                                <DaumPostcode autoClose style={postCodeStyle} onComplete={handleComplete} />
+                                            </div>
+                                        </Fade>
+                                    </Modal>
+                        &nbsp;
+                            <Form.Control style={{ width: 30 + 'em', display: 'inline' }} size="sm"
+                                        type="text" value={empAddress} id="empAddress" name="empAddress"
+                                        onChange={onEmpAddressHandler} disabled={props.cDataForm === 'I' || props.newDataForm === 'N'} />
 
-                        <td colSpan="5" hidden={!forPrint && props.cDataForm !== 'I' && props.newDataForm !== 'N'}>
-                            {ceoRegistCardImg}
-                        </td>
-                    </tr>
+                                </td>
+
+                                <td colSpan="9" hidden={!forPrint}>{zipcode}{empAddress}{empDetailAddress}</td>
+
+                            </tr>
+                            <tr>
+                                <td colSpan="9" hidden={forPrint}>
+
+                                    <Form.Control style={{ width: 30 + 'em', display: 'inline' }} size="sm"
+                                        type="text" value={empDetailAddress}
+                                        id="empDetailAddress"
+                                        name="empDetailAddress"
+                                        onChange={onEmpDetailAddressHandler}
+                                        disabled={props.cDataForm === 'I' || props.newDataForm === 'N'} />
+
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <th className="memberInfo" >첨부파일</th>
+                                <td colSpan="4" hidden={forPrint || props.cDataForm === 'I' || props.newDataForm === 'N'}>
+                                    <input type='file'
+                                        file={idCardFile}
+                                        name='idCardFile'
+                                        value={idCardFileName}
+                                        onChange={idCardHandleFileChange}
+                                    />
+                                </td>
+                                <td colSpan="5" hidden={forPrint || props.cDataForm === 'I' || props.newDataForm === 'N'}>
+                                    <input type='file'
+                                        file={registCardFile}
+                                        name='registCardFile'
+                                        value={registCardFileName}
+                                        onChange={registCardHandleFileChange}
+                                    />
+                                </td>
+
+                                {/* 출력용 */}
+                                <td colSpan="4" hidden={!forPrint && props.cDataForm === 'I' && props.newDataForm === 'N'}>
+                                    {ceoIdCardImg}
+                                </td>
+
+                                <td colSpan="5" hidden={!forPrint && props.cDataForm !== 'I' && props.newDataForm !== 'N'}>
+                                    {ceoRegistCardImg}
+                                </td>
+                            </tr>
 
 
-                    {/* 계약정보란 */}
+                            {/* 계약정보란 */}
+                            <tr>
+                                <th rowSpan="7" className="info">계약정보</th>
+                            </tr>
 
-                    <tr>
-                        <th rowSpan="7" className="info">계약정보</th>
-                    </tr>
+                            <tr>
+                                <th className="info">계약구분<span className="star">(*)</span></th>
+                                <td hidden={forPrint}>
 
-                    <tr>
-                        <th className="info">계약구분</th>
-                        <td hidden={forPrint}>
-                            <select multiple={false} onChange={onContractTpHandler} value={contractTp}>
-                                {valueArr[1].map(item => (
-                                    <option key={item.key} value={item.key}>{item.value}</option>
-                                ))}
-                            </select>
-                        </td>
+                                    <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm" as="select" multiple={false} onChange={onContractTpHandler} value={contractTp}>
+                                        {valueArr[1].map(item => (
+                                            <option key={item.key} value={item.key}>{item.value}</option>
+                                        ))}
 
-                        {/* 계약구분 출력용 */}
-                        <td hidden={!forPrint}>
-                            {contractTpPrint}
-                        </td>
+                                    </Form.Control>
 
-                        <th className="info">호실</th>
-                        <td hidden={forPrint}>
-                            <select multiple={false} onChange={onContractTpValHandler} value={contractTpVal}>
-                                {contractTpVals.map(item => (
-                                    <option key={item.key} value={item.key}>{item.value}</option>
-                                ))}
-                            </select>
-                        </td>
-                        {/* 호실 출력용 */}
-                        <td hidden={!forPrint}>
-                            {contractTpVals.map(item => (
-                                <option key={item.key} value={item.key}>{item.value}</option>
-                            ))}
-                        </td>
+                                </td>
 
-                        <th className="info">사물함</th>
-                        <td hidden={forPrint}>
-                            <select multiple={false} onChange={onRoomLockerTpHandler} value={roomLockerTp}>
-                                {roomLockers.map(item => (
-                                    <option key={item.key} value={item.key}>{item.value}</option>
-                                ))}
-                            </select>
-                        </td>
-                        {/* 사물함 출력용 */}
-                        <td hidden={!forPrint}>
-                            {roomLockers.map(item => (
-                                <option key={item.key} value={item.key}>{item.value}</option>
-                            ))}
-                        </td>
+                                {/* 계약구분 출력용 */}
+                                <td hidden={!forPrint}>
+                                    {contractTpPrint}
+                                </td>
 
-                        <th className="info">월회비</th>
-                        <td hidden={forPrint}>
-                            <input type="text" value={contractMoney} id="contractMoney" name="contractMoney"
-                                size="5"
-                                onChange={onContractMoneyHandler} />
-                        </td>
+                                <th className="info">호실<span className="star">(*)</span></th>
 
-                        {/* 월회비 출력용 */}
-                        <td hidden={!forPrint}>
-                            {contractMoney}
-                        </td>
-                    </tr>
+                                <td hidden={forPrint}>
 
-                    <tr>
-                        <th className="info">이용기간</th>
-                        <td hidden={forPrint}>
-                            <input type="text" value={contractTerm} id="contractTerm" name="contractTerm" size="1"
-                                onChange={onContractTermHandler} /> &nbsp;개월 &nbsp;
+                                    <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm" as="select" multiple={false} onChange={onContractTpValHandler} value={contractTpVal}>
+                                        {contractTpVals.map(item => (
+                                            <option key={item.key} value={item.key}>{item.value}</option>
+                                        ))}
+                                    </Form.Control>
+
+                                </td>
+                                {/* 호실 출력용 */}
+                                <td hidden={!forPrint}>
+                                    {contractTpVals.map(item => (
+                                        <option key={item.key} value={item.key}>{item.value}</option>
+                                    ))}
+                                </td>
+
+                                <th className="info">사물함</th>
+                                <td hidden={forPrint}>
+
+                                    <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm" as="select" multiple={false} onChange={onRoomLockerTpHandler} value={roomLockerTp}>
+                                        {roomLockers.map(item => (
+                                            <option key={item.key} value={item.key}>{item.value}</option>
+                                        ))}
+                                    </Form.Control>
+
+                                </td>
+                                {/* 사물함 출력용 */}
+                                <td hidden={!forPrint}>
+                                    {roomLockers.map(item => (
+                                        <option key={item.key} value={item.key}>{item.value}</option>
+                                    ))}
+                                </td>
+
+                                <th className="info">월회비</th>
+                                <td hidden={forPrint}>
+
+                                    <Form.Control style={{ width: 7 + 'em', display: 'inline' }} size="sm"
+                                        type="text" value={contractMoney} id="contractMoney" name="contractMoney"
+                                        onChange={onContractMoneyHandler} />
+
+                                </td>
+
+                                {/* 월회비 출력용 */}
+                                <td hidden={!forPrint}>
+                                    {contractMoney}
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <th className="info">이용기간<span className="star">(*)</span></th>
+                                <td hidden={forPrint}>
+
+                                    <Form.Control style={{ width: 3 + 'em', display: 'inline' }} size="sm"
+                                        type="text" value={contractTerm} id="contractTerm" name="contractTerm"
+                                        onChange={onContractTermHandler} />
+
+                                &nbsp;개월 &nbsp;
 
                                 <DatePicker
-                                multiple={false}
-                                locale="ko"
-                                selected={startAsk_date.setHours(9, 0, 0, 0)}//Front = 한국시 BackEnd = 표준시 9시간차이
-                                onChange={date => setStartAsk_date(date)}
-                                selectsStart
-                                startDate={startAsk_date.setHours(9, 0, 0, 0)}
-                                endDate={endAsk_date}
-                                dateFormat="yyyy.MM.dd"
+                                        id="dateSize"
+                                        multiple={false}
+                                        locale="ko"
+                                        selected={startAsk_date.setHours(9, 0, 0, 0)}//Front = 한국시 BackEnd = 표준시 9시간차이
+                                        onChange={date => setStartAsk_date(date)}
+                                        selectsStart
+                                        startDate={startAsk_date.setHours(9, 0, 0, 0)}
+                                        endDate={endAsk_date}
+                                        dateFormat="yyyy.MM.dd"
 
-                            />&nbsp;
+                                    />&nbsp;
                             ~ &nbsp;
-                            <input type="text" disabled={true} value={dateEnd} size="8" />
-                            {/* 신규계약 중복확인 */}
-                            <input type="button" onClick={onDateHandler} className="useContractBtn"
-                                hidden={props.newDataForm === 'N'} value="중복확인"></input>
 
-                            {/*기존회원 신규계약 중복확인 */}
-                            <input type="button" className="plusContractBtn" onClick={onPlusDateHandler}
-                                hidden={props.newDataForm !== 'N'} value="중복확인"></input>
-                        </td>
+                            <Form.Control style={{ width: 8 + 'em', display: 'inline' }} size="sm"
+                                        type="text" value={dateEnd} />
 
-                        {/* 이용기간 출력용 */}
-                        <td hidden={!forPrint}>
-                            {contractTerm}개월 &nbsp;
+
+                                    {/* 신규계약 중복확인 */}
+                                    <Button variant="contained" color="primary" style={{ width: 100 }} onClick={onDateHandler} className="useContractBtn"
+                                        hidden={props.newDataForm === 'N'} >중복확인</Button>
+
+                                    {/*기존회원 신규계약 중복확인 */}
+                                    <Button variant="contained" color="primary" style={{ width: 100 }} className="plusContractBtn" onClick={onPlusDateHandler}
+                                        hidden={props.newDataForm !== 'N'}>중복확인</Button>
+                                </td>
+
+                                {/* 이용기간 출력용 */}
+                                <td hidden={!forPrint}>
+                                    {contractTerm}개월 &nbsp;
 
                                 <DatePicker
-                                multiple={false}
-                                locale="ko"
-                                selected={startAsk_date.setHours(9, 0, 0, 0)}//Front = 한국시 BackEnd = 표준시 9시간차이
-                                onChange={date => setStartAsk_date(date)}
-                                selectsStart
-                                startDate={startAsk_date.setHours(9, 0, 0, 0)}
-                                endDate={endAsk_date}
-                                dateFormat="yyyy.MM.dd"
+                                        id="dateSize"
+                                        multiple={false}
+                                        locale="ko"
+                                        selected={startAsk_date.setHours(9, 0, 0, 0)}//Front = 한국시 BackEnd = 표준시 9시간차이
+                                        onChange={date => setStartAsk_date(date)}
+                                        selectsStart
+                                        startDate={startAsk_date.setHours(9, 0, 0, 0)}
+                                        endDate={endAsk_date}
+                                        dateFormat="yyyy.MM.dd"
 
-                            />&nbsp;
+                                    />&nbsp;
                             ~ &nbsp;
                             <input type="text" disabled={true} value={dateEnd} size="8" />
-                            {/* 신규계약 중복확인 */}
-                            <input type="button" onClick={onDateHandler} className="useContractBtn"
-                                hidden={props.newDataForm === 'N' || forPrint} value="중복확인"></input>
+                                    {/* 신규계약 중복확인 */}
+                                    <Button variant="contained" color="primary" style={{ width: 100 }} onClick={onDateHandler} className="useContractBtn"
+                                        hidden={props.newDataForm === 'N' || forPrint}>중복확인</Button>
 
-                            {/*기존회원 신규계약 중복확인 */}
-                            <input type="button" className="plusContractBtn" onClick={onPlusDateHandler}
-                                hidden={props.newDataForm !== 'N'} value="중복확인"></input>
+                                    {/*기존회원 신규계약 중복확인 */}
+                                    <Button variant="contained" color="primary" style={{ width: 100 }} className="plusContractBtn" onClick={onPlusDateHandler}
+                                        hidden={props.newDataForm !== 'N'} >중복확인</Button>
+                                </td>
+
+                                <th className="info">입금일<span className="star">(*)</span></th>
+                                <td hidden={forPrint}>
+
+                                    <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm" as="select" multiple={false} onChange={onPayDateHandler} value={payDate}>
+                                        {payDates.map(item => (
+                                            <option key={item.key} value={item.key}>{item.value}</option>
+                                        ))}
+                                    </Form.Control>
+
+                                </td>
+
+                                <td hidden={!forPrint}>
+                                    {payDate}일
                         </td>
 
-                        <th className="info">입금일</th>
-                        <td hidden={forPrint}>
-                            <select multiple={false} onChange={onPayDateHandler} value={payDate}>
-                                {payDates.map(item => (
-                                    <option key={item.key} value={item.key}>{item.value}</option>
-                                ))}
-                            </select>
-                        </td>
+                                <th className="info">납부방법<span className="star">(*)</span></th>
+                                <td hidden={forPrint}>
 
-                        <td hidden={!forPrint}>
-                            {payDate}일
-                        </td>
+                                    <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm" as="select" multiple={false} onChange={onPayMethodHandler} value={payMethod}>
+                                        {valueArr[2].map(item => (
+                                            <option key={item.key} value={item.key}>{item.value}</option>
+                                        ))}
+                                    </Form.Control>
 
-                        <th className="info">납부방법</th>
-                        <td hidden={forPrint}>
-                            <select multiple={false} onChange={onPayMethodHandler} value={payMethod}>
-                                {valueArr[2].map(item => (
-                                    <option key={item.key} value={item.key}>{item.value}</option>
-                                ))}
-                            </select>
-                        </td>
+                                </td>
 
-                        <td hidden={!forPrint}>
-                            {payMethodPrint}
-                        </td>
+                                <td hidden={!forPrint}>
+                                    {payMethodPrint}
+                                </td>
 
-                        <th className="info">예치금</th>
-                        <td hidden={forPrint}>
-                            <input type="text" value={contractMoney} id="contractMoney" name="contractMoney"
-                                size="10"
-                                onChange={onContractMoneyHandler}
-                            />
-                        </td>
+                                <th className="info">예치금</th>
+                                <td hidden={forPrint}>
 
-                        {/*예치금 출력용  */}
-                        <td hidden={!forPrint}>
-                            {contractMoney}
-                        </td>
-                    </tr>
+                                    <Form.Control style={{ width: 7 + 'em', display: 'inline' }} size="sm"
+                                        type="text" value={contractMoney} id="contractMoney" name="contractMoney"
+                                        onChange={onContractMoneyHandler} />
 
-                    <tr>
-                        <th className="info">특약사항</th>
-                        <td colSpan="9" className="alignLeft" id="infoPadding" hidden={forPrint}>
-                            계약기간 만료 또는 종료시 사업지 주소지와 전화를 7일이내 이전해야 하고,<br />
+                                </td>
+
+                                {/*예치금 출력용  */}
+                                <td hidden={!forPrint}>
+                                    {contractMoney}
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <th className="info">특약사항</th>
+                                <td colSpan="9" className="alignLeft" id="infoPadding" hidden={forPrint}>
+                                    계약기간 만료 또는 종료시 사업지 주소지와 전화를 7일이내 이전해야 하고,<br />
                             계약을 해지할 경우 7일이전에 서면 또는 구두 통보해야함.<br />
-                            <textarea rows="5" cols="110" value={comment} id="comment" name="comment"
-                                onChange={onCommentHandler}></textarea>
-                        </td>
 
-                        {/* 특약사항 출력용 */}
-                        <td colSpan="9" className="alignLeft" id="infoPadding" hidden={!forPrint}>
-                            계약기간 만료 또는 종료시 사업지 주소지와 전화를 7일이내 이전해야 하고,<br />
+                                    <Form.Control as="textarea" rows={3} value={comment} id="comment" name="comment"
+                                        onChange={onCommentHandler} />
+
+                                </td>
+
+                                {/* 특약사항 출력용 */}
+                                <td colSpan="9" className="alignLeft" id="infoPadding" hidden={!forPrint}>
+                                    계약기간 만료 또는 종료시 사업지 주소지와 전화를 7일이내 이전해야 하고,<br />
                             계약을 해지할 경우 7일이전에 서면 또는 구두 통보해야함.<br />
-                            <hr></hr>
-                            {comment}
-                        </td>
-                    </tr>
+                                    <hr></hr>
+                                    {comment}
+                                </td>
+                            </tr>
 
-                    <tr>
-                        <th className="info">이용범위</th>
-                        <td colSpan="9" className="alignLeft" id="etcInfoPadding">
-                            사무공간 제공과 부대시설(회의실,접견실,휴게실,IT기기,유무선 통신망)을 이용 가능
+                            <tr>
+                                <th className="info">이용범위</th>
+                                <td colSpan="9" className="alignLeft" id="etcInfoPadding">
+                                    사무공간 제공과 부대시설(회의실,접견실,휴게실,IT기기,유무선 통신망)을 이용 가능
                     </td>
-                    </tr>
+                            </tr>
 
-                    <tr>
-                        <th className="basicInfoTitle">센터</th>
-                        <td className="basicInfo">(주)에스원테크</td>
+                            <tr>
+                                <th className="basicInfoTitle">센터</th>
+                                <td className="basicInfo">(주)에스원테크</td>
 
-                        <th className="basicInfoTitle">전화번호</th>
-                        <td colSpan="2" className="basicInfo">070-4355-2312</td>
+                                <th className="basicInfoTitle">전화번호</th>
+                                <td colSpan="2" className="basicInfo">070-4355-2312</td>
 
-                        <th className="basicInfoTitle">E-mail</th>
-                        <td colSpan="2" className="basicInfo">swonbiz@s-onetech.com</td>
-                    </tr>
+                                <th className="basicInfoTitle">E-mail</th>
+                                <td colSpan="2" className="basicInfo">swonbiz@s-onetech.com</td>
+                            </tr>
 
-                    <tr>
-                        <th className="basicInfoTitle">성명</th>
-                        <td className="basicInfo">이정희</td>
+                            <tr>
+                                <th className="basicInfoTitle">성명</th>
+                                <td className="basicInfo">이정희</td>
 
-                        <th className="basicInfoTitle">FAX번호</th>
-                        <td colSpan="2" className="basicInfo">070-4015-3344/02-6203-4433</td>
+                                <th className="basicInfoTitle">FAX번호</th>
+                                <td colSpan="2" className="basicInfo">070-4015-3344/02-6203-4433</td>
 
-                        <th colSpan="2" className="info">계약접근경로</th>
-                        <td hidden={forPrint}>
-                            <select multiple={false} onChange={onContractPathHandler} value={contractPath}>
-                                {contractpaths.map(item => (
-                                    <option key={item.key} value={item.key}>{item.value}</option>
-                                ))}
-                            </select>
-                        </td>
+                                <th colSpan="2" className="info">계약접근경로</th>
+                                <td hidden={forPrint}>
 
-                        {/* 계약접근경로 출력용 */}
-                        <td hidden={!forPrint}>
-                            {accessPrint}
-                        </td>
+                                    <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm" as="select" multiple={false} onChange={onContractPathHandler} value={contractPath}>
+                                        {contractpaths.map(item => (
+                                            <option key={item.key} value={item.key}>{item.value}</option>
+                                        ))}
+                                    </Form.Control>
 
-                    </tr>
+                                </td>
+
+                                {/* 계약접근경로 출력용 */}
+                                <td hidden={!forPrint}>
+                                    {accessPrint}
+                                </td>
+
+                            </tr>
 
 
-                    <tr>
-                        <td colSpan="9" className="alignLeft" id="borderBottom">
-                            -에스원비즈 삼성센터(이하 "갑")과 상기 회원(이하 "을")은 "갑"이 제공하는 서비스를 "을"이 이용함에 있어서 수반되는 사항을 본
-                            이용계약서 약관대로 체결하고, 본 &nbsp; 계약의 성립을 증명하기 위하여 본 이용계약서 2부를 작성하여 기명, 날인하고 각 한 부씩 보관한다.
+                            <tr>
+                                <td colSpan="9" className="alignLeft" id="borderBottom">
+                                    -에스원비즈 삼성센터(이하 "갑")과 상기 회원(이하 "을")은 "갑"이 제공하는 서비스를 "을"이 이용함에 있어서 수반되는 사항을 본
+                                    이용계약서 약관대로 체결하고, 본 &nbsp; 계약의 성립을 증명하기 위하여 본 이용계약서 2부를 작성하여 기명, 날인하고 각 한 부씩 보관한다.
                         <br />-본 이용계약서로는 임대차계약서를 대신할 수 없음
                     </td>
-                    </tr>
-                    <tr>
-                        <td colSpan="9" className="alignRight"
-                            id="borderTopBottom"> 2021년 &nbsp;&nbsp; {new Date().getMonth() + 1}월 &nbsp;&nbsp; {new Date().getDate()}일
+                            </tr>
+                            <tr>
+                                <td colSpan="9"
+                                    id="borderTopBottom"> 2021년 &nbsp;&nbsp; {new Date().getMonth() + 1}월 &nbsp;&nbsp; {new Date().getDate()}일
                     </td>
-                    </tr>
+                            </tr>
 
-                    <tr>
-                        <td colSpan="5" className="alignLeft" id="fstTextSpacing">
+                            <tr>
+                                <td colSpan="5" className="alignLeft" id="fstTextSpacing">
 
-                            갑: &nbsp; &nbsp; &nbsp;
+                                    갑: &nbsp; &nbsp; &nbsp;
                         서울특별시 강남구 봉은사로 63길 11 명화빌딩 3, 4층(삼성동) <br />
 
                         &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;㈜ 에스원테크 최현수 (인)<br />
 
                         &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;계좌번호 : 우리은행 1005-002-433395<br />
 
-                        </td>
-                        <td colSpan="4" className="alignLeft" id="sndTextSpacing">
-                            을 :&nbsp; &nbsp; &nbsp;
+                                </td>
+                                <td colSpan="4" className="alignLeft" id="sndTextSpacing">
+                                    을 :&nbsp; &nbsp; &nbsp;
                             {zipcode} {empAddress} {empDetailAddress}<br />
                             &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; {memberNm} {empIdName} (인)<br />
-                            <span id="hidden">spacing</span>
-                        </td>
-                    </tr>
-                </tbody>
-            </Table>
+                                    <span id="hidden">.</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
 
-            <div className="btn-center" hidden={forPrint}>
-                {/* 신규계약 */}
-                <input type="button" hidden={props.newDataForm === 'N' || props.cDataForm === 'I'}
-                    onClick={temporaryStorage} value="임시저장" />
-                <input type="button" className="new"
-                    hidden={props.newDataForm === 'N' || props.cDataForm === 'I'}
-                    onClick={onSubmitHandler} value="저장" />
+                    <div className="btn-center" hidden={forPrint}>
+                        {/* 신규계약 */}
+                        <Button variant="contained" color="primary" style={{ width: 100 }} hidden={props.newDataForm === 'N' || props.cDataForm === 'I'}
+                            onClick={temporaryStorage} >임시저장</Button>
+                        <Button variant="contained" color="primary" style={{ width: 100 }} className="new"
+                            hidden={props.newDataForm === 'N' || props.cDataForm === 'I'}
+                            onClick={onSubmitHandler}  >저장</Button>
 
-                <input type="button" className="memberId" hidden={props.newDataForm !== 'N'}
-                    onClick={newMemberIdStorage} value="저장" />
+                        <Button variant="contained" color="primary" style={{ width: 100 }} className="memberId" hidden={props.newDataForm !== 'N'}
+                            onClick={newMemberIdStorage} >저장</Button>
 
-                {/* 가계약을 확정으로  / 수정한거 저장하기 */}
-                <input type="button" className="contractId" hidden={props.cDataForm !== 'I'}
-                    onClick={newContractIdStorage} value="저장" />
+                        {/* 가계약을 확정으로  / 수정한 것 저장하기 */}
+                        <Button variant="contained" color="primary" style={{ width: 100 }} className="contractId" hidden={props.cDataForm !== 'I'}
+                            onClick={newContractIdStorage}  >저장</Button>
 
+                        <Button variant="contained" color="primary" style={{ width: 70 }} onClick={onPrintHandler} >출력</Button>
+                        <Button variant="contained" color="primary" style={{ width: 150 }} onClick={onleaseAgreementHandler} id="btnWidth" >임대차 계약서</Button>
 
-                {/* <input type="button" className="contractId" hidden={props.cDataForm !== 'I'}
-                    onClick={newMemberModifyStorage} value="수정하기" /> */}
-
-                <input type="button" onClick={onPrintHandler} value="출력" />
-                <input type="button" onClick={onleaseAgreementHandler} id="btnWidth" value="임대차 계약서" />
-
-                {/* <input type="button" className="memberId" hidden={props.newDataForm !== 'N'}
-                    onClick={newEndHandler} value="종료" /> */}
-                <input type="button" className="contractId" hidden={props.cDataForm !== 'I'}
-                    onClick={newEndHandler} value="종료" />
-                <input type="button" hidden={userStatus !== 'T'}
-                    onClick={onDeleteHandler} value="삭제" />
+                        <Button variant="contained" color="primary" style={{ width: 70 }} className="contractId" hidden={props.cDataForm !== 'I'}
+                            onClick={newEndHandler}  >종료</Button>
+                        <Button variant="contained" color="primary" style={{ width: 70 }} hidden={userStatus !== 'T'}
+                            onClick={onDeleteHandler} >삭제</Button>
+                    </div>
+                </div>
             </div>
-
             {/* <input type="button" onClick = {onPrintSheetHandler} hidden = {!forPrint} value="출력" /> */}
 
             <Dialog
@@ -1572,9 +1578,8 @@ function S010100010(props) {
                 open={printSheetOpen}
                 onClose={onPrintSheetClose}>
                 <S010100010 dataNum={rNum} cDataForm={'I'} />
-                {/* ref={printArea} */}
                 <DialogActions>
-                    <input type="button" onClick={onPrintSheetClose} color="primary" value="닫기" hidden={forPrint} />
+                    <Button variant="contained" color="primary" style={{ width: 70 }} onClick={onPrintSheetClose} color="primary" hidden={forPrint} >닫기</Button>
                 </DialogActions>
             </Dialog>
 

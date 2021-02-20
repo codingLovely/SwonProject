@@ -1,9 +1,11 @@
 //<<상담등록 페이지>>
-
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-
 import './css/S010100140.css';
+
+import Button from '@material-ui/core/Button';
+
+import Form from 'react-bootstrap/Form';
 //datepicker 시작
 import DatePicker, { registerLocale } from "react-datepicker";
 import ko from 'date-fns/locale/ko'
@@ -13,8 +15,7 @@ registerLocale("ko", ko);
 
 
 function S010100140(props) {
-    //console.log(props.dataForm);
-    //console.log(props.num);
+
 
 
     const rNum = props.num;
@@ -109,25 +110,18 @@ function S010100140(props) {
             }).catch(() => {
                 alert("문의구분 데이터를 불러오는데 실패하였습니다.");
             })
-        return arr;
-        console.log('arr', arr);
+        //return arr;
+        //console.log('arr', arr);
     }
 
-
-    //datepicker속성 및 이벤트 시작
-    //const [modalAskDate, setModalAskDate] = useState(new Date());
     const [startDate, setStartDate] = useState(new Date());
-    //datepicker속성 및 이벤트 끝
-
-
-    //input type ="text"
+  
     const [modalAskName, setModalAskName] = useState("")
     const [modalAskInfo, setModalAskInfo] = useState("")
     const [modalAskContent, setModalAskContent] = useState("")
 
-    //select-option 이벤트들
+
     const onAskTpHandler = (event) => {
-        //console.log(event.currentTarget.value);
         setModalAskTp(event.currentTarget.value);
     }
 
@@ -139,7 +133,7 @@ function S010100140(props) {
         setModalAskPath(event.currentTarget.value);
     }
 
-    //input type = "text" 이벤트들
+
     const onAskNameHandler = (event) => {
         setModalAskName(event.currentTarget.value);
     }
@@ -150,10 +144,6 @@ function S010100140(props) {
 
     const onAskContentHandler = (event) => {
         setModalAskContent(event.currentTarget.value);
-    }
-
-    const onChangeHandler = (event) => {
-        // DatePicker.value
     }
 
     const onModifyHandler = () => {
@@ -181,19 +171,17 @@ function S010100140(props) {
 
     }
 
-    //상담등록저장버튼클릭시
+    // 상담 등록 저장 버튼 클릭시
     const onHandleSubmit = (event) => {
         event.preventDefault();
         //   //문의구분 NUll체크
         if (!modalAskTp || modalAskTp === '선택') {
-            //alert('modalAskTp: '+modalAskTp);
             return alert("문의구분을 선택하세요.");
         }
 
         //문의방법 NUll체크
         if (!modalAskMethod) {
-            //alert('111');
-            //alert((modalAskMethod == null)+ ',' + (modalAskMethod == '' ));
+           
             return alert("문의방법을 선택하세요.");
         }
 
@@ -202,7 +190,6 @@ function S010100140(props) {
             return alert("접근경로를 선택하세요.");
         }
 
-        //서버에 채운 값들을 request로 보낸다.
         const body = {
             modalAskTp: modalAskTp,
             modalAskDate: startDate,
@@ -212,8 +199,6 @@ function S010100140(props) {
             modalAskInfo: modalAskInfo,
             modalAskContent: modalAskContent
         }
-        //console.log('setModalAskDate',setModalAskDate);
-
 
         axios.post('/api/askStList/insert', body)
             .then(response => {
@@ -225,104 +210,110 @@ function S010100140(props) {
             })
 
     }
-  
+
     return (
+
+        <form onSubmit={onHandleSubmit} >
         
-        <form onSubmit={onHandleSubmit} id="formWrapper">
-            {/* <h1>상담등록</h1> */}
-            <div id="wrapper">
-                <table className="buttonTable">
-                    <tbody>
-                        <tr>
-                            <th>문의구분</th>
-                            <td>
-                                <select multiple={false} onChange={onAskTpHandler} value={modalAskTp} >
+            <div className="askInfoWrapper">
+                <div className="memberInfoWrap">
+                    {/* 회원정보란 */}
+                    <h5 id="infoTitle">상담 등록</h5>
 
-                                    {modalContractTpLov.map(item => (
-                                        <option key={item.key} value={item.key}>{item.value}</option>
-                                    ))}
+                    <table id="memberDetailTable">
+                        <tbody>
+                            <tr>
+                                <th>문의구분</th>
+                                <td>
 
-                                </select>
+                                    <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm" as="select" multiple={false} onChange={onAskTpHandler} value={modalAskTp}>
+                                        {modalContractTpLov.map(item => (
+                                            <option key={item.key} value={item.key}>{item.value}</option>
+                                        ))}
+                                    </Form.Control>
 
-                            </td>
+                                </td>
 
-                            <th>문의일자</th>
-                            <td>
-                                {/* <DatePicker
-                                    locale="ko"
-                                    selected={new Date()}
-                                    value={modalAskDate}
-                                    onChange={date => setModalAskDate(date)}
-                                    minDate={new Date()}
-                                    maxDate={addDays(new Date(), 0)}
-                                    dateFormat="yy.MM.dd (eee)"
+                                <th>문의일자</th>
+                                <td>
+                                    {/* <DatePicker
+                                                locale="ko"
+                                                selected={new Date()}
+                                                value={modalAskDate}
+                                                onChange={date => setModalAskDate(date)}
+                                                minDate={new Date()}
+                                                maxDate={addDays(new Date(), 0)}
+                                                dateFormat="yy.MM.dd (eee)"
 
-                                /> */}
-                                <DatePicker
-                                    locale="ko"
-                                    selected={startDate.setHours(9, 0, 0, 0)}
-                                    onChange={date => setStartDate(date)}
-                                    dateFormat="yyyy.MM.dd (eee)"
-                                    onClick={onChangeHandler}
-                                />
-                            </td>
+                                            /> */}
 
-                            <th>문의자명</th>
-                            <td>
-                                <input type="text"
-                                    value={modalAskName}
-                                    id="modalAskName"
-                                    name="modalAskName"
-                                    size="7"
-                                    onChange={onAskNameHandler}
-                                />
-                            </td>
-                        </tr>
+                                    <DatePicker
+                                        locale="ko"
+                                        selected={startDate.setHours(9, 0, 0, 0)}
+                                        onChange={date => setStartDate(date)}
+                                        dateFormat="yyyy.MM.dd (eee)"
+                                    />
 
-                        <tr>
-                            <th>문의방법</th>
-                            <td>
-                                <select multiple={false} value={modalAskMethod} onChange={onAskMethodHandler}  >
-                                    {modalAskMethodLov.map(item => (
-                                        <option key={item.key} value={item.key}>{item.value}</option>
-                                    ))}
+                                </td>
 
-                                </select>
-                            </td>
+                                <th>문의자명</th>
+                                <td>
+                                    <Form.Control style={{ width: 7 + 'em', display: 'inline' }} size="sm"
+                                        type="text"
+                                        value={modalAskName}
+                                        id="modalAskName"
+                                        name="modalAskName"
+                                        onChange={onAskNameHandler} />
+                                </td>
+                            </tr>
 
-                            <th>접근경로</th>
-                            <td>
-                                <select multiple={false} value={modalAskPath} onChange={onAskPathHandler}  >
-                                    {modalAccessPathLov.map(item => (
-                                        <option key={item.key} value={item.key}>{item.value}</option>
-                                    ))}
+                            <tr>
+                                <th>문의방법</th>
+                                <td>
+                                    <Form.Control style={{ width: 10 + 'em', display: 'inline' }} size="sm" as="select" multiple={false} value={modalAskMethod} onChange={onAskMethodHandler}>
+                                        {modalAskMethodLov.map(item => (
+                                            <option key={item.key} value={item.key}>{item.value}</option>
+                                        ))}
 
-                                </select>
-                            </td>
+                                    </Form.Control>
 
-                            <th>문의자연락처</th>
-                            <td>
-                                <input type="text" value={modalAskInfo} id="modalAskInfo" name="modalAskInfo" size="7"
-                                    onChange={onAskInfoHandler} />
-                            </td>
-                        </tr>
+                                </td>
+
+                                <th>접근경로</th>
+                                <td>
+                                    <Form.Control style={{ width: 7 + 'em', display: 'inline' }} size="sm" as="select" multiple={false} value={modalAskPath} onChange={onAskPathHandler}>
+                                        {modalAccessPathLov.map(item => (
+                                            <option key={item.key} value={item.key}>{item.value}</option>
+                                        ))}
+
+                                    </Form.Control>
+
+                                </td>
+
+                                <th>문의자연락처</th>
+                                <td>
+                                    <Form.Control style={{ width: 10 + 'em', display: 'inline' }} size="sm"
+                                        type="text" value={modalAskInfo} id="modalAskInfo" name="modalAskInfo" onChange={onAskInfoHandler} />
+                                </td>
+                            </tr>
 
 
-                        <tr>
-                            <th>상담내용</th>
-                            <td colSpan="5">
-                                <textarea rows="5" cols="100" value={modalAskContent} id="modalAskContent" name="modalAskContent"
-                                    onChange={onAskContentHandler} ></textarea>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                            <tr>
+                                <th>상담내용</th>
 
+                                <td colSpan="5">
+                                    <Form.Control as="textarea" rows={3} value={modalAskContent} id="modalAskContent" name="modalAskContent"
+                                        onChange={onAskContentHandler} />
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <input type="button" className="popBtn" value="수정하기" onClick={onModifyHandler} hidden={props.dataForm !== 'U'} />
-            {/* <button>닫기</button> */}
-            <input className="popBtn" type="submit" hidden={props.dataForm === 'U'} />
-
+            <div id="btnAlign">
+                <Button variant="contained" color="primary" style={{ width: 100 }} className="popBtn" onClick={onModifyHandler} hidden={props.dataForm !== 'U'} >수정하기</Button>
+                <Button variant="contained" color="primary" style={{ width: 100 }} className="popBtn" type="submit" hidden={props.dataForm === 'U'} >등록하기</Button>
+            </div>
         </form>
 
     );

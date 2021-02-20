@@ -96,7 +96,7 @@ router.get('/insert/tb_s10_contract020_by_id', (req, res) => {
 
 })
 
-
+//let payFlagNum;
 router.post('/paymentUpdate', (req, res) => {
 
     let modalContractId = req.body.modalContractId;
@@ -106,36 +106,78 @@ router.post('/paymentUpdate', (req, res) => {
     let paymentStatusList = req.body.paymentStatusList;
     //체크된 값들
     let newChecked = req.body.newChecked;
+    connection.beginTransaction(function (error) {
 
-    for (let i = 0; i < newChecked.length; i++) {
-        //체크된 값 분리
-        let newCheckedList = newChecked[i].split(",");
-        console.log('newCheckedList', newCheckedList);
+        for (let i = 0; i < newChecked.length; i++) {
+            //체크된 값 분리
+            let newCheckedList = newChecked[i].split(",");
+            //console.log('newCheckedList', newCheckedList);
 
-        let chkPayPlanDate = newCheckedList[0];
-        let chkPayDate = newCheckedList[1];
-        let chkConComment = newCheckedList[2];
-        console.log('chkPayPlanDate', chkPayPlanDate);
-        console.log('chkPayDate', chkPayDate);
-        console.log('chkConComment', chkConComment);
+            let chkPayPlanDate = newCheckedList[0];
+            let chkPayDate = newCheckedList[1];
+            let chkConComment = newCheckedList[2];
+            //console.log('chkPayPlanDate', chkPayPlanDate);
+            //console.log('chkPayDate', chkPayDate);
+            //console.log('chkConComment', chkConComment);
 
-        let sql =
-            ' UPDATE TB_S10_CONTRACT020  ' +
-            '        SET ' +
-            '        PAYED_DATE ="' + chkPayDate + '", ' +
-            '        PAYED_FLAG = "Y", ' +
-            '            LAST_UPDATE_DATE = SYSDATE(), ' +
-            '            PAYED_MONEY = PAYED_PLAN_MONEY, ' +
-            '            CONTRACT_COMMENT = "' + chkConComment + '"' +
-            '         WHERE CONTRACT_ID =' + modalContractId + ' AND PAY_PLAN_DATE ="' + chkPayPlanDate + '"';
+            let sql =
+                ' UPDATE TB_S10_CONTRACT020  ' +
+                '        SET ' +
+                '        PAYED_DATE ="' + chkPayDate + '", ' +
+                '        PAYED_FLAG = "Y", ' +
+                '            LAST_UPDATE_DATE = SYSDATE(), ' +
+                '            PAYED_MONEY = PAYED_PLAN_MONEY, ' +
+                '            CONTRACT_COMMENT = "' + chkConComment + '"' +
+                '         WHERE CONTRACT_ID =' + modalContractId + ' AND PAY_PLAN_DATE ="' + chkPayPlanDate + '"';
 
-        connection.query(sql, (error, rows) => {
-            if (error) throw error;
-
-        });
+                connection.query(sql, function (error, result) {  //쿼리문
+                    //console.log('payContractSql :' + result);
+            
+                    if (error) {
+                        connection.rollback(function () {
+                            console.log('sql.error');
+                            throw error;
+                        });
+                    }
+                    });//payContract
+            
     }
-    res.send({ success: true });
 
+    // 마지막 납부완료시 종료(end_flag= 'Y')처리
+    let countPayFlag = 'SELECT COUNT(PAYED_FLAG)AS ENDFLAGNUM FROM TB_S10_CONTRACT020 '+
+                       'WHERE CONTRACT_ID = '+modalContractId+' AND PAYED_FLAG = "N"';
+    
+            connection.query(countPayFlag, (error, row) => {
+                if (error) {
+                    connection.rollback(function () {
+                        console.log('countPayFlag.error');
+                        throw error;
+                    });
+                }
+                
+                if(row[0].ENDFLAGNUM === 0){
+                    // console.log('a완료되었습니ㅏㄷ.');
+                    let endFlagSql = 'UPDATE TB_S10_CONTRACT010 ' +
+                            'SET END_FLAG = "Y" ' +
+                            'WHERE CONTRACT_ID = '+ modalContractId;
+            
+                    connection.query(endFlagSql, (error, rows) => {
+                        if (error) throw error;
+                    });
+                }
+
+                connection.commit(function (err) {
+                    if (err) {
+                        connection.rollback(function () {
+                            throw err;
+                        });
+                    }
+         });//commit
+
+    });
+    
+    res.send({ success: true });
+})//transaction
 })
 
 module.exports = router;

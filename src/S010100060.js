@@ -1,14 +1,11 @@
 import React, { Fragment, useEffect, useState } from 'react';
 import axios from 'axios';
 import S010100070 from './S010100070';
-import ReactPaginate from 'react-paginate';
-import moment from 'moment';
 
 import clsx from 'clsx';
 import { makeStyles } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Drawer from '@material-ui/core/Drawer';
-import Box from '@material-ui/core/Box';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import List from '@material-ui/core/List';
@@ -24,29 +21,25 @@ import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import NotificationsIcon from '@material-ui/icons/Notifications';
 import { mainListItems, secondaryListItems } from './listItems';
 import Button from '@material-ui/core/Button';
-import Form from 'react-bootstrap/Form';
-
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Title from './Title';
-
-//엑셀다운로드
-import xlsx from 'xlsx';
-
-import { DatePicker } from 'antd';
-import 'antd/dist/antd.css';
-
-// //<!--켈린더 라이브러리시작
-// import DatePicker, { registerLocale } from 'react-datepicker';
-// import ko from 'date-fns/locale/ko';
-// registerLocale('ko', ko);
-
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 
+
+import Form from 'react-bootstrap/Form';
+
+import { DatePicker } from 'antd';
+import 'antd/dist/antd.css';
+import moment from 'moment';
+
+import ReactPaginate from 'react-paginate';
+
+import xlsx from 'xlsx';
 
 const drawerWidth = 240;
 
@@ -55,7 +48,7 @@ const useStyles = makeStyles((theme) => ({
         display: 'flex',
     },
     toolbar: {
-        paddingRight: 24, // keep right padding when drawer closed
+        paddingRight: 24,
     },
     toolbarIcon: {
         display: 'flex',
@@ -131,36 +124,32 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 
-
-
-//켈린더 라이브러리 끝-->
 let paymentState = [{ key: '전체', value: '전체' },
 { key: 'Y', value: 'Y' },
 { key: 'N', value: 'N' }]
 
-function S010100060(props) {
+function S010100060() {
 
     const classes = useStyles();
+
     const [open, setOpen] = React.useState(true);
+    const [userName, setUserName] = useState('');
+    const [paymentStatus, setPaymentStatus] = useState('');
+    const [checked, setChecked] = useState([]);
+
+    const [startDate, setStartDate] = useState(new Date(moment().date('01')));
+    const [endDate, setEndDate] = useState(new Date());
+
+    const [payStatusList, setPayStatusList] = useState([].slice(0, 5));
+    const [storeOpen, setStoreOpen] = useState(false);
+    const [dataAllContract, setDataAllContract] = useState('');
+
     const handleDrawerOpen = () => {
         setOpen(true);
     };
     const handleDrawerClose = () => {
         setOpen(false);
     };
-
-    const [userName, setUserName] = useState('');
-    const [paymentStatus, setPaymentStatus] = useState('');
-    const [checked, setChecked] = useState([]);
-
-    //<!--캘린더 속성 
-    const [startDate, setStartDate] = useState(new Date(moment().date('01')));
-    const [endDate, setEndDate] = useState(new Date());
-    //캘린더 속성 끝--> 
-
-    const [payStatusList, setPayStatusList] = useState([].slice(0, 5));
-    const [storeOpen, setStoreOpen] = useState(false);
-    const [dataAllContract, setDataAllContract] = useState('');
 
     useEffect(() => {
         // let startDates = startDate.getFullYear() + '.' + (startDate.getMonth() + 1) + '.' + startDate.getDate();
@@ -211,11 +200,10 @@ function S010100060(props) {
             })
     }
 
-    //<!--onSubmit
+
     const onSubmitHandler = (event) => {
         event.preventDefault();
     }
-    //onSubmit끝-->
 
     const nameSearchHandler = (event) => {
         setUserName(event.currentTarget.value);
@@ -424,8 +412,10 @@ function S010100060(props) {
                             <table className='btn'>
                                 <thead>
                                     <tr>
-                                        <td>
+                                        <td id="alignLeft">
                                             <Button variant='contained' style={{ width: 80 }} color='primary' onClick = {onPaymenthandler}> 납부 </Button>
+                                        </td>
+                                        <td id="alignRight">
                                             <Button variant='contained' style={{ width: 140 }} color='primary' onClick = {excelHandler} >엑셀다운로드 </Button>
                                         </td>
                                     </tr>
@@ -494,9 +484,6 @@ function S010100060(props) {
                     </input>
                 </DialogActions>
             </Dialog>
-
-
-
         </Fragment>
     );
 
