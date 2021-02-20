@@ -1,12 +1,11 @@
-
 td #alignRight{text-align: right;}
 
 
-
-#contractBtn{margin: 0px 100px 20px 0px;}
-.dataTable:nth-child(2n){
+/* 
+#contractBtn{margin: 100px 300px 20px 0px;} */
+/* .dataTable:nth-child(2n){
   background-color:#EBF7FF;
 }
 .dataTable:nth-child(2n+1){
   background-color:#C7D3ED;
-}
+} */

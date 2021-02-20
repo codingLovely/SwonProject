@@ -3,11 +3,8 @@ import React, { Fragment, useEffect, useState } from 'react';
 import './css/S010100130.css';
 import axios from 'axios';
 import S010100140 from './S010100140';
-import 'react-datepicker/dist/react-datepicker.css';
-import 'react-datepicker/dist/react-datepicker-cssmodules.min.css';
-import moment from 'moment';
-import ReactPaginate from 'react-paginate';
-
+// import 'react-datepicker/dist/react-datepicker.css';
+// import 'react-datepicker/dist/react-datepicker-cssmodules.min.css';
 import clsx from 'clsx';
 import { makeStyles } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -27,34 +24,25 @@ import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import NotificationsIcon from '@material-ui/icons/Notifications';
 import { mainListItems, secondaryListItems } from './listItems';
 import Button from '@material-ui/core/Button';
-
-import Form from 'react-bootstrap/Form';
-
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Title from './Title';
-
-import { DatePicker } from "antd";
-import "antd/dist/antd.css";
-
-//<!--켈린더 라이브러리시작
-// import DatePicker, { registerLocale } from "react-datepicker";
-//import ko from 'date-fns/locale/ko';
-//registerLocale("ko", ko);
-//켈린더 라이브러리 끝-->
-
-//엑셀다운로드
-import xlsx from 'xlsx';
-
-//<!--모달창 라이브러리
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogTitle from '@material-ui/core/DialogTitle';
-//모달창 라이브러리 끝-->
 
+import { DatePicker } from "antd";
+import "antd/dist/antd.css";
+import moment from 'moment';
+
+import Form from 'react-bootstrap/Form';
+
+import ReactPaginate from 'react-paginate';
+
+import xlsx from 'xlsx';
 
 const drawerWidth = 240;
 
@@ -73,7 +61,7 @@ const useStyles = makeStyles((theme) => ({
     },
 
     toolbar: {
-        paddingRight: 24, // keep right padding when drawer closed
+        paddingRight: 24,
     },
     toolbarIcon: {
         display: 'flex',
@@ -146,9 +134,6 @@ const useStyles = makeStyles((theme) => ({
         height: 240,
     },
     
-    // TableHead:{
-    //     backgroundColor:'#3f51b5'
-    // },
 }));
 
 
@@ -156,12 +141,40 @@ let num = '';
 let rNum = 0;
 let chkSt = '';
 
-function S010100130(props) {
+function S010100130() {
 
     const classes = useStyles();
+
     const [open, setOpen] = React.useState(true);
     const [mOpen, setMOpen] = React.useState(false);
     const [storeOpen, setStoreOpen] = React.useState(false);
+    
+    const [data] = useState('I');
+
+    const [numForDetail, setNumForDetail] = useState('');
+    const [tb_s10_ask010, setTb_s10_ask010] = useState([].slice(0,10));
+    const [deleteAskOpen, setDeleteAskOpen] = React.useState(false);
+    const [ask_tps, setAsk_tps] = useState([{}])
+    const [startAsk_date, setStartAsk_date] = useState(new Date());
+    const [endAsk_date, setEndAsk_date] = useState(new Date());
+
+    // 문의구분
+    const [ask_tp, setAsk_tp] = useState('');
+    // 문의자명
+    const [ask_name, setAsk_name] = useState('');
+    // 삭제
+    const [checkForDelete, setCheckForDelete] = useState(true);
+    const [checked, setChecked] = useState([]);
+
+    // 페이징
+    const [pageNumber,setPageNumber] = useState(0);
+    const usersPerPage = 20;
+    const pagesVisited = pageNumber * usersPerPage;
+    const pageCount = Math.ceil(tb_s10_ask010.length/usersPerPage);
+    
+    const changePage = ({selected}) => {
+        setPageNumber(selected);
+    }
 
     const handleDrawerOpen = () => {
         setOpen(true);
@@ -171,20 +184,6 @@ function S010100130(props) {
         setOpen(false);
     };
 
-    const [data] = useState('I');
-
-    const [numForDetail, setNumForDetail] = useState('');
-    const [tb_s10_ask010, setTb_s10_ask010] = useState([].slice(0,5));
-    const [deleteAskOpen, setDeleteAskOpen] = React.useState(false);
-    const [ask_tps, setAsk_tps] = useState([{}])
-
-    const [startAsk_date, setStartAsk_date] = useState(new Date());
-    const [endAsk_date, setEndAsk_date] = useState(new Date());
-
-    useEffect(() => {
-        searchAsk();
-    }, []);
-
     const searchAsk = () => {
         const body = {
             startAsk_date,
@@ -192,8 +191,8 @@ function S010100130(props) {
             ask_tp,
             endAsk_date
         }
-        console.log('startAsk_date',startAsk_date);
-        console.log('endAsk_date',endAsk_date);
+        // console.log('startAsk_date',startAsk_date);
+        // console.log('endAsk_date',endAsk_date);
 
         axios.post("/api/askStList/search", body).then(response => {
             if (response.data.success) {
@@ -205,10 +204,11 @@ function S010100130(props) {
         })
     }
 
-    //select-option
-    const [ask_tp, setAsk_tp] = useState('')
+    useEffect(() => {
+        searchAsk();
+    }, []);
 
-    //문의 구분
+    // 문의 구분
     useEffect(() => {
         axios.post('/api/askStList/ask_tp')
             .then(response => {
@@ -229,21 +229,19 @@ function S010100130(props) {
             })
     }, [])
     
-
-    //상담등록 모달
-    const onHandleClickOpen = (event) => {
+    // 상담등록 모달
+    const onHandleClickOpen = () => {
         //console.log('상담열기');
         setStoreOpen(true);
 
     };
 
-    const onHandleClickClose = (event) => {
+    const onHandleClickClose = () => {
         setStoreOpen(false);
         searchAsk();
     };
-    
 
-    //상세보기 모달
+    // 상세보기 모달
     const onDetailHandleClickOpen = (event) => {
         //console.log('target',event.target.id);
         num = event.target.id;
@@ -258,58 +256,43 @@ function S010100130(props) {
 
     };
     
-    const [checkForDelete, setCheckForDelete] = useState(true);
-
-    const onDeleteHandle = () => {
-        setCheckForDelete(false);
-    }
-
     const onBackHandle = () => {
         setCheckForDelete(true);
         setChecked([]);
     }
 
-    const [checked, setChecked] = useState([]);
+    const handleToggle = (event) => {
 
-    const handleToggle = (e) => {
-        //console.log('event', e.target.id);
-
-
-        const currentIndex = checked.indexOf(e.target.id);
+        const currentIndex = checked.indexOf(event.target.id);
         //전체 Checked된 State에서 현재 누를 Checkbox가 있는지 확인
         const newChecked = checked;
 
         if (currentIndex === -1) {
-            newChecked.push(e.target.id)
+            newChecked.push(event.target.id)
         } else {
             newChecked.splice(currentIndex, 1)
         }
         setChecked(newChecked);
 
         newChecked.length > 0 ? chkSt = 'check' : chkSt = ''; 
-        console.log('chkSt',chkSt);
-        console.log('newChecked.length',newChecked.length);
+        // console.log('chkSt',chkSt);
+        // console.log('newChecked.length',newChecked.length);
 
     }
 
-    //문의자명 속성
-    const [ask_name, setAsk_name] = useState("")
-
-    //문의구분 select-option이벤트
     const onAsk_tpHandler = (event) => {
         setAsk_tp(event.currentTarget.value);
     }
 
-    //문의자명 input type = "text"이벤트
     const onAsk_nameHandler = (event) => {
         setAsk_name(event.currentTarget.value);
     }
 
-    const handleClose = (event) => {
+    const handleClose = () => {
         setDeleteAskOpen(false);
     }
 
-    const onHandleDelete = (event) => {
+    const onHandleDelete = () => {
         if(chkSt == 'check'){
             setDeleteAskOpen(true);
         }else{
@@ -317,7 +300,7 @@ function S010100130(props) {
         }
     }
   
-    const deleteHandle = (event) => {
+    const deleteHandle = () => {
         let askIdArray = checked;
        
             axios.post('/api/askStList/delete', askIdArray)
@@ -337,16 +320,9 @@ function S010100130(props) {
         onBackHandle();
     }
 
-
-
     // 조회 
     const onHandleFormSubmit = (event) => {
-
         event.preventDefault();
-
-        // if(method.valueOf('전체')||!startDate||!endDate||!searchName){
-        //     return alert("값을 입력하세요")
-        // }
 
         const body = {
             startAsk_date,
@@ -399,34 +375,24 @@ function S010100130(props) {
         xlsx.writeFile(wb, "상담현황.xlsx");
 
     }
-
-
-    const [pageNumber,setPageNumber] = useState(0);
-    const usersPerPage = 20;
-    const pagesVisited = pageNumber * usersPerPage;
     
     const displayUsers = tb_s10_ask010.slice(pagesVisited,pagesVisited + usersPerPage).map((tb_s10_ask010, index) => {
         return (
-            <TableRow key={tb_s10_ask010.ASK_ID}>
-            <TableCell>
-            <input type="checkbox" onChange={handleToggle} id={tb_s10_ask010.ASK_ID} />
-            </TableCell>
-            <TableCell onClick={onDetailHandleClickOpen} id={tb_s10_ask010.ASK_ID} className='underLineForDetail'>{index + 1}</TableCell>
-            <TableCell>{tb_s10_ask010.ASK_TP}</TableCell>
-            <TableCell>{tb_s10_ask010.ASK_DATE}</TableCell>
-            <TableCell>{tb_s10_ask010.ASK_METHOD}</TableCell>
-            <TableCell>{tb_s10_ask010.ASK_NAME}</TableCell>
-            <TableCell>{tb_s10_ask010.ASK_INFO}</TableCell>
-            <TableCell>{tb_s10_ask010.ASK_PATH}</TableCell>
+            <TableRow key={index}>
+                <TableCell>
+                <input type="checkbox" onChange={handleToggle} id={tb_s10_ask010.ASK_ID} />
+                </TableCell>
+                <TableCell onClick={onDetailHandleClickOpen} id={tb_s10_ask010.ASK_ID} className='underLineForDetail'>{index + 1}</TableCell>
+                <TableCell>{tb_s10_ask010.ASK_TP}</TableCell>
+                <TableCell>{tb_s10_ask010.ASK_DATE}</TableCell>
+                <TableCell>{tb_s10_ask010.ASK_METHOD}</TableCell>
+                <TableCell>{tb_s10_ask010.ASK_NAME}</TableCell>
+                <TableCell>{tb_s10_ask010.ASK_INFO}</TableCell>
+                <TableCell>{tb_s10_ask010.ASK_PATH}</TableCell>
             </TableRow>
         );
     });
    
-    const pageCount = Math.ceil(tb_s10_ask010.length/usersPerPage);
-    const changePage = ({selected}) => {
-        setPageNumber(selected);
-    }
-
     return (
         <Fragment>
 
@@ -477,7 +443,6 @@ function S010100130(props) {
 
 
                 {/* 메인화면  */}
-
                 <main className={classes.content}>
                     <form onSubmit={onHandleFormSubmit}>
                         <div className={classes.appBarSpacer} />
@@ -492,10 +457,9 @@ function S010100130(props) {
                                             문의일자
                                             &nbsp;
                                         
-                                        {/* date클릭할 때 고정 */}
                                             <DatePicker
                                                 locale="ko"
-                                                selected={startAsk_date}//Front = 한국시 BackEnd = 표준시 9시간차이
+                                                selected={startAsk_date}
                                                 onChange={date => setStartAsk_date(date)}
                                                 selectsStart
                                                 startDate={startAsk_date}
@@ -508,7 +472,7 @@ function S010100130(props) {
                                         ~ &nbsp;
                                         <DatePicker
                                                 locale="ko"
-                                                selected={endAsk_date}//Front = 한국시 BackEnd = 표준시 9시간차이
+                                                selected={endAsk_date}
                                                 onChange={date => setEndAsk_date(date)}
                                                 selectsEnd
                                                 startDate={startAsk_date}
@@ -516,10 +480,6 @@ function S010100130(props) {
                                                 minDate={startAsk_date}
                                                 defaultValue={moment(moment(),'YYYY-MM-DD')}
                                             />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-
-
-                                        {/* <input type="image" src="/examples/images/submit_icon.png" alt="제출버튼" height="30" width="30"/> */}
-
 
                                             문의구분
                                             &nbsp;
@@ -550,30 +510,20 @@ function S010100130(props) {
                                 <table className="btn">
                                     <thead>
                                         <tr>
-                                            <td colSpan="5" >
-                                                <Button variant="contained" color="primary" style={{ width: 100 }} onClick={onHandleClickOpen} >
-                                                    상담등록
-                                                </Button>
-                                                <Button variant="contained" color="primary"  style={{ width: 100 }} onClick={onHandleDelete}
-                                                    value="삭제하기" >
-                                                    삭제하기
-                                                        </Button>
-                                                <Dialog
-                                                    open={deleteAskOpen}
-                                                    onClose={onHandleDelete}>
-                                                    <DialogTitle id="alert-dialog-title">{"체크한 행을 삭제할까요?"}</DialogTitle>
-                                                    <DialogActions>
-                                                        <Button onClick={deleteHandle} color="primary">
-                                                            네
-                                                        </Button>
-                                                        <Button onClick={handleClose} color="primary" autoFocus>
-                                                            아니오
-                                                        </Button>
-                                                    </DialogActions>
-                                                </Dialog>
+                                            <td colSpan="5"id = "alignLeft" >
+                                                
+                                                    <Button variant="contained" color="primary" style={{ width: 100 }} onClick={onHandleClickOpen} >
+                                                        상담등록
+                                                    </Button>
+                                                    <Button variant="contained" color="primary"  style={{ width: 100 }} onClick={onHandleDelete}
+                                                        value="삭제하기" >
+                                                        삭제하기
+                                                    </Button>
+                                                
                                             </td>
+                                            
                                             <td  id="alignRight"><Button variant="contained" style={{ width: 150 }} color="primary" onClick={excelHandler}>엑셀다운로드</Button></td>
-                                        </tr>
+                                        </tr>                                
                                     </thead>
                                 </table>
 
@@ -598,7 +548,7 @@ function S010100130(props) {
                                                 </TableRow>
                                             </TableHead>
                                             <TableBody>
-                                            {/* {currentPosts} */}{ displayUsers}
+                                                { displayUsers}
                                             </TableBody>
                                             </Table>
                                             <div id = "reactPage">
@@ -624,8 +574,22 @@ function S010100130(props) {
                 </main>
             </div>
 
+            <Dialog
+                open={deleteAskOpen}
+                onClose={onHandleDelete}>
+                <DialogTitle id="alert-dialog-title">{"체크한 행을 삭제할까요?"}</DialogTitle>
+                <DialogActions>
+                    <Button onClick={deleteHandle} color="primary">
+                        네
+                    </Button>
+                    <Button onClick={handleClose} color="primary" autoFocus>
+                        아니오
+                    </Button>
+                </DialogActions>
+            </Dialog>
 
-            {/* 모달창 시작*/}
+
+           
             <Dialog
                 maxWidth={"lg"}
                 open={mOpen}>
@@ -634,21 +598,19 @@ function S010100130(props) {
                     <input type="button" onClick={onDetailHandleClickClose} color="primary" value='닫기' />
                 </DialogActions>
             </Dialog>
-            {/* // 모달창 끝 */}
+           
 
 
-            {/* 모달창 시작*/}
+           
             <Dialog
                 maxWidth={"lg"}
-                open={storeOpen}
-            >
+                open={storeOpen}>
                 <S010100140 dataForm={data} num={numForDetail} />
                 <DialogActions>
                     <input type="button" onClick={onHandleClickClose} color="primary" value='닫기' />
                 </DialogActions>
             </Dialog>
-            {/* // 모달창 끝 */}
-
+           
         </Fragment>
     );
 

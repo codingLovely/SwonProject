@@ -61,11 +61,11 @@ router.post('/searchMember', (req, res) => {
             '                       then "N" '+
             '                       end '+
             '           from TB_S10_CONTRACT010 con '+
-            '       where con.MEMBER_ID = member010.MEMBER_ID) as END_FLAG '+
+            '   where con.MEMBER_ID = member010.MEMBER_ID) as END_FLAG '+
             '   FROM TB_S10_MEMBER010 member010 '+
             '           INNER JOIN TB_S10_EMP010 emp010 '+
             '               ON member010.CEO_ID = emp010.EMP_ID '+
-            '       WHERE  MEMBER_ST != "D"' ;
+            '   WHERE  MEMBER_ST != "D"' ;
 
     if (memberTp != null && memberTp != "" && memberTp != "전체")
         sql += ' AND member010.MEMBER_TP = "' + memberTp + '"';
@@ -115,12 +115,14 @@ router.post('/accessPath', (req, res) => {
 router.post('/contHier', (req, res) => {
     let contractTp = req.body.contractTpBody;
 
-    let sql = 'SELECT ' +
-        'CODE1.CD_V,CODE1.CD_V_MEANING ' +
-        'FROM TB_S10_CODE CODE1 ' +
-        'INNER JOIN TB_S10_CODE CODE2 ' +
-        'ON CODE1.CD_TP = CODE2.CD_V ' +
-        'WHERE CODE2.CD_V = "' + contractTp + '"'
+    let sql = 'SELECT '+  
+              ' CODE1.CD_V,CODE1.CD_V_MEANING '+  
+              ' FROM TB_S10_CODE CODE1  '+
+              '  INNER JOIN TB_S10_CODE CODE2 '+ 
+              '  ON CODE1.CD_TP = CODE2.CD_V  '+
+              '  LEFT JOIN TB_S10_CONTRACT010 CON '+
+              ' ON CODE1.CD_V = CON.CONTRACT_ROOM '+
+              ' WHERE (CON.CONTRACT_ID IS NULL OR CON.END_FLAG = "Y") AND CODE2.CD_V= "'+contractTp+'"';
 
     connection.query(sql, (error, rows) => {//쿼리문
         if (error) throw error;
@@ -134,7 +136,14 @@ router.post('/contHier', (req, res) => {
 router.post('/roomLockerHier', (req, res) => {
 
     //console.log(firstVal);
-    let sql = 'SELECT CD_V,CD_V_MEANING FROM TB_S10_CODE WHERE CD_TP ="L"';
+    let sql = ' SELECT '+  
+              '      CODE1.CD_V,CODE1.CD_V_MEANING '+ 
+              '   FROM TB_S10_CODE CODE1 '+ 
+              '   INNER JOIN TB_S10_CODE CODE2 '+ 
+              '  ON CODE1.CD_TP = CODE2.CD_V '+ 
+              '  LEFT JOIN TB_S10_CONTRACT010 CON '+
+              '  ON CODE1.CD_V = CON.CONTRACT_LOCKER '+
+              '  WHERE (CON.CONTRACT_ID IS NULL OR CON.END_FLAG = "Y") AND CODE1.CD_TP LIKE "L"';
 
     connection.query(sql, (error, rows) => {  //쿼리문
         if (error) throw error;
