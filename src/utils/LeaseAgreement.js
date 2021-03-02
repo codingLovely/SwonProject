@@ -1,6 +1,7 @@
 import React,{Fragment, useState, useEffect}from 'react';
 import axios from 'axios';
 import './utilsCss/LeaseAgreement.css';
+import Button from '@material-ui/core/Button';
 
 function LeaseAgreement (props){
 
@@ -25,6 +26,13 @@ function LeaseAgreement (props){
     const [companyAddr,setCompanyAddr] = useState('');
     const [ceoTel,setCeoTel] = useState('');
 
+    const  numberWithCommas = (x) => {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+    
+    const onPrintHandler = (event) => {
+        window.print();
+    }
 
     useEffect(() => {
       const rNum = props.dataNum;
@@ -33,13 +41,14 @@ function LeaseAgreement (props){
               if (response.data.success) {
 
                 const modalCContractDate = response.data.rows[0].CONTRACT_DATE;
-                const modalCContractMoney = response.data.rows[0].PAYED_PLAN_MONEY;
+                const modalCContractMoney = numberWithCommas(response.data.rows[0].PAYED_PLAN_MONEY);
+                const contractMoney =response.data.rows[0].PAYED_PLAN_MONEY;
                
                 const modalCContractTpValM = response.data.rows[0].CONTRACT_ROOM_M;
                 const modalCPayDate = response.data.rows[0].PAY_DATE;
 
                 //VAT(10%)적용한 modalCContractMoney 값
-                let VatMoney = modalCContractMoney*(10/100);
+                let VatMoney = numberWithCommas(contractMoney*(10/100));
                
                 const modalCStartDate = response.data.rows[0].START_DATE;
                 const modalCEndDate = response.data.rows[0].END_DATE;
@@ -48,9 +57,9 @@ function LeaseAgreement (props){
                 let wasteStartMonth = modalCStartDate.substring(5, 7);
                 let wasteStartDay = modalCStartDate.substring(8, 10);
 
-                let wasteEndYear = modalCEndDate.substring(0, 4);
-                let wasteEndMonth = modalCEndDate.substring(5, 7);
-                let wasteEndDay = modalCEndDate.substring(8, 10);
+                let wasteEndYear = modalCEndDate.substring(0, 2);
+                let wasteEndMonth = modalCEndDate.substring(3, 5);
+                let wasteEndDay = modalCEndDate.substring(6, 8);
 
                 const modalCMemberNm = response.data.rows[0].MEMBER_NM;
                 const modalCRegNo = response.data.rows[0].REG_NO;
@@ -103,8 +112,7 @@ function LeaseAgreement (props){
         } 
 
     return(
-             <div>
-                    <Fragment>
+                        <Fragment>
                         <div className = "agreementWrapper">
                         <h1> 임 대 차 계 약 서 </h1>
                         <br/>
@@ -161,7 +169,7 @@ function LeaseAgreement (props){
                                 <h3>3. 계약기간</h3>									
                                 <ul>
                                     <li>
-                                        1) 본 계약의 계약기간은 {startYear}년 {startMonth}월 {startDay}일부터 {endYear}년 {endMonth}월 {endDay}일까지로 한다.									
+                                        1) 본 계약의 계약기간은 {startYear}년 {startMonth}월 {startDay}일부터 20{endYear}년 {endMonth}월 {endDay}일까지로 한다.									
                                     </li>            
                                 </ul>
                                 </div>  
@@ -364,9 +372,12 @@ function LeaseAgreement (props){
                                 <br/>                                                    
                                 연락처 : {ceoTel} <br/>
                                 </div>
-                        </div>                                    
+                        </div>
+                        <div style = {{textAlign : 'center'}}>                       
+                            <Button variant="contained" color="primary" style={{ width: 70 }} onClick={onPrintHandler} >출력</Button>                                    
+                        </div>                        
                     </Fragment>
-                </div>
+             
 
 
      );

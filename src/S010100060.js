@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useState } from 'react';
+import React, { Fragment, useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import S010100070 from './S010100070';
 
@@ -176,7 +176,6 @@ function S010100060() {
     }, [])
 
     const paymentSearchHandler = () => {
-
         // let startDates = startDate.getFullYear() + '.' + (startDate.getMonth() + 1) + '.' + startDate.getDate();
         // let endDates = endDate.getFullYear() + '.' + (endDate.getMonth() + 1) + '.' + endDate.getDate();
 
@@ -213,10 +212,10 @@ function S010100060() {
         setPaymentStatus(event.currentTarget.value);
     }
 
-    const onPayHandleClickClose = () => {
+    const onPayHandleClickClose = useCallback(() => {
         setStoreOpen(false);
         paymentSearchHandler();
-    }
+    });
 
 
     const handleToggle = (e) => {
@@ -381,9 +380,9 @@ function S010100060() {
                                             defaultValue={moment(moment(),'YYYY-MM-DD')}
                                         />
 
-                                        {/* <input type='image' src='/examples/images/submit_icon.png' alt='제출버튼' height='30' width='30'/> */}
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                     회원명&nbsp;
+
                     <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size='sm' type='text'
                                             value={userName}
                                             id='userName'
@@ -393,6 +392,7 @@ function S010100060() {
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 
                     납부여부&nbsp;
+                    
                     <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size='sm' as='select'
                                             multiple={false} onChange={paymentStatusHandler} value={paymentStatus}>
                                             {paymentState.map(item => (
@@ -473,16 +473,11 @@ function S010100060() {
                 </main>
             </div>
 
-
             <Dialog
                 maxWidth={'lg'}
                 open={storeOpen}
                 onClose={onPayHandleClickClose}>
-                <S010100070 dataContracId={dataAllContract} />
-                <DialogActions>
-                    <input type='button' onClick={onPayHandleClickClose} color='primary' value='닫기'>
-                    </input>
-                </DialogActions>
+                <S010100070 dataContracId={dataAllContract} onPayHandleClickClose={onPayHandleClickClose}/>
             </Dialog>
         </Fragment>
     );

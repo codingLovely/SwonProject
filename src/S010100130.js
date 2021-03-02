@@ -1,10 +1,10 @@
-//<<상담현황 페이지>>
-import React, { Fragment, useEffect, useState } from 'react';
+import React, { Fragment, useEffect, useState, useCallback } from 'react';
 import './css/S010100130.css';
 import axios from 'axios';
 import S010100140 from './S010100140';
 // import 'react-datepicker/dist/react-datepicker.css';
 // import 'react-datepicker/dist/react-datepicker-cssmodules.min.css';
+
 import clsx from 'clsx';
 import { makeStyles } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -31,8 +31,6 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Title from './Title';
 import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogTitle from '@material-ui/core/DialogTitle';
 
 import { DatePicker } from "antd";
 import "antd/dist/antd.css";
@@ -153,7 +151,6 @@ function S010100130() {
 
     const [numForDetail, setNumForDetail] = useState('');
     const [tb_s10_ask010, setTb_s10_ask010] = useState([].slice(0,10));
-    const [deleteAskOpen, setDeleteAskOpen] = React.useState(false);
     const [ask_tps, setAsk_tps] = useState([{}])
     const [startAsk_date, setStartAsk_date] = useState(new Date());
     const [endAsk_date, setEndAsk_date] = useState(new Date());
@@ -196,7 +193,7 @@ function S010100130() {
 
         axios.post("/api/askStList/search", body).then(response => {
             if (response.data.success) {
-                //console.log('검색결과:'+response.data.rows);
+                // console.log('검색결과:'+response.data.rows);
                 setTb_s10_ask010(response.data.rows);
             } else {
                 alert('검색에 실패하였습니다.')
@@ -236,10 +233,10 @@ function S010100130() {
 
     };
 
-    const onHandleClickClose = () => {
+    const onHandleClickClose = useCallback(() => {
         setStoreOpen(false);
         searchAsk();
-    };
+    });
 
     // 상세보기 모달
     const onDetailHandleClickOpen = (event) => {
@@ -250,21 +247,17 @@ function S010100130() {
         setMOpen(true);
     };
 
-    const onDetailHandleClickClose = () => {
+    const onDetailHandleClickClose = useCallback(() => {
         setMOpen(false);
         searchAsk();
 
-    };
+    });
     
-    const onBackHandle = () => {
-        setCheckForDelete(true);
-        setChecked([]);
-    }
 
     const handleToggle = (event) => {
 
         const currentIndex = checked.indexOf(event.target.id);
-        //전체 Checked된 State에서 현재 누를 Checkbox가 있는지 확인
+        // 전체 Checked된 State에서 현재 누를 Checkbox가 있는지 확인
         const newChecked = checked;
 
         if (currentIndex === -1) {
@@ -288,37 +281,60 @@ function S010100130() {
         setAsk_name(event.currentTarget.value);
     }
 
-    const handleClose = () => {
-        setDeleteAskOpen(false);
-    }
-
-    const onHandleDelete = () => {
-        if(chkSt == 'check'){
-            setDeleteAskOpen(true);
-        }else{
-            alert('삭제할 사용자를 선택하세요.');
-        }
-    }
   
-    const deleteHandle = () => {
-        let askIdArray = checked;
+
+    const useConfirm = (message = null, onConfirm, onCancel) => {
+        if (!onConfirm || typeof onConfirm !== "function") {
+            return;
+        }
+        if (onCancel && typeof onCancel !== "function") {
+            return;
+        }
+
+        const confirmAction = () => {
+            if (window.confirm(message)) {
+                onConfirm();
+            } else {
+                onCancel();
+            }
+        };
+
+        return confirmAction;
+    };
+
+    const approvalConfirm = () => {
+
+        if (checked.length === 0) {
+            alert('삭제할 사용자를 선택하세요');
+        }  else {
+            let askIdArray = checked;
        
             axios.post('/api/askStList/delete', askIdArray)
                 .then(response => {
                     if (response.data.success) {
-                            alert('삭제하였습니다.');
+                            alert('삭제 하였습니다.');
                             searchAsk();
                     } else {
                         alert("error")
                         
                     }
                 })
-        chkSt = '';        
-        setDeleteAskOpen(false);
+            chkSt = '';        
+        
+            setChecked([]);
+            setCheckForDelete(true);
+        }
 
-        setChecked([]);
-        onBackHandle();
     }
+
+    const cancelConfirm = () => alert('삭제를 취소하였습니다.');
+
+    const onHandleDelete = useConfirm(
+        "삭제하시겠습니까?",
+        approvalConfirm,
+        cancelConfirm
+    );
+
 
     // 조회 
     const onHandleFormSubmit = (event) => {
@@ -330,9 +346,9 @@ function S010100130() {
             ask_tp,
             endAsk_date
         }
-
-        //console.log('ask_tp', ask_tp);
-        //console.log("조회조건", body);
+        // console.log(startAsk_date); ->실제시간보다 10분정도 느린 것 체크하기
+        // console.log('ask_tp', ask_tp);
+        // console.log("조회조건", body);
         // alert('startDate day:'+startAsk_date.getDay());
         // alert('endDate year:'+endAsk_date.getFullYear());
         // alert('endDate day:'+endAsk_date.getDate());
@@ -342,7 +358,7 @@ function S010100130() {
 
         axios.post("/api/askStList/search", body).then(response => {
             if (response.data.success) {
-                //console.log('검색결과:'+response.data.rows);
+                // console.log('검색결과:'+response.data.rows);
                 setTb_s10_ask010(response.data.rows);
             } else {
                 alert('검색에 실패하였습니다.')
@@ -378,18 +394,19 @@ function S010100130() {
     
     const displayUsers = tb_s10_ask010.slice(pagesVisited,pagesVisited + usersPerPage).map((tb_s10_ask010, index) => {
         return (
-            <TableRow key={index}>
-                <TableCell>
-                <input type="checkbox" onChange={handleToggle} id={tb_s10_ask010.ASK_ID} />
+            <TableRow key={tb_s10_ask010.ASK_ID}>
+                    <TableCell >
+                <input  key={tb_s10_ask010.ASK_ID+1} type="checkbox" onChange={handleToggle} id={tb_s10_ask010.ASK_ID} />
                 </TableCell>
-                <TableCell onClick={onDetailHandleClickOpen} id={tb_s10_ask010.ASK_ID} className='underLineForDetail'>{index + 1}</TableCell>
-                <TableCell>{tb_s10_ask010.ASK_TP}</TableCell>
-                <TableCell>{tb_s10_ask010.ASK_DATE}</TableCell>
-                <TableCell>{tb_s10_ask010.ASK_METHOD}</TableCell>
-                <TableCell>{tb_s10_ask010.ASK_NAME}</TableCell>
-                <TableCell>{tb_s10_ask010.ASK_INFO}</TableCell>
-                <TableCell>{tb_s10_ask010.ASK_PATH}</TableCell>
+                <TableCell onClick={onDetailHandleClickOpen} id={tb_s10_ask010.ASK_ID} className='underLineForDetail'>{tb_s10_ask010.ASK_ID}</TableCell>
+                <TableCell >{tb_s10_ask010.ASK_TP}</TableCell>
+                <TableCell >{tb_s10_ask010.ASK_DATE}</TableCell>
+                <TableCell >{tb_s10_ask010.ASK_METHOD}</TableCell>
+                <TableCell >{tb_s10_ask010.ASK_NAME}</TableCell>
+                <TableCell >{tb_s10_ask010.ASK_INFO}</TableCell>
+                <TableCell >{tb_s10_ask010.ASK_PATH}</TableCell>
             </TableRow>
+           
         );
     });
    
@@ -485,8 +502,8 @@ function S010100130() {
                                             &nbsp;
 
                                                                 <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm" as="select" multiple={false} onChange={onAsk_tpHandler} value={ask_tp}>
-                                                                    {ask_tps.map(item => (
-                                                                        <option key={item.key} value={item.key}>{item.value}</option>
+                                                                    {ask_tps.map((item,index) => (
+                                                                        <option key={index} value={item.key}>{item.value}</option>
                                                                     ))}
 
                                                                 </Form.Control>
@@ -573,42 +590,17 @@ function S010100130() {
                     </form>
                 </main>
             </div>
-
-            <Dialog
-                open={deleteAskOpen}
-                onClose={onHandleDelete}>
-                <DialogTitle id="alert-dialog-title">{"체크한 행을 삭제할까요?"}</DialogTitle>
-                <DialogActions>
-                    <Button onClick={deleteHandle} color="primary">
-                        네
-                    </Button>
-                    <Button onClick={handleClose} color="primary" autoFocus>
-                        아니오
-                    </Button>
-                </DialogActions>
-            </Dialog>
-
-
            
             <Dialog
                 maxWidth={"lg"}
                 open={mOpen}>
-                <S010100140 dataForm={"U"} num={numForDetail} />
-                <DialogActions>
-                    <input type="button" onClick={onDetailHandleClickClose} color="primary" value='닫기' />
-                </DialogActions>
+                <S010100140 dataForm={"U"} num={numForDetail} onDetailHandleClickClose={onDetailHandleClickClose}/>
             </Dialog>
-           
-
-
-           
+                      
             <Dialog
                 maxWidth={"lg"}
                 open={storeOpen}>
-                <S010100140 dataForm={data} num={numForDetail} />
-                <DialogActions>
-                    <input type="button" onClick={onHandleClickClose} color="primary" value='닫기' />
-                </DialogActions>
+                <S010100140 dataForm={data} num={numForDetail} onHandleClickClose={onHandleClickClose} />
             </Dialog>
            
         </Fragment>

@@ -1,5 +1,5 @@
 
-.memInfoWrapper{padding: 20px;}
+.memInfoWrapper{padding: 30px;}
 .memInfoWrap
 
 .btn-center{text-align: center;}
@@ -8,7 +8,6 @@
 /* .react-datepicker-wrapper input{width: 100px;}
 #fstTextSpacing.alignLeft {line-height:200%;border-top:none; border-bottom: none; border-right: none;}
 #sndTextSpacing.alignLeft {line-height:200%; border-top:none; border-bottom: none;  border-left: none;} */
-#sndTextSpacing #hidden {color:#ffffff;}
 .borderLine{border-top: none;}
 .useContractTable tr #borderTopBottom {text-align: left;}
 

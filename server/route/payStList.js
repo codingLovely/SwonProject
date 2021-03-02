@@ -59,18 +59,22 @@ router.post('/list', (req, res) => {
 
 router.get('/insert/tb_s10_contract020_by_id', (req, res) => {
 
-    let type = req.query.type
-    let dataContracId = req.query.id
+    let type = req.query.type;
+    let dataContracId = req.query.id;
 
     let sql =
         'SELECT EMP.NAME, EMP.EMP_HP, EMP.EMP_EMAIL, ' +
         '       MEM.MEMBER_NM, CODE1.CD_V_MEANING AS "MEMBER_ST", ' +
-        '       DATE_FORMAT(CON.START_DATE,"%y.%m.%d") AS "START_DATE",' +
-        '       DATE_FORMAT(CON.END_DATE,"%y.%m.%d" ) AS "END_DATE",' +
-        '       DATE_FORMAT(PCON.PAYED_DATE,"%y.%m.%d") AS "PAYED_DATE",' +
+        '       DATE_FORMAT(CON.START_DATE,"%y-%m-%d") AS "START_DATE",' +
+        '       DATE_FORMAT(CON.END_DATE,"%y-%m-%d" ) AS "END_DATE",' +
+        '       DATE_FORMAT(PCON.PAYED_DATE,"%y-%m-%d") AS "PAYED_DATE",' +
         '       CON.COMMENT, ' +
         '       CON.CONTRACT_TERM, ' +
-        '       DATE_FORMAT(PCON.PAY_PLAN_DATE,"%y.%m.%d") AS "PAY_PLAN_DATE", ' +
+        '       CON.PAY_METHOD,' +
+        '       (SELECT CD_V_MEANING '+
+                  ' FROM TB_S10_CODE '+
+                ' WHERE CD_TP = "PAY_METHOD" AND CD_V = CON.PAY_METHOD) AS "PAY_METHOD_M",'+
+        '       DATE_FORMAT(PCON.PAY_PLAN_DATE,"%y-%m-%d") AS "PAY_PLAN_DATE", ' +
         '       PCON.CONTRACT_ID, ' +
         '       PCON.PAYED_FLAG, ' +
         '       PCON.CONTRACT_COMMENT ' +
@@ -84,7 +88,7 @@ router.get('/insert/tb_s10_contract020_by_id', (req, res) => {
         'LEFT JOIN TB_S10_CODE CODE1  ' +
         'ON MEM.MEMBER_ST = CODE1.CD_V  ' +
         'AND CODE1.CD_TP ="MEMBER_ST"  ' +
-        'WHERE PCON.CONTRACT_ID =' + dataContracId;
+        'WHERE PCON.CONTRACT_ID = ' + dataContracId;
 
     connection.query(sql, (error, rows) => {//쿼리문
         //console.log(rows);
@@ -100,12 +104,11 @@ router.get('/insert/tb_s10_contract020_by_id', (req, res) => {
 router.post('/paymentUpdate', (req, res) => {
 
     let modalContractId = req.body.modalContractId;
-    let modalPayPlanDate = req.body.modalPayPlanDate;
-    let insertPayDate = req.body.insertPayDate;
-    let referComment = req.body.referComment;
-    let paymentStatusList = req.body.paymentStatusList;
+
     //체크된 값들
     let newChecked = req.body.newChecked;
+
+    console.log('newChecked',newChecked);
     connection.beginTransaction(function (error) {
 
         for (let i = 0; i < newChecked.length; i++) {

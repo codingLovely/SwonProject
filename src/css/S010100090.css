@@ -1,0 +1,11 @@
+.MuiTableHead-root{
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.MuiTableCell-body{
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }

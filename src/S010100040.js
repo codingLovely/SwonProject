@@ -1,4 +1,4 @@
-import React, { Fragment, useState, useEffect } from 'react';
+import React, { Fragment, useState, useEffect, useCallback } from 'react';
 import axios from "axios";
 import './css/S010100040.css';
 import S010100010 from './S010100010';
@@ -33,6 +33,10 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 
 import Form from 'react-bootstrap/Form';
+
+import { DatePicker } from 'antd';
+import 'antd/dist/antd.css';
+import moment from 'moment';
 
 import ReactPaginate from 'react-paginate';
 
@@ -140,6 +144,9 @@ function S010100040() {
     const [memberStatus, setMemberStatus] = useState([{}]);
     const [memberType, setMemberType] = useState([{}]);
 
+    const [startDate, setStartDate] = useState(new Date(moment().date('01')));
+    const [endDate, setEndDate] = useState(new Date());
+
     const [open, setOpen] = React.useState(true);
     const [storeOpen, setStoreOpen] = React.useState(false);
     const [memberIdModal, setMemberIdModal] = useState(0);
@@ -167,7 +174,6 @@ function S010100040() {
         axios.get('/api/memStList/selectMemberTp')
             .then(response => {
                 if (response.data.success) {
-                    //console.log('ask_tp',response.data.rows);
                     let arr = [{ key: '전체', value: '전체' }]
 
                     response.data.rows.map((data) =>
@@ -194,7 +200,6 @@ function S010100040() {
         axios.get('/api/memStList/selectMemberSt')
             .then(response => {
                 if (response.data.success) {
-                    //console.log('ask_tp',response.data.rows);
                     let arr = [{ key: '전체', value: '전체' }]
 
                     response.data.rows.map((data) =>
@@ -215,6 +220,8 @@ function S010100040() {
     // 조회
     const memberList = () => {
         const body = {
+            startDate,
+            endDate,
             memberNm,
             regNo,
             name,
@@ -223,10 +230,13 @@ function S010100040() {
             memberSt
         }
 
+        // console.log('starDate',startDate);
+        // console.log('endDate',endDate);
+
         axios.post('/api/memStList/searchMember', body)
             .then(response => {
                 if (response.data.success) {
-                    //console.log('tb_member',response.data.rows);
+                    console.log(response.data.rows);
                     setTbMember(response.data.rows);
                 } else {
                     alert("데이터 목록을 가져오는 것을 실패하였습니다.")
@@ -246,10 +256,10 @@ function S010100040() {
         setStoreOpen(true);
     };
 
-    const onHandleClickClose = () => {
+    const onHandleClickClose = useCallback(() => {
         setStoreOpen(false);
         memberList();
-    }
+    });
 
     const memberStHandler = (event) => {
         setMemberSt(event.currentTarget.value);
@@ -281,10 +291,10 @@ function S010100040() {
         setModalOpen(true);
     }
 
-    const onHandleDetailClickClose = () => {
+    const onHandleDetailClickClose = useCallback(() => {
         memberList();
         setModalOpen(false);
-    }
+    });
 
     const onSNSHandler = (event) => {
 
@@ -317,7 +327,7 @@ function S010100040() {
     const displayMemSt = tbMember.slice(pagesVisited, pagesVisited + usersPerPage).map((tbMember, index) => {
         return (
             <TableRow key={index}>
-                <TableCell id={tbMember.MEMBER_ID} >{index + 1}</TableCell>
+                <TableCell id={tbMember.MEMBER_ID} >{tbMember.MEMBER_ID}</TableCell>
                 <TableCell>{tbMember.MEMBER_NM}</TableCell>
                 <TableCell>{tbMember.REG_NO}</TableCell>
                 <TableCell onClick={onHandleDetailClickOpen} className='underLineForDetail' id={tbMember.MEMBER_ID}>{tbMember.NAME}</TableCell>
@@ -386,65 +396,91 @@ function S010100040() {
                             <Grid item xs={12}>
                                 <Paper style={{ padding: 16 }}>
                                     <form onSubmit={onSearchSubmitHandler}>
+                                        <div className = "searchMenu">
+                                            계약일자 
+                                            &nbsp;
+                                            <DatePicker
+                                            locale='ko'
+                                            selected={startDate}
+                                            onChange={date => setStartDate(date)}
+                                            selectsStart
+                                            startDate={startDate}
+                                            endDate={endDate}
+                                            defaultValue={moment(moment().date('01'),'YYYY-MM-DD')}
+                                        /> &nbsp;~&nbsp;
+                                        <DatePicker
+                                            locale='ko'
+                                            selected={endDate}
+                                            onChange={date => setEndDate(date)}
+                                            selectsEnd
+                                            startDate={startDate}
+                                            endDate={endDate}
+                                            // minDate={startDate}
+                                            defaultValue={moment(moment(),'YYYY-MM-DD')}
+                                        />
+                                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
                                         회원명&nbsp;
                                             <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm" type="text"
-                                            value={memberNm} id="memberNm" name="memberNm" onChange={memberNmHandler} />
+                                                value={memberNm} id="memberNm" name="memberNm" onChange={memberNmHandler} />
 
                    &nbsp;&nbsp;&nbsp;&nbsp;
 
 
                     사업자번호 &nbsp;
                     <Form.Control style={{ width: 10 + 'em', display: 'inline' }} size="sm" type="text"
-                                            value={regNo} id="regNo" name="regNo"
-                                            onChange={regNoHandler} />
+                                                value={regNo} id="regNo" name="regNo"
+                                                onChange={regNoHandler} />
 
                    &nbsp;&nbsp;&nbsp;&nbsp;
 
 
                     대표자명 &nbsp;
                     <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm" type="text"
-                                            value={name} id="name" name="name"
-                                            onChange={nameHandler} />
+                                                value={name} id="name" name="name"
+                                                onChange={nameHandler} />
 
                     &nbsp;&nbsp;&nbsp;&nbsp;
 
                     회원구분 &nbsp;
                     <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm" as="select"
-                                            multiple={false} onChange={memberTpHandler} value={memberTp}>
-                                            {memberType.map(item => (
-                                                <option key={item.key} value={item.key}>{item.value}</option>
-                                            ))}
+                                                multiple={false} onChange={memberTpHandler} value={memberTp}>
+                                                {memberType.map((item,index) => (
+                                                    <option key={index} value={item.key}>{item.value}</option>
+                                                ))}
 
-                                        </Form.Control>
+                                            </Form.Control>
 
                                             &nbsp;&nbsp;&nbsp;&nbsp;
-
-                    종료 &nbsp;
+                                            </div>
+                                        <div className = "searchMenu">
+                                            종료 &nbsp;
                     <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm" as="select"
-                                            multiple={false} onChange={contractStatusHandler} value={contractStatus}>
-                                            {endStatus.map(item => (
-                                                <option key={item.key} value={item.key}>{item.value}</option>
-                                            ))}
+                                                multiple={false} onChange={contractStatusHandler} value={contractStatus}>
+                                                {endStatus.map(item => (
+                                                    <option key={item.key} value={item.key}>{item.value}</option>
+                                                ))}
 
-                                        </Form.Control>
+                                            </Form.Control>
 
                                             &nbsp;&nbsp;&nbsp;&nbsp;
 
                     상태 &nbsp;
                     <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm" as="select"
-                                            multiple={false} onChange={memberStHandler} value={memberSt}>
-                                            {memberStatus.map(item => (
-                                                <option key={item.key} value={item.key}>{item.value}</option>
-                                            ))}
+                                                multiple={false} onChange={memberStHandler} value={memberSt}>
+                                                {memberStatus.map((item,index) => (
+                                                    <option key={index} value={item.key}>{item.value}</option>
+                                                ))}
 
-                                        </Form.Control>
+                                            </Form.Control>
 
 
                                             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 
                                     <Button variant="contained" style={{ width: 80 }} color="primary" onClick={onSearchSubmitHandler}>
-                                            조회
+                                                조회
                                     </Button>
+                                        </div>
                                     </form>
                                 </Paper>
                             </Grid>
@@ -523,25 +559,20 @@ function S010100040() {
                     </Container>
                 </main>
             </div>
-
+            {/* 이름클릭 상세보기 */}
             <Dialog
                 maxWidth={"lg"}
                 open={modalOpen}
                 onClose={onHandleDetailClickClose}>
-                <S010100050 dataMemId={memberIdModal} dataForm={"U"} />
-                <DialogActions>
-                    <input type="button" id="contractBtn" onClick={onHandleDetailClickClose} color="primary" value='닫기' />
-                </DialogActions>
+                <S010100050 dataMemId={memberIdModal} dataForm={"U"} onHandleDetailClickClose={onHandleDetailClickClose} />
             </Dialog>
 
+            {/* 신규등록 */}
             <Dialog
                 maxWidth={"lg"}
                 open={storeOpen}
                 onClose={onHandleClickClose}>
-                <S010100010 />
-                <DialogActions>
-                    <input type="button" onClick={onHandleClickClose} color="primary" value="닫기" />
-                </DialogActions>
+                <S010100010 onHandleClickClose={onHandleClickClose}/>
             </Dialog>
 
         </Fragment>

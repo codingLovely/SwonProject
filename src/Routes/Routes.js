@@ -8,7 +8,8 @@ import S010100090 from '../S010100090';
 import S010100130 from '../S010100130';
 import S010100140 from '../S010100140';
 import S010100150 from '../S010100150';
-
+import S010100160 from '../S010100160';
+import test from '../test';
 
 import LeaseAgreement from '../utils/LeaseAgreement';
 //export default
@@ -27,8 +28,13 @@ import LeaseAgreement from '../utils/LeaseAgreement';
           <Route exact path = "/consultationStatus" component = {S010100130}></Route>
           {/* 직원현황 */}
           <Route exact path = "/staff" component = {S010100090}></Route>
+          {/* 계약현황 */}
+          <Route exact path = "/contractStatus" component = {S010100160}></Route>
           {/* 로그인/로그아웃*/}
           <Route exact path = "/login" component = {S010100150}></Route>
+
+            {/* test*/}
+            <Route exact path = "/andy" component = {test}></Route>
 
           {/* 상담등록 */}
           <Route exact path = "/registration" component = {S010100140}></Route>

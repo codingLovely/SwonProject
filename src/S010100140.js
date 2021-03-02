@@ -1,4 +1,3 @@
-//<<상담등록 페이지>>
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './css/S010100140.css';
@@ -6,31 +5,27 @@ import './css/S010100140.css';
 import Button from '@material-ui/core/Button';
 
 import Form from 'react-bootstrap/Form';
-//datepicker 시작
+
 import DatePicker, { registerLocale } from "react-datepicker";
 import ko from 'date-fns/locale/ko'
 registerLocale("ko", ko);
-//datepicker끝
+
 
 
 
 function S010100140(props) {
 
-
-
     const rNum = props.num;
-    //console.log('rNum',rNum);
-    //const modal = props.modal;
-
+    // console.log('rNum',rNum);
+    // 상세보기
     useEffect(() => {
-        //if(isNaN(rNum)){ return alert('숫자를 클릭하세요') }
-
+      
         if (props.dataForm === 'U') {
 
             axios.get(`/api/askStList/tb_s10_ask010_by_id?id=${rNum}&type=single`)
                 .then(response => {
                     if (response.data.success) {
-                        //console.log(response.data)
+                        // console.log(response.data)
                         const askTp = (response.data.rows[0].ASK_TP);
                         const askDate = (response.data.rows[0].ASK_DATE);
                         const askMethod = (response.data.rows[0].ASK_METHOD);
@@ -38,9 +33,7 @@ function S010100140(props) {
                         const askPath = (response.data.rows[0].ASK_PATH);
                         const askInfo = (response.data.rows[0].ASK_INFO);
                         const askContent = (response.data.rows[0].ASK_CONTENT);
-
-                        // setModalAskDate(askDate);
-                        //console.log('askDate', askDate);
+    
                         setModalAskTp(askTp);
                         setModalAskName(askName);
                         setModalAskMethod(askMethod);
@@ -60,7 +53,6 @@ function S010100140(props) {
     const [modalAskTp, setModalAskTp] = useState('')
     const [modalAskMethod, setModalAskMethod] = useState('')
     const [modalAskPath, setModalAskPath] = useState('')
-
 
     const [modalContractTpLov, setModalContractTpLov] = useState([{ key: '', value: '선택' }])
     const [modalAskMethodLov, setModalAskMethodLov] = useState([{ key: '', value: '선택' }])
@@ -85,6 +77,7 @@ function S010100140(props) {
     /**
      * desc : LOV에 필요한 항목을 받아 DB조회 후 조회값을 반환하는 로직
      * */
+
     async function getLovByCdTp(cdTp, attribute2) {
         let arr = [{ key: '선택', value: '선택' }];
         return await axios.post('/api/askStList/selectTest', { firstVal: cdTp, secondVal: attribute2 })
@@ -110,8 +103,8 @@ function S010100140(props) {
             }).catch(() => {
                 alert("문의구분 데이터를 불러오는데 실패하였습니다.");
             })
-        //return arr;
-        //console.log('arr', arr);
+        // return arr;
+        // console.log('arr', arr);
     }
 
     const [startDate, setStartDate] = useState(new Date());
@@ -133,7 +126,6 @@ function S010100140(props) {
         setModalAskPath(event.currentTarget.value);
     }
 
-
     const onAskNameHandler = (event) => {
         setModalAskName(event.currentTarget.value);
     }
@@ -145,8 +137,30 @@ function S010100140(props) {
     const onAskContentHandler = (event) => {
         setModalAskContent(event.currentTarget.value);
     }
+    
 
-    const onModifyHandler = () => {
+
+
+    const useConfirm = (message = null, onConfirm, onCancel) => {
+        if (!onConfirm || typeof onConfirm !== "function") {
+            return;
+        }
+        if (onCancel && typeof onCancel !== "function") {
+            return;
+        }
+
+        const confirmAction = () => {
+            if (window.confirm(message)) {
+                onConfirm();
+            } else {
+                onCancel();
+            }
+        };
+
+        return confirmAction;
+    };
+
+    const approvalConfirm = () => {
 
         const body = {
             modalAskId: rNum,
@@ -168,8 +182,17 @@ function S010100140(props) {
                 }
             })
 
-
     }
+
+    const cancelConfirm = () => alert('수정을 취소하였습니다.');
+
+    const onModifyHandler = useConfirm(
+        modalAskName+'님의 정보를 수정하시겠습니까?',
+        approvalConfirm,
+        cancelConfirm
+    );
+
+
 
     // 상담 등록 저장 버튼 클릭시
     const onHandleSubmit = (event) => {
@@ -248,10 +271,11 @@ function S010100140(props) {
                                             /> */}
 
                                     <DatePicker
+                                        id="dateSize"
                                         locale="ko"
                                         selected={startDate.setHours(9, 0, 0, 0)}
                                         onChange={date => setStartDate(date)}
-                                        dateFormat="yyyy.MM.dd (eee)"
+                                        dateFormat="yyyy-MM-dd (eee)"
                                     />
 
                                 </td>
@@ -313,6 +337,8 @@ function S010100140(props) {
             <div id="btnAlign">
                 <Button variant="contained" color="primary" style={{ width: 100 }} className="popBtn" onClick={onModifyHandler} hidden={props.dataForm !== 'U'} >수정하기</Button>
                 <Button variant="contained" color="primary" style={{ width: 100 }} className="popBtn" type="submit" hidden={props.dataForm === 'U'} >등록하기</Button>
+                <Button variant="contained" color="primary" style={{ width: 100 }} className="popBtn" hidden={props.dataForm !== 'U'} onClick={props.onDetailHandleClickClose}>닫기</Button>
+                <Button variant="contained" color="primary" style={{ width: 100 }} className="popBtn" hidden={props.dataForm === 'U'} onClick={props.onHandleClickClose}>닫기</Button>
             </div>
         </form>
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { post } from 'axios';
 import './css/S010100050.css';
@@ -15,7 +15,6 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Title from './Title';
 import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
 import Modal from '@material-ui/core/Modal';
 import Backdrop from '@material-ui/core/Backdrop';
 import Fade from '@material-ui/core/Fade';
@@ -140,7 +139,7 @@ function S010100050(props) {
     const [detailSndRegNo, setDetailSndRegNo] = useState('');
     const [detailThdRegNo, setDetailThdRegNo] = useState('');
 
-    const [detailMemberTp, setDetailMemberTp] = useState([])
+    const [detailMemberTp, setDetailMemberTp] = useState('')
     const [detailName, setDetailName] = useState('');
 
     const [detailFstEmpHp, setDetailFstEmpHp] = useState('');
@@ -165,7 +164,7 @@ function S010100050(props) {
     const [conOpen, setConOpen] = React.useState(false);
     const [newOpen, setNewOpen] = React.useState(false);
     const [detailMemberId, setDetailMemberId] = useState('');
-
+    const [mEndFlag,setMEndFlag] = useState('');
 
 
     const [currentPage, setCurrentPage] = useState(1);
@@ -217,6 +216,7 @@ function S010100050(props) {
         let body = {
             dataMemId: dataMemId
         }
+        // console.log('dataMemId',dataMemId);
 
         axios.post('/api/memDetail/detailMember_by_id', body)
             .then(response => {
@@ -243,6 +243,7 @@ function S010100050(props) {
                     const modalEmpHps = modalEmpHp.split('-');
                     const modalEmpEmails = modalEmpEmail.split('@');
 
+                    // console.log('response.data.rows[0].MEMBER_ST',response.data.rows[0].MEMBER_ST);
                     setDetailAllInfo(response.data.rows);
                     setDetailMemberId(memberId);
 
@@ -263,7 +264,7 @@ function S010100050(props) {
 
                     setDetailEmpEmail(modalEmpEmails[0]);
                     setDetailDomain(modalEmpEmails[1]);
-
+                    setMEndFlag(modalEndFlag);
                     //setStartAsk_date(new Date(modalEndDate));
 
                     setDetailZipcode(modalZip);
@@ -283,11 +284,11 @@ function S010100050(props) {
 
     // 회원정보수정 함수
     const tempAddMember = () => {
-        const url = '/api/s010100050/modifyMember';
+        const url = '/api/memDetail/modifyMember';
         const formData = new FormData();
         // console.log('memberId',memberId);
         const dataMemId = props.dataMemId;
-        console.log('dataMemId', dataMemId);
+        // console.log('dataMemId', dataMemId);
 
         // 회원이름 및 전화번호 memberId
         // formData.append('dataName',dataName);
@@ -335,6 +336,7 @@ function S010100050(props) {
     // 회원정보 수정
     const onModifyHandler = (event) => {
         event.preventDefault();
+        
         tempAddMember().then((response) => {
             alert('정상적으로 수정 되었습니다.');
             detailMemberList();
@@ -408,16 +410,16 @@ function S010100050(props) {
     }
 
 
-    const onConContractHandler = (event) => {
+    const onConContractHandler = useCallback(() => {
         setConOpen(false);
         detailMemberList();
-    }
+    });
 
     // 신규계약 닫기
-    const onNewContractHandler = (event) => {
+    const onNewContractHandler = useCallback(()=> {
         setNewOpen(false);
         detailMemberList();
-    }
+    });
 
     const onNewOpenContractHandler = (event) => {
         setNewOpen(true);
@@ -431,7 +433,7 @@ function S010100050(props) {
             .then(response => {
                 if (response) {
                     alert('res');
-                    console.log(response);
+                    // console.log(response);
 
                 } else {
                     alert("다운로드에 실패하였습니다.");
@@ -465,7 +467,7 @@ function S010100050(props) {
                 <TableCell>{detailAllInfo.CONTRACT_TERM}개월 ({detailAllInfo.START_DATE} ~ {detailAllInfo.END_DATE})</TableCell>
                 <TableCell>{detailAllInfo.MEMBER_ST}</TableCell>
                 <TableCell>{detailAllInfo.PAY_DATE}일</TableCell>
-                <TableCell>{detailAllInfo.PAYED_PLAN_MONEY}</TableCell>
+                <TableCell>{detailAllInfo.MONTHLY_FEE}</TableCell>
                 <TableCell>{detailAllInfo.CONTRACT_LOCKER}</TableCell>
                 <TableCell>{detailAllInfo.END_FLAG}</TableCell>
             </TableRow>
@@ -473,19 +475,9 @@ function S010100050(props) {
 
     });
 
-    // const [a, setA] = useState([]);
-
-    // if (detailAllInfo.END_FLAG == 'N') {
-    //     detailAllInfo.map(item => (
-    //         setA(item.END_DATE)
-    //     )
-    //     )
-
-    // }
 
     const postCodeStyle = {
         display: "block",
-        // position: "absolute",
         top: "50%",
         width: "400px",
         height: "500px",
@@ -531,10 +523,12 @@ function S010100050(props) {
                 <div className="memberInfoWrap">
                     {/* 회원정보란 */}
                     <h5 id="infoTitle">회원 정보</h5>
-
+                    
                     <table id="memberDetailTable">
+                    <tbody>
                         <tr>
                             <th colSpan="2">회원명</th>
+                            
                             <td>
 
                                 <Form.Control style={{ width: 5 + 'em', display: 'inline' }} size="sm"
@@ -548,12 +542,12 @@ function S010100050(props) {
                                 <Form.Control style={{ width: 5 + 'em', display: 'inline' }} size="sm"
                                     type="text" value={detailFstRegNo} id="detailRegNo" name="detailRegNo"
                                     onChange={onDetailFstRegNoHandler} />
-                                &nbsp; -&nbsp;
+                                &nbsp; - &nbsp;
 
                                 <Form.Control style={{ width: 3 + 'em', display: 'inline' }} size="sm"
                                     type="text" value={detailSndRegNo} id="detailRegNo" name="detailRegNo"
                                     onChange={onDetailSndRegNoHandler} />
-                                &nbsp; -&nbsp;
+                                &nbsp; - &nbsp;
 
                                 <Form.Control style={{ width: 7 + 'em', display: 'inline' }} size="sm"
                                     type="text" value={detailThdRegNo} id="detailRegNo" name="detailRegNo"
@@ -563,9 +557,9 @@ function S010100050(props) {
                             <th>회원구분</th>
                             <td>
 
-                                <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm" as="select" multiple={false} onChange={onDetailMemberTpHandler} value={detailMemberTp}>
-                                    {memberTpDetail.map(item => (
-                                        <option key={item.key} value={item.key}>{item.value}</option>
+                                <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm" as="select" multiple={false} onChange={onDetailMemberTpHandler} value={detailMemberTp|| ''}>
+                                    {memberTpDetail.map((item,index) => (
+                                        <option key={index} value={item.key}>{item.value}</option>
                                     ))}
                                 </Form.Control>
 
@@ -596,13 +590,13 @@ function S010100050(props) {
                                     type="text" value={detailFstEmpHp} id="detailEmpHp" name="detailEmpHp"
                                     onChange={onDetailFstEmpHpHandler} />
 
-                                     &nbsp;-&nbsp;
+                                     &nbsp; - &nbsp;
                                      <Form.Control style={{ width: 5 + 'em', display: 'inline' }} size="sm"
                                     type="text" value={detailSndEmpHp} id="detailEmpHp" name="detailEmpHp"
                                     onChange={onDetailSndEmpHpHandler} />
 
 
-                                     &nbsp;-&nbsp;
+                                     &nbsp; - &nbsp;
                                     <Form.Control style={{ width: 5 + 'em', display: 'inline' }} size="sm"
                                     type="text" value={detailThdEmpHp} id="detailEmpHp" name="detailEmpHp"
                                     onChange={onDetailThdEmpHpHandler} />
@@ -617,7 +611,7 @@ function S010100050(props) {
                                     onChange={onDetailEmpEmailHandler} />
 
 
-                            @&nbsp;
+                            &nbsp; @ &nbsp;
                             <Form.Control style={{ width: 10 + 'em', display: 'inline' }} size="sm"
                                     type="text" value={detailDomain} id="detailEmpEmail" name="detailEmpEmail"
                                     onChange={onDetailDomainHandler} />
@@ -625,6 +619,7 @@ function S010100050(props) {
 
                             </td>
                         </tr>
+                        <tr>
                         <th>주소</th>
                         <td colSpan="8">
 
@@ -665,6 +660,7 @@ function S010100050(props) {
 
 
                         </td>
+                        </tr>
                         <tr>
 
                             <th rowSpan="2" colSpan="2">첨부파일</th>
@@ -690,9 +686,9 @@ function S010100050(props) {
                                 />
                             </td>
                         </tr>
-
+                        </tbody>
                     </table>
-
+                   
                     <React.Fragment >
                         <Title>상담 현황</Title>
                         <Table size="small">
@@ -712,7 +708,7 @@ function S010100050(props) {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {/* {currentPosts} */}{currentPosts}
+                              {currentPosts}
                             </TableBody>
                         </Table>
                         <div id="reactPage">
@@ -731,17 +727,20 @@ function S010100050(props) {
                     </React.Fragment>
                     {/* </Paper> */}
                     {/* </Grid> */}
-
-
                     <div className="pageCenter">
-                        <Pagination postsPerPage={postsPerPage} totalPosts={s010100050R.length} paginate={paginate} />
-                    </div>
+                            <Pagination postsPerPage={postsPerPage} totalPosts={s010100050R.length} paginate={paginate} />
+                        </div>
+
                     <div id="btnAlign">
+            
                         <Button variant="contained" color="primary" style={{ width: 100 }} id="btn-centerN" onClick={onNewOpenContractHandler} >
                             신규계약
                         </Button>
                         <Button variant="contained" color="primary" style={{ width: 100 }} id="btn-centerN" onClick={onModifyHandler} >
                             수정하기
+                        </Button>
+                        <Button variant="contained" color="primary" style={{ width: 70 }} id="btn-centerN" onClick={props.onHandleDetailClickClose} >
+                            닫기
                         </Button>
                     </div>
                 </div>
@@ -752,10 +751,7 @@ function S010100050(props) {
                 maxWidth={"lg"}
                 open={conOpen}
                 onClose={onConContractHandler}>
-                <S010100010 dataNum={rNum} cDataForm={'I'} />
-                <DialogActions>
-                    <input type="button" onClick={onConContractHandler} color="primary" value="닫기" />
-                </DialogActions>
+                <S010100010 dataNum={rNum} cDataForm={'I'} endFlag = {mEndFlag} onConContractHandler={onConContractHandler}/>
             </Dialog>
 
             {/*신규계약 멤버ID클릭*/}
@@ -763,11 +759,7 @@ function S010100050(props) {
                 maxWidth={"lg"}
                 open={newOpen}
                 onClose={onNewContractHandler}>
-                <S010100010 dataMem={detailMemberId} newDataForm={'N'} />
-
-                <DialogActions>
-                    <input type="button" onClick={onNewContractHandler} color="primary" value="닫기" />
-                </DialogActions>
+                <S010100010 dataMem={detailMemberId} newDataForm={'N'} onNewContractHandler={onNewContractHandler}/>
             </Dialog>
 
         </form>

@@ -29,9 +29,6 @@ let payDates = [];
 let forPrint;
 // 확정-가계약
 let forMemberStatus;
-// 계약 수정하기 이용기간 중복확인
-let existingStartDate;
-let existingEndDate;
 
 
 const useStyles = makeStyles((theme) => ({
@@ -64,7 +61,7 @@ function S010100010(props) {
 
     // 계약정보
     const [contractTp, setContractTp] = useState('');
-    const [contractTpVal, setContractTpVal] = useState([{ key: '', value: '선택' }]);
+    const [contractTpVal, setContractTpVal] = useState({ key: '', value: '선택' });
     const [roomLockerTp, setRoomLockerTp] = useState(0);
     const [contractMoney, setContractMoney] = useState('');
     const [contractTerm, setContractTerm] = useState('0');
@@ -105,6 +102,7 @@ function S010100010(props) {
     const [memberStFlag, setMemberStFlag] = useState('');
 
     const [isPostOpen, setIsPostOpen] = useState(false);
+
     const classes = useStyles();
 
     const handleOpen = () => {
@@ -118,7 +116,6 @@ function S010100010(props) {
 
     const postCodeStyle = {
         display: "block",
-        // position: "absolute",
         top: "50%",
         width: "400px",
         height: "500px",
@@ -140,7 +137,6 @@ function S010100010(props) {
             fullAddress += extraAddress !== "" ? ` (${extraAddress})` : "";
         }
 
-
         setZipcode(data.zonecode);
         setEmpAddress(fullAddress);
 
@@ -149,7 +145,9 @@ function S010100010(props) {
     const rNum = props.dataNum;
     const modalMemberId = props.dataMem;
 
+    // s010100050 -> 신규계약버튼 클릭시 member상세정보
     useEffect(() => {
+
         if (props.newDataForm === 'N') {
             axios.get(`/api/memStList/insert/tb_s10_contract010_by_id?id=${modalMemberId}&type=single`)
                 .then(response => {
@@ -164,6 +162,9 @@ function S010100010(props) {
                         const modalCZipCode = response.data.rows[0].ZIP_CODE;
                         const modalCAddress = response.data.rows[0].ADDRESS;
                         const modalCDetailAddress = response.data.rows[0].DETAIL_ADDRESS;
+
+                        const modalCCeoIdCardImg = response.data.rows[0].CEO_IMAGE_ID;
+                        const modalCRegistIdCardImg = response.data.rows[0].CEO_IMAGE_REGISTER;
 
                         const modalCRegNos = modalCRegNo.split("-");
                         const modalCEmpHps = modalCEmpHp.split("-");
@@ -180,6 +181,8 @@ function S010100010(props) {
                         setThirdEmpHp(modalCEmpHps[2]);
                         setEmpEmailId(modalCEmpEmails[0]);
                         setDomainAddress(modalCEmpEmails[1]);
+                        setCeoIdCardImg(modalCCeoIdCardImg);
+                        setCeoRegistCardImg(modalCRegistIdCardImg);
                         setZipcode(modalCZipCode);
                         setEmpAddress(modalCAddress);
                         setEmpDetailAddress(modalCDetailAddress);
@@ -191,15 +194,16 @@ function S010100010(props) {
         }
 
     }, []);
-
-
+    let endBtnDelete;
+    // s01010050 -> 계약id클릭시 계약상세정보
     useEffect(() => {
         if (props.cDataForm === 'I') {
-            //계약상세정보 함수(contract_id이용)
+
             axios.get(`/api/memStList/tb_s10_contract010_by_id?id=${rNum}&type=single`)
                 .then(response => {
                     if (response.data.success) {
-
+                        // console.log('contract_',response.data.rows);
+                        
                         const modalCMemberNm = response.data.rows[0].MEMBER_NM;
                         const modalCRegNo = response.data.rows[0].REG_NO;
                         const modalCMemberTp = response.data.rows[0].MEMBER_TP;
@@ -213,6 +217,7 @@ function S010100010(props) {
                         const modalCRegistIdCardImg = response.data.rows[0].CEO_IMAGE_REGISTER;
 
                         const modalCContractDate = response.data.rows[0].CONTRACT_DATE;
+
                         const modalCContractTp = response.data.rows[0].CONTRACT_TP;
                         const modalCContractTerm = response.data.rows[0].CONTRACT_TERM;
                         const modalCPayDate = response.data.rows[0].PAY_DATE;
@@ -222,6 +227,7 @@ function S010100010(props) {
                         const modalCContractPath = response.data.rows[0].CONTRACT_PATH;
                         const modalCContractPathM = response.data.rows[0].CONTRACT_PATH_M;
 
+                        const modalCStartDate = response.data.rows[0].START_DATE;
                         const modalCEndDate = response.data.rows[0].END_DATE;
 
                         const modalCContractTpVal = response.data.rows[0].CONTRACT_ROOM;
@@ -275,7 +281,8 @@ function S010100010(props) {
                         setRoomLockerTp(modalCRoomLockerTp);
                         setComment(modalCComment);
 
-                        setStartAsk_date(new Date(modalCContractDate));
+                        setStartAsk_date(new Date(modalCStartDate));
+                        setEndAsk_date(modalCEndDate);
 
                         setContractTpVal(modalCContractTpVal);
                         setRoomLockerTp(modalCRoomLockerTp);
@@ -342,13 +349,13 @@ function S010100010(props) {
     }, [])
 
     // 날 일
-    let arr = [{ key: '선택', value: '선택' }];
+    let arrDate = [{ key: '선택', value: '선택' }];
     for (let i = 1; i <= 31; i++) {
-        arr.push({
+        arrDate.push({
             value: i,
             key: i
         });
-        payDates = arr;
+        payDates = arrDate;
     }
 
     const [contractTpVals, setContractTpVals] = useState([{ key: '', value: '선택' }]);
@@ -360,20 +367,21 @@ function S010100010(props) {
 
         let contractTpBody = event.currentTarget.value;
 
-
         axios.post('/api/memStList/contHier', { contractTpBody: contractTpBody })
             .then(response => {
                 if (response.data.success) {
-                    // console.log('ContractTpVal', response.data.rows);
-                    let arr = [{ key: '선택', value: '선택' }]
+                    console.log('ContractTpVal', response.data.rows);
+                    let arr = [{ key: '선택', value: '선택' }];
 
-                    response.data.rows.map((data) =>
+                    (response.data.rows).map((data) =>
                         arr.push({
                             value: data.CD_V_MEANING, key: data.CD_V
                         }));
+
                     switch (contractTpBody) {
                         case 'R1':
                             setContractTpVals(arr);
+                            console.log('contractTpBody', contractTpBody);
                             break;
                         case 'R2':
                             setContractTpVals(arr);
@@ -416,6 +424,7 @@ function S010100010(props) {
                     let monthlyMoney = {
                         contractTpBody: contractTpBody
                     }
+
                     axios.post('/api/memStList/monthlyMoney', monthlyMoney)
                         .then(response => {
                             if (response.data.success) {
@@ -482,11 +491,13 @@ function S010100010(props) {
 
     // 첨부파일 서버로 보내는 함수
     const addMember = () => {
-        const url = '/api/s010100010/insertMember010';
+        const url = '/api/memStList/insertMember010';
         const formData = new FormData();
 
         let startDate = startAsk_date.getFullYear() + '-' + (startAsk_date.getMonth() + 1) + '-' + startAsk_date.getDate();
-
+        
+        // 납부 여부
+        formData.append('selectedOption',selectedOption);
         formData.append('idCardFile', idCardFile);
         formData.append('registCardFile', registCardFile);
         formData.append('idCardFileName', idCardFileName);
@@ -530,6 +541,7 @@ function S010100010(props) {
                 'content-type': 'multipart/form-data'
             }
         }
+
         return post(url, formData, config);
     }
 
@@ -538,56 +550,74 @@ function S010100010(props) {
     // 저장-확정
     const onSubmitHandler = (event) => {
         event.preventDefault();
+
         forMemberStatus = "C";
 
-        // 대표자 NUll체크
-        if (empIdName == null || empIdName == '') {
-            return alert("대표자를 입력하세요.");
-        }
+        // // 대표자 NUll체크
+        // if (empIdName == null || empIdName == '') {
+        //     return alert("대표자를 입력하세요.");
+        // }
 
-        // 연락처 NUll체크
-        if (firstEmpHp == null || firstEmpHp == '' || secondEmpHp == null || secondEmpHp == '' || thirdEmpHp == null || thirdEmpHp == '') {
-            return alert("연락처를 입력하세요.");
-        }
+        // // 연락처 NUll체크
+        // if (firstEmpHp == null || firstEmpHp == '' || secondEmpHp == null || secondEmpHp == '' || thirdEmpHp == null || thirdEmpHp == '') {
+        //     return alert("연락처를 입력하세요.");
+        // }
 
-        // 계약구분 NUll체크
-        if (contractTp == null || contractTp == '') {
-            return alert("계약구분을 선택하세요.");
-        }
+        // // 계약구분 NUll체크
+        // if (contractTp == null || contractTp == '') {
+        //     return alert("계약구분을 선택하세요.");
+        // }
 
-        // 호실 NUll체크
-        if (contractTpVal == null || contractTpVal == '') {
-            return alert("호실을 선택하세요.");
-        }
+        // // 호실 NUll체크
+        // if (contractTpVal == null || contractTpVal == '') {
+        //     return alert("호실을 선택하세요.");
+        // }
 
-        // 이용기간 NUll체크
-        if (contractTerm == null || contractTerm == '') {
-            return alert("이용기간을 입력하세요.");
-        }
+        // // 이용기간 NUll체크
+        // if (contractTerm == null || contractTerm == '') {
+        //     return alert("이용기간을 입력하세요.");
+        // }
 
-        // 입금일 NUll체크
-        if (payDate == null || payDate == '') {
-            return alert("입금일을 하세요.");
-        }
+        // // 입금일 NUll체크
+        // if (payDate == null || payDate == '') {
+        //     return alert("입금일을 선택하세요.");
+        // }
 
-        // 납부방법 NUll체크
-        if (payMethod == null || payMethod == '') {
-            return alert("납부방법을 선택하세요.");
-        }
+        // // 납부방법 NUll체크
+        // if (payMethod == null || payMethod == '') {
+        //     return alert("납부방법을 선택하세요.");
+        // }
+
+        // if((firstRegNo.length < 3)||(secondRegNo.length < 2)||(thirdRegNo.length < 5)){
+        //     alert('사업자번호 형식을 확인하세요');
+        // }
+
+        // if((firstEmpHp.length < 3)||(secondEmpHp.length < 3)||(thirdEmpHp.length < 3)){
+        //     alert('연락처 형식을 확인하세요');
+        // }
+
 
         // 중복확인
-        if (regNoCheckBtn == '') {
-            alert('사업자 번호 중복확인 하세요.');
-        } else if (empHpCheckBtn == '') {
-            alert('전화번호 중복확인 하세요.');
-        } else if (dateCheckBtn == '') {
-            alert('이용날짜 중복확인 하세요.');
-        } else if (regNoCheckBtn == 'check' && empHpCheckBtn == 'check' && dateCheckBtn == 'check') {
-            addMember().then((response) => {
-                alert('정상적으로 등록 되었습니다.');
-            })
-        }
+        // if (regNoCheckBtn == '') {
+        //     alert('사업자 번호 중복확인 하세요.');
+        // } else if (empHpCheckBtn == '') {
+        //     alert('전화번호 중복확인 하세요.');
+        // } else if (dateCheckBtn == '') {
+        //     alert('이용날짜 중복확인 하세요.');
+        // } else if (regNoCheckBtn == 'check' && empHpCheckBtn == 'check' && dateCheckBtn == 'check') {
 
+            addMember().then((response) => {
+                alert(Error);
+                // setRegNoCheckBtn('');
+                // setEmpHpCheckBtn('');
+                // setDateCheckBtn('');
+                // onContractTpHandler();
+                alert('정상적으로 등록 되었습니다.');
+
+
+            })
+
+        // }
     }
 
     // 임시저장-가계약
@@ -605,15 +635,27 @@ function S010100010(props) {
             return alert("연락처를 입력하세요.");
         }
 
-        // 중복확인
+        // if((firstRegNo.length < 3)||(secondRegNo.length < 2)||(thirdRegNo.length < 5)){
+        //     alert('사업자번호 형식을 확인하세요');
+        // }
+
+        // if((firstEmpHp.length < 3)||(firstEmpHp.length < 3)||(firstEmpHp.length < 3)){
+        //     alert('연락처 형식을 확인하세요');
+        // }
+
+        // // 중복확인
         if (regNoCheckBtn == '') {
             alert('사업자 번호 중복확인 하세요.');
         } else if (empHpCheckBtn == '') {
             alert('전화번호 중복확인 하세요.');
         } else if (dateCheckBtn == '') {
             alert('이용날짜 중복확인 하세요.');
-        } else if (regNoCheckBtn == 'check' && empHpCheckBtn == 'check' && dateCheckBtn == 'check') {
+        } else if (regNoCheckBtn == 'check' && empHpCheckBtn == 'check' && dateCheckBtn == 'check') { // 여부체크메세지
             addMember().then((response) => {
+                setRegNoCheckBtn('');
+                setEmpHpCheckBtn('');
+                setDateCheckBtn('');
+                // onContractTpHandler(event);
                 alert('정상적으로 등록 되었습니다.');
             })
         }
@@ -621,32 +663,32 @@ function S010100010(props) {
     }
 
     // 신규계약추가
-    const newMemberIdStorage = (event) => {
+    const newMemberIdStorage = () => {
 
-        // 계약구분 NUll체크
-        if (contractTp == null || contractTp == '') {
-            return alert("계약구분을 선택하세요.");
-        }
+        // // 계약구분 NUll체크
+        // if (contractTp == null || contractTp == '') {
+        //     return alert("계약구분을 선택하세요.");
+        // }
 
-        // 호실 NUll체크
-        if (contractTpVal == null || contractTpVal == '') {
-            return alert("호실을 선택하세요.");
-        }
+        // // 호실 NUll체크
+        // if (contractTpVal == null || contractTpVal == '') {
+        //     return alert("호실을 선택하세요.");
+        // }
 
-        // 이용기간 NUll체크
-        if (contractTerm == null || contractTerm == '') {
-            return alert("이용기간을 입력하세요.");
-        }
+        // // 이용기간 NUll체크
+        // if (contractTerm == null || contractTerm == '') {
+        //     return alert("이용기간을 입력하세요.");
+        // }
 
-        // 입금일 NUll체크
-        if (payDate == null || payDate == '') {
-            return alert("입금일을 하세요.");
-        }
+        // // 입금일 NUll체크
+        // if (payDate == null || payDate == '') {
+        //     return alert("입금일을 선택하세요.");
+        // }
 
-        // 납부방법 NUll체크
-        if (payMethod == null || payMethod == '') {
-            return alert("납부방법을 선택하세요.");
-        }
+        // // 납부방법 NUll체크
+        // if (payMethod == null || payMethod == '') {
+        //     return alert("납부방법을 선택하세요.");
+        // }
 
         // memberId
         let memberIdForNew = props.dataMem;
@@ -655,6 +697,7 @@ function S010100010(props) {
 
         let body = {
             // 계약정보
+            // memberSt:"C",
             memberIdForNew: memberIdForNew,
             contractTp: contractTp,
             contractTpVal: contractTpVal,
@@ -668,6 +711,8 @@ function S010100010(props) {
             contractPath: contractPath,
             comment: comment
         }
+
+        console.log('startDate', startDate);
 
         axios.post('/api/memStList/detailNewContract_by_id', body)
             .then(response => {
@@ -698,12 +743,23 @@ function S010100010(props) {
                         alert('확정실패 하였습니다');
                     }
                 })
+        } else {
+
         }
 
         //수정하기
         let modifyDataNum = props.dataNum;
 
-        let startDate = startAsk_date.getFullYear() + '-' + (startAsk_date.getMonth() + 1) + '-' + startAsk_date.getDate();
+        let year = (startAsk_date.getFullYear() + '').substring(2);
+        //console.log('year',year);
+        let month = startAsk_date.getMonth() + 1;
+        let date = startAsk_date.getDate();
+        month = month < 10 ? '0' + month : month;
+        date = date < 10 ? '0' + date : date;
+
+        let startDate = year + '-' + month + '-' + date;
+
+        // console.log('startDate',startDate);
 
         let body = {
             //계약정보
@@ -721,78 +777,47 @@ function S010100010(props) {
             comment: comment
         }
 
-        console.log('comment', comment);
-        let dateChangeChk = props.dataNum;
 
-        let dataChk = {
-            dateChangeChk: dateChangeChk,
-            contractTpVal: contractTpVal
+        let dateEndFrame = dateEnd.toString().substring(2, 10);
+
+        // 날짜 수정x
+        if (dateEndFrame === endAsk_date && contractTerm === contractTerm) {
+
+            setDateCheckBtn('check');
+            // console.log('body',body);
+            axios.post('/api/memStList/detailModifyContracId', body)
+                .then(response => {
+                    if (response.data.success) {
+                        alert('이용계약서를 수정하였습니다');
+                        setDateCheckBtn('');
+                    } else {
+                        alert('이용계약서 수정을 실패 하였습니다');
+                    }
+                })
+
+        } else {
+
+            if (dateCheckBtn == 'check') {
+
+                axios.post('/api/memStList/detailModifyContracId', body)
+                    .then(response => {
+                        if (response.data.success) {
+                            alert('이용계약서를 수정하였습니다');
+                            setDateCheckBtn('');
+                        } else {
+                            alert('이용계약서 수정을 실패 하였습니다');
+                        }
+                    })
+
+            } else if (dateCheckBtn == '') {
+                alert('날짜 중복확인 하세요');
+            }
+
         }
 
 
-        // 이용기간 중복확인 할 때 (기존 db에 있는)startDate,endDate 가져오는 api 
-        axios.post('/api/memStList/contractModify/dateChangeSt', dataChk)
-            .then(response => {
-                if (response.data.success) {
-                    //console.log('response.data.row',response.data.row);
-                    let wastedStartDate = response.data.row[0].START_DATE;
-                    let wastedEndDate = response.data.row[0].END_DATE;
-                    let wastedContractTerm = response.data.row[0].CONTRACT_TERM;
-
-                    let wasteStartDateDay = wastedStartDate.substring(8, 10);
-                    let wasteStartMonthDay = wastedStartDate.substring(5, 7);
-                    let wasteStartYearDay = wastedStartDate.substring(0, 4);
-                    existingStartDate = wasteStartYearDay + '-' + parseInt(wasteStartMonthDay) + '-' + (parseInt(wasteStartDateDay) + 1);
-
-                    let wasteEndDateDay = wastedEndDate.substring(8, 10);
-                    let wasteEndMonthDay = wastedEndDate.substring(5, 7);
-                    let wasteEndYearDay = wastedEndDate.substring(0, 4);
-
-                    // endDate는 DatePicker(x) input-> '.'로 바로 설정했었음
-                    existingEndDate = wasteEndYearDay + '.' + parseInt(wasteEndMonthDay) + '.' + (parseInt(wasteEndDateDay) + 1);
-
-                    // 날짜 수정x
-                    if (dateEnd === existingEndDate || contractTerm === wastedContractTerm) {
-
-                        setDateCheckBtn('check');
-
-                        axios.post('/api/memStList/detailModifyContracId', body)
-                            .then(response => {
-                                if (response.data.success) {
-                                    alert('이용계약서를 수정하였습니다');
-                                } else {
-                                    alert('이용계약서 수정을 실패 하였습니다');
-                                }
-                            })
-                        alert('날짜 수정안했음');
-
-                        // 날짜 수정o
-                    } else {
-                        // console.log('contractTerm != wastedContractTerm', contractTerm != wastedContractTerm);
-                        alert('날짜 수정했음');
-                        if (dateCheckBtn == 'check') {
-
-                            axios.post('/api/memStList/detailModifyContracId', body)
-                                .then(response => {
-                                    if (response.data.success) {
-                                        alert('이용계약서를 수정하였습니다');
-                                    } else {
-                                        alert('이용계약서 수정을 실패 하였습니다');
-                                    }
-                                })
-
-                        } else if (dateCheckBtn == '') {
-                            alert('날짜 중복확인 하세요');
-                        }
-                        setDateCheckBtn('');
-                    }
-
-                } else {
-
-                }
-            })
-
     }
+    const [printMemberSheetOpen,setPrintMemberSheetOpen] = useState(false);
 
     // 출력버튼 모달 open
     const onPrintHandler = (event) => {
@@ -805,6 +830,15 @@ function S010100010(props) {
         setPrintSheetOpen(false);
     }
 
+    const onPrintMemberHandler = (event) => {
+         forPrint = true;
+        setPrintMemberSheetOpen(true);
+    }
+
+    const onPrintMemberSheetClose = (event) =>{
+         forPrint = false;
+        setPrintMemberSheetOpen(false);
+    }
     const onleaseAgreementHandler = (event) => {
         setLeaseAgreementOpen(true);
     }
@@ -818,15 +852,24 @@ function S010100010(props) {
     }
 
     const onFirstRegNoHandler = (event) => {
-        setFisrtRegNo(event.currentTarget.value);
+        const regex= /[^0-9]/g;   //숫자만 
+        let changeValue = event.currentTarget.value;
+        changeValue = changeValue.replace(regex, "");
+        setFisrtRegNo(changeValue);
     }
 
     const onSecondRegNoHandler = (event) => {
-        setSecondRegNo(event.currentTarget.value);
+        const regex= /[^0-9]/g;   //숫자만 
+        let changeValue = event.currentTarget.value;
+        changeValue = changeValue.replace(regex, "");
+        setSecondRegNo(changeValue);
     }
 
     const onThirdRegNoHandler = (event) => {
-        setThirdRegNo(event.currentTarget.value);
+        const regex= /[^0-9]/g;   //숫자만 
+        let changeValue = event.currentTarget.value;
+        changeValue = changeValue.replace(regex, "");
+        setThirdRegNo(changeValue);
     }
 
     const onMemberTpHandler = (event) => {
@@ -850,11 +893,13 @@ function S010100010(props) {
     }
 
     const onEmpEmailIdHandler = (event) => {
-        setEmpEmailId(event.currentTarget.value);
+        const regexData = getRegexData(/[^-A-Za-z0-9_]/g,event.currentTarget.value);
+        setEmpEmailId(regexData);
     }
 
     const onDomainAddressHandler = (event) => {
-        setDomainAddress(event.currentTarget.value);
+        const regexData = getRegexData(/[^a-zA-Z0-9.]+$/,event.currentTarget.value);
+        setDomainAddress(regexData);
     }
 
     const onZipcodeHandler = (event) => {
@@ -867,6 +912,10 @@ function S010100010(props) {
 
     const onEmpDetailAddressHandler = (event) => {
         setEmpDetailAddress(event.currentTarget.value);
+    }
+
+    const getRegexData = (regex,data) => {
+        return data.replace(regex, "");
     }
 
 
@@ -906,8 +955,6 @@ function S010100010(props) {
     const onRegNoCheckHandler = (event) => {
         event.preventDefault();
 
-        setRegNoCheckBtn('check');
-
         // console.log('regNoCheckBtn2.', regNoCheckBtn);
 
         const body = {
@@ -922,8 +969,11 @@ function S010100010(props) {
                 if (response.data.success) {
                     if (response.data.number[0].RowNum >= 1) {
                         alert('이미 존재하는 사업자번호입니다.');
+                        setRegNoCheckBtn('');
+
                     } else if (response.data.number[0].RowNum === 0) {
                         alert('사용할 수 있는 사업자 번호입니다.')
+                        setRegNoCheckBtn('check');
                     }
                 } else {
                     alert('중복체크에 실패 하였습니다.')
@@ -969,7 +1019,8 @@ function S010100010(props) {
     let finalDate = new Date(finalYear, finalMonth, 0).getDate() > startAsk_date.getDate()
         ? startAsk_date.getDate()
         : new Date(finalYear, finalMonth, 0).getDate();
-    let dateEnd = Math.floor(finalYear) + '.' + finalMonth + '.' + finalDate;
+    finalDate = finalDate < 10 ? '0'+finalDate : finalDate;
+    let dateEnd = Math.floor(finalYear) + '-' + finalMonth + '-' + finalDate;
 
 
     // 이용기간 중복체크
@@ -977,7 +1028,7 @@ function S010100010(props) {
 
         // setDateCheckBtn('check');
         const rNum = props.dataNum;
-        let startDate = startAsk_date.getFullYear() + '.' + (startAsk_date.getMonth() + 1) + '.' + startAsk_date.getDate();
+        let startDate = startAsk_date.getFullYear() + '-' + (startAsk_date.getMonth() + 1) + '-' + startAsk_date.getDate();
 
         const body = {
             contractTp: contractTp,
@@ -996,29 +1047,47 @@ function S010100010(props) {
                 if (response.data.success) {
                     if (response.data.number[0].STARTENDDATE >= 1) {
                         alert('이미 이용중인 날짜입니다.');
+                        setDateCheckBtn('');
                     } else if (response.data.number[0].STARTENDDATE === 0) {
                         alert('사용가능한 날짜입니다.')
+                        setDateCheckBtn('check');
                     }
                 } else {
                     alert('중복체크에 실패 하였습니다.')
                 }
             })
 
-        setDateCheckBtn('check');
+
 
     }
 
+    const [paymentY,setPaymentY] = useState('Y');
+    const [paymentN,setPaymentN] = useState('N');
+    const [selectedOption,setSelectedOption] = useState('');
+
+    const changeRadio = (event) => {
+        setSelectedOption(event.target.value);
+      };
+      
+    //   const changeRadioN = (event) => {
+    //     setPaymentN(event.target.value);
+    //   };
 
     const onDateHandler = (event) => {
         event.preventDefault();
         funcDateChk();
     }
+    const [Y,setY] = useState('');
+    const [N,setN] = useState('');
 
-
-    const onPlusDateHandler = (event) => {
-        event.preventDefault();
-        funcDateChk();
-    }
+    const changeRadioQ1 = (e) => {
+        setY(e.target.value);
+      };
+      
+      const changeRadioQ2 = (e) => {
+        setN(e.target.value);
+      };
+      
 
 
     const idCardHandleFileChange = (event) => {
@@ -1033,6 +1102,9 @@ function S010100010(props) {
         setRegistCardFileName(event.currentTarget.value);
     }
 
+    const onPrintSheetHandler = () => {
+        window.print();
+    }
     return (
 
         <form style={{
@@ -1057,7 +1129,7 @@ function S010100010(props) {
                             </tr>
 
                             <tr>
-                                <th className="memberInfo">회원명<span className="star">(*)</span></th>
+                                <th className="memberInfo">회원명</th>
                                 <td hidden={forPrint}>
 
                                     <Form.Control style={{ width: 10 + 'em', display: 'inline' }} size="sm"
@@ -1071,11 +1143,11 @@ function S010100010(props) {
                                     {memberNm}
                                 </td>
 
-                                <th className="memberInfo">사업자 번호<span className="star">(*)</span></th>
+                                <th className="memberInfo">사업자 번호</th>
                                 <td colSpan="2" hidden={forPrint}>
 
                                     <Form.Control style={{ width: 4 + 'em', display: 'inline' }} size="sm"
-                                        type="text" value={firstRegNo} id="firstRegNo" name="firstRegNo"
+                                        type="text" maxLength = "3" required = "required" value={firstRegNo} id="firstRegNo" name="firstRegNo"
                                         onChange={onFirstRegNoHandler} disabled={props.cDataForm === 'I' || props.newDataForm === 'N'} />
 
 
@@ -1084,7 +1156,7 @@ function S010100010(props) {
                         &nbsp;
 
                         <Form.Control style={{ width: 3 + 'em', display: 'inline' }} size="sm"
-                                        type="text" value={secondRegNo} id="secondRegNo" name="secondRegNo"
+                                        type="text" maxLength="2" required = "required" value={secondRegNo} id="secondRegNo" name="secondRegNo"
                                         onChange={onSecondRegNoHandler} disabled={props.cDataForm === 'I' || props.newDataForm === 'N'} />
 
                         &nbsp;
@@ -1092,7 +1164,7 @@ function S010100010(props) {
                         &nbsp;
 
                         <Form.Control style={{ width: 7 + 'em', display: 'inline' }} size="sm"
-                                        type="text" value={thirdRegNo} id="thirdRegNo" name="thirdRegNo"
+                                        type="text" maxLength="5" required = "required" value={thirdRegNo} id="thirdRegNo" name="thirdRegNo"
                                         onChange={onThirdRegNoHandler} disabled={props.cDataForm === 'I' || props.newDataForm === 'N'} />
 
 
@@ -1124,7 +1196,7 @@ function S010100010(props) {
                             </tr>
 
                             <tr>
-                                <th className="memberInfo">대표자<span className="star">(*)</span></th>
+                                <th className="memberInfo">대표자</th>
                                 <td hidden={forPrint}>
 
                                     <Form.Control style={{ width: 7 + 'em', display: 'inline' }} size="sm"
@@ -1136,24 +1208,24 @@ function S010100010(props) {
                                 {/* 대표자(이름) 출력용 */}
                                 <td hidden={!forPrint} >{empIdName}</td>
 
-                                <th className="memberInfo">연락처<span className="star">(*)</span></th>
+                                <th className="memberInfo">연락처</th>
                                 <td colSpan="2" hidden={forPrint}>
 
                                     <Form.Control style={{ width: 5 + 'em', display: 'inline' }} size="sm"
-                                        type="text" value={firstEmpHp} id="firstEmpHp" name="firstEmpHp"
+                                        type="text"  maxLength="3" required = "required" value={firstEmpHp} id="firstEmpHp" name="firstEmpHp"
                                         onChange={onFirstEmpHpHandler} disabled={props.cDataForm === 'I' || props.newDataForm === 'N'} />
 
                         &nbsp;
                         -
                         &nbsp;
                         <Form.Control style={{ width: 5 + 'em', display: 'inline' }} size="sm"
-                                        type="text" value={secondEmpHp} id="secondEmpHp" name="secondEmpHp" name="firstEmpHp"
+                                        type="text" maxLength="3" required = "required" value={secondEmpHp} id="secondEmpHp" name="secondEmpHp" name="firstEmpHp"
                                         onChange={onSecondEmpHpHandler} disabled={props.cDataForm === 'I' || props.newDataForm === 'N'} />
 
                         -
                         &nbsp;
                         <Form.Control style={{ width: 5 + 'em', display: 'inline' }} size="sm"
-                                        type="text" value={thirdEmpHp} id="thirdEmpHp" name="thirdEmpHp"
+                                        type="text"  maxLength="3" required = "required" value={thirdEmpHp} id="thirdEmpHp" name="thirdEmpHp"
                                         onChange={onThirdEmpHpHandler} disabled={props.cDataForm === 'I' || props.newDataForm === 'N'} />
 
                                     <Button variant="contained" color="primary" style={{ width: 100 }} onClick={onEmpHpChkHandler} hidden={props.cDataForm == 'I' || props.newDataForm === 'N'} >중복확인</Button>
@@ -1186,7 +1258,7 @@ function S010100010(props) {
                             <tr>
                                 <th rowSpan="2" className="memberInfo">대표자 주소</th>
 
-                                <td colSpan="9" hidden={forPrint}>
+                                <td colSpan="7" hidden={forPrint}>
 
                                     <Form.Control style={{ width: 10 + 'em', display: 'inline' }} size="sm"
                                         type="text" value={zipcode} id="zipcode" name="zipcode"
@@ -1220,11 +1292,11 @@ function S010100010(props) {
 
                                 </td>
 
-                                <td colSpan="9" hidden={!forPrint}>{zipcode}{empAddress}{empDetailAddress}</td>
+                                <td colSpan="7" hidden={!forPrint}>{zipcode}{empAddress}{empDetailAddress}</td>
 
                             </tr>
                             <tr>
-                                <td colSpan="9" hidden={forPrint}>
+                                <td colSpan="7" hidden={forPrint}>
 
                                     <Form.Control style={{ width: 30 + 'em', display: 'inline' }} size="sm"
                                         type="text" value={empDetailAddress}
@@ -1238,7 +1310,7 @@ function S010100010(props) {
 
                             <tr>
                                 <th className="memberInfo" >첨부파일</th>
-                                <td colSpan="4" hidden={forPrint || props.cDataForm === 'I' || props.newDataForm === 'N'}>
+                                <td colSpan="2" hidden={forPrint || props.cDataForm === 'I' || props.newDataForm === 'N'}>
                                     <input type='file'
                                         file={idCardFile}
                                         name='idCardFile'
@@ -1246,7 +1318,7 @@ function S010100010(props) {
                                         onChange={idCardHandleFileChange}
                                     />
                                 </td>
-                                <td colSpan="5" hidden={forPrint || props.cDataForm === 'I' || props.newDataForm === 'N'}>
+                                <td colSpan="4" hidden={forPrint || props.cDataForm === 'I' || props.newDataForm === 'N'}>
                                     <input type='file'
                                         file={registCardFile}
                                         name='registCardFile'
@@ -1272,7 +1344,7 @@ function S010100010(props) {
                             </tr>
 
                             <tr>
-                                <th className="info">계약구분<span className="star">(*)</span></th>
+                                <th className="info">계약구분</th>
                                 <td hidden={forPrint}>
 
                                     <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm" as="select" multiple={false} onChange={onContractTpHandler} value={contractTp}>
@@ -1289,7 +1361,7 @@ function S010100010(props) {
                                     {contractTpPrint}
                                 </td>
 
-                                <th className="info">호실<span className="star">(*)</span></th>
+                                <th className="info">호실</th>
 
                                 <td hidden={forPrint}>
 
@@ -1340,7 +1412,7 @@ function S010100010(props) {
                             </tr>
 
                             <tr>
-                                <th className="info">이용기간<span className="star">(*)</span></th>
+                                <th className="info">이용기간</th>
                                 <td hidden={forPrint}>
 
                                     <Form.Control style={{ width: 3 + 'em', display: 'inline' }} size="sm"
@@ -1351,6 +1423,14 @@ function S010100010(props) {
 
                                 <DatePicker
                                         id="dateSize"
+                                        locale="ko"
+                                        selected={startAsk_date.setHours(9, 0, 0, 0)}
+                                        onChange={date => setStartAsk_date(date)}
+                                        dateFormat="yyyy-MM-dd"
+                                    />
+
+                                    {/* <DatePicker
+                                        id="dateSize"
                                         multiple={false}
                                         locale="ko"
                                         selected={startAsk_date.setHours(9, 0, 0, 0)}//Front = 한국시 BackEnd = 표준시 9시간차이
@@ -1359,21 +1439,15 @@ function S010100010(props) {
                                         startDate={startAsk_date.setHours(9, 0, 0, 0)}
                                         endDate={endAsk_date}
                                         dateFormat="yyyy.MM.dd"
-
-                                    />&nbsp;
-                            ~ &nbsp;
+                                    />&nbsp; */}
+                           &nbsp; ~ &nbsp;
 
                             <Form.Control style={{ width: 8 + 'em', display: 'inline' }} size="sm"
-                                        type="text" value={dateEnd} />
+                                        type="text" value={dateEnd} readOnly />
 
-
-                                    {/* 신규계약 중복확인 */}
                                     <Button variant="contained" color="primary" style={{ width: 100 }} onClick={onDateHandler} className="useContractBtn"
-                                        hidden={props.newDataForm === 'N'} >중복확인</Button>
+                                    >중복확인</Button>
 
-                                    {/*기존회원 신규계약 중복확인 */}
-                                    <Button variant="contained" color="primary" style={{ width: 100 }} className="plusContractBtn" onClick={onPlusDateHandler}
-                                        hidden={props.newDataForm !== 'N'}>중복확인</Button>
                                 </td>
 
                                 {/* 이용기간 출력용 */}
@@ -1396,29 +1470,53 @@ function S010100010(props) {
                             <input type="text" disabled={true} value={dateEnd} size="8" />
                                     {/* 신규계약 중복확인 */}
                                     <Button variant="contained" color="primary" style={{ width: 100 }} onClick={onDateHandler} className="useContractBtn"
-                                        hidden={props.newDataForm === 'N' || forPrint}>중복확인</Button>
+                                        hidden={forPrint}>중복확인</Button>
 
-                                    {/*기존회원 신규계약 중복확인 */}
-                                    <Button variant="contained" color="primary" style={{ width: 100 }} className="plusContractBtn" onClick={onPlusDateHandler}
-                                        hidden={props.newDataForm !== 'N'} >중복확인</Button>
                                 </td>
 
-                                <th className="info">입금일<span className="star">(*)</span></th>
+                                <th className="info">납부여부</th>
                                 <td hidden={forPrint}>
 
-                                    <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm" as="select" multiple={false} onChange={onPayDateHandler} value={payDate}>
+                                    {/* <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm" as="select" multiple={false} onChange={onPayDateHandler} value={payDate}>
                                         {payDates.map(item => (
                                             <option key={item.key} value={item.key}>{item.value}</option>
                                         ))}
-                                    </Form.Control>
+                                    </Form.Control> */}
 
+                                    &nbsp;
+                                    <div onChange={changeRadio}>
+                                        <input
+                                            type="radio"
+                                            id="paymentY"
+                                            name="paymentFlag"
+                                            value={paymentY}
+                                            checked={selectedOption === 'Y'}
+                                            readOnly
+                                        ></input>
+                                        
+                                        네
+                                        &nbsp;&nbsp;
+                                        
+                                        <input
+                                            type="radio"
+                                            id="paymentN"
+                                            name="paymentFlag"
+                                            value={paymentN}
+                                            checked={selectedOption === 'N'}
+                                            readOnly
+                                        ></input>
+                                        
+                                        아니오 
+                                    </div>  
                                 </td>
+
+ 
 
                                 <td hidden={!forPrint}>
                                     {payDate}일
                         </td>
 
-                                <th className="info">납부방법<span className="star">(*)</span></th>
+                                <th className="info">납부방법</th>
                                 <td hidden={forPrint}>
 
                                     <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm" as="select" multiple={false} onChange={onPayMethodHandler} value={payMethod}>
@@ -1540,7 +1638,6 @@ function S010100010(props) {
                                     을 :&nbsp; &nbsp; &nbsp;
                             {zipcode} {empAddress} {empDetailAddress}<br />
                             &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; {memberNm} {empIdName} (인)<br />
-                                    <span id="hidden">.</span>
                                 </td>
                             </tr>
                         </tbody>
@@ -1550,38 +1647,69 @@ function S010100010(props) {
                         {/* 신규계약 */}
                         <Button variant="contained" color="primary" style={{ width: 100 }} hidden={props.newDataForm === 'N' || props.cDataForm === 'I'}
                             onClick={temporaryStorage} >임시저장</Button>
+
+
+                            
                         <Button variant="contained" color="primary" style={{ width: 100 }} className="new"
                             hidden={props.newDataForm === 'N' || props.cDataForm === 'I'}
-                            onClick={onSubmitHandler}  >저장</Button>
+                            onClick={onSubmitHandler} id = "호호"  >저장</Button>
 
-                        <Button variant="contained" color="primary" style={{ width: 100 }} className="memberId" hidden={props.newDataForm !== 'N'}
+                        <Button variant="contained" color="primary" style={{ width: 100 }}  id = "뀨"className="memberId" hidden={props.newDataForm !== 'N'}
                             onClick={newMemberIdStorage} >저장</Button>
 
                         {/* 가계약을 확정으로  / 수정한 것 저장하기 */}
-                        <Button variant="contained" color="primary" style={{ width: 100 }} className="contractId" hidden={props.cDataForm !== 'I'}
-                            onClick={newContractIdStorage}  >저장</Button>
+                        <Button variant="contained" color="primary" style={{ width: 100 }} className="contractId" hidden={props.cDataForm !== 'I'||props.endFlag === 'Y'}
+                            onClick={newContractIdStorage}  id = "로로러롤호" >저장</Button>
 
-                        <Button variant="contained" color="primary" style={{ width: 70 }} onClick={onPrintHandler} >출력</Button>
+                        <Button variant="contained" color="primary" style={{ width: 70 }} hidden = {props.cDataForm !== 'I'} onClick={onPrintHandler} >출력</Button>
+                        <Button variant="contained" color="primary" style={{ width: 70 }} id = "mem" hidden = {props.newDataForm !== 'N'} onClick={onPrintMemberHandler} >출력</Button>
+
                         <Button variant="contained" color="primary" style={{ width: 150 }} onClick={onleaseAgreementHandler} id="btnWidth" >임대차 계약서</Button>
 
-                        <Button variant="contained" color="primary" style={{ width: 70 }} className="contractId" hidden={props.cDataForm !== 'I'}
+                        <Button variant="contained" color="primary" style={{ width: 70 }} className="contractId" hidden={props.cDataForm !== 'I'||props.endFlag === 'Y'}
                             onClick={newEndHandler}  >종료</Button>
                         <Button variant="contained" color="primary" style={{ width: 70 }} hidden={userStatus !== 'T'}
                             onClick={onDeleteHandler} >삭제</Button>
+
+
+          
+                        <Button hidden = {props.cDataForm === 'I' || props.newDataForm === 'N'} variant="contained" id="신규" color="primary" style={{ width: 70 }}
+                            onClick={props.onHandleClickClose} >닫기</Button>
+                        {/* S010100050 -> 계약Id클릭시 닫기 */}
+                        <Button variant="contained" id="계약아이디" color="primary" style={{ width: 70 }}
+                            hidden = {props.cDataForm !== 'I'} onClick={props.onConContractHandler} >닫기</Button>
+                        {/* S010100050 -> 신규계약클릭시 닫기  */}
+                        <Button variant="contained" id="기존신규계약" color="primary" style={{ width: 70 }}
+                            hidden = {props.newDataForm !== 'N'} onClick={props.onNewContractHandler} >닫기</Button>
+
+
                     </div>
                 </div>
             </div>
-            {/* <input type="button" onClick = {onPrintSheetHandler} hidden = {!forPrint} value="출력" /> */}
+            <input type="button" onClick={onPrintSheetHandler} hidden={!forPrint} value="출력" />
 
             <Dialog
                 maxWidth={"lg"}
                 open={printSheetOpen}
                 onClose={onPrintSheetClose}>
-                <S010100010 dataNum={rNum} cDataForm={'I'} />
+                <S010100010 dataNum={rNum} cDataForm={'I'}  />
                 <DialogActions>
                     <Button variant="contained" color="primary" style={{ width: 70 }} onClick={onPrintSheetClose} color="primary" hidden={forPrint} >닫기</Button>
                 </DialogActions>
             </Dialog>
+
+            <Dialog
+                maxWidth={"lg"}
+                open={printMemberSheetOpen}
+                onClose={onPrintMemberSheetClose}>
+                <S010100010 dataMem={modalMemberId} newDataForm = {'N'}  />
+                <DialogActions>
+                    <Button variant="contained" color="primary" style={{ width: 70 }} onClick={onPrintMemberSheetClose} color="primary" hidden={forPrint} >닫기</Button>
+                </DialogActions>
+            </Dialog>
+
+
+
 
             <Dialog
                 maxWidth={"lg"}
