@@ -448,7 +448,7 @@ function S010100050(props) {
 
 
 
-    function onIdDownloadHandler() {
+    const onIdDownloadHandler = () =>  {
 
             axios.get(`/api/s01010050/download/tb_s10_member010_by_id?id=${dataMemId}&type=single`)
                 .then(response => {
