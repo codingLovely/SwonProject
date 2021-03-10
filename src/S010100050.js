@@ -445,55 +445,56 @@ function S010100050(props) {
     }
 
 
+
+
+
     function onIdDownloadHandler() {
 
+            axios.get(`/api/s01010050/download/tb_s10_member010_by_id?id=${dataMemId}&type=single`)
+                .then(response => {
+                    if (response) {
+                        alert('res');
+                         console.log(response);
+
+                    } else {
+                        alert("다운로드에 실패하였습니다.");
+                    }
+                })
+        
     }
+
     //     const onIdDownloadHandler = async event => {
-    //         event.preventDefault();
-    //         // axios({
-    //         //     url: decodeURIComponent('1f39da861fcdab5734f147f53718d12a.jpg'),
-    //         //     method: 'GET',
-    //         //     responseType: 'blob'
-    //         //   }).then((response) => {
-    //         //     const url = window.URL.createObjectURL(new Blob([response.data]))
-    //         //     const link = document.createElement('a')
-    //         //     link.href = url
-    //         //     link.setAttribute('download', '1f39da861fcdab5734f147f53718d12a.jpg')
-    //         //     document.body.appendChild(link)
-    //         //     link.click()
-    //         //   })
-    // //           const response = await fetch(
-    // //             "../1f39da861fcdab5734f147f53718d12a.jpg"
-    // //             );
-    // //             if (response.status === 200) {
-    // //             const blob = await response.blob();
-    // //             console.log('blob',blob);
-    // //             const url = URL.createObjectURL(blob);
-    // //             console.log('url',url);
-    // //             const link = document.createElement("a");
-    // //             link.href = url;
-    // //             link.download = "image";
-    // //             document.body.appendChild(link);
-    // //             link.click();
-    // //             link.remove();
-    // //             return { success: true };
-    // //  }
-    //         // console.log('dataMemId', dataMemId);
-
-    //         axios.get(`/api/s01010050/download/tb_s10_member010_by_id?id=${dataMemId}&type=single`)
-    //             .then(response => {
-    //                 if (response) {
-    //                     alert('res');
-    //                      console.log(response);
-
-    //                 } else {
-    //                     alert("다운로드에 실패하였습니다.");
-    //                 }
-    //             })
-    //     }
-
-
+    //     event.preventDefault();
+    //     axios({
+    //         url: decodeURIComponent('1f39da861fcdab5734f147f53718d12a.jpg'),
+    //         method: 'GET',
+    //         responseType: 'blob'
+    //         }).then((response) => {
+    //         const url = window.URL.createObjectURL(new Blob([response.data]))
+    //         const link = document.createElement('a')
+    //         link.href = url
+    //         link.setAttribute('download', '1f39da861fcdab5734f147f53718d12a.jpg')
+    //         document.body.appendChild(link)
+    //         link.click()
+    //         })
+    //         const response = await fetch(
+    //         "../1f39da861fcdab5734f147f53718d12a.jpg"
+    //         );
+    //         if (response.status === 200) {
+    //         const blob = await response.blob();
+    //         console.log('blob',blob);
+    //         const url = URL.createObjectURL(blob);
+    //         console.log('url',url);
+    //         const link = document.createElement("a");
+    //         link.href = url;
+    //         link.download = "image";
+    //         document.body.appendChild(link);
+    //         link.click();
+    //         link.remove();
+    //         return { success: true };
+    //     }   
     // }
+
     // const onIdDownloadHandler = async (file_name, file_path) => {
     //     const res = await CustomFetch('/fileDownload', {
     //       responseType: 'blob',
