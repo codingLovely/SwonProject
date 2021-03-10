@@ -1,7 +1,7 @@
 import axios from 'axios';
 import React, { Fragment } from 'react';
 import { useState } from 'react';
-
+import { useCookies } from 'react-cookie';
 import clsx from 'clsx';
 import { makeStyles } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -28,6 +28,8 @@ import Checkbox from '@material-ui/core/Checkbox';
 import Link from '@material-ui/core/Link';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Form from 'react-bootstrap/Form';
+import logos from './css/logos.png';
+import S010100151 from './S010100151';
 function Copyright() {
   return (
     <Typography variant="body2" color="textSecondary" align="center">
@@ -143,7 +145,7 @@ const useStyles = makeStyles((theme) => ({
 
 
 
-function S010100150() {
+function S010100150(props) {
 
   const classes = useStyles();
 
@@ -159,6 +161,7 @@ function S010100150() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
 
+
   const onEmailHandler = (event) => {
     setEmail(event.currentTarget.value)
   }
@@ -167,6 +170,52 @@ function S010100150() {
     setPassword(event.currentTarget.value)
   }
 
+  
+  const useConfirm = (message = null, onConfirm, onCancel) => {
+    if (!onConfirm || typeof onConfirm !== "function") {
+        return;
+    }
+    if (onCancel && typeof onCancel !== "function") {
+        return;
+    }
+
+    const confirmAction = () => {
+        if (window.confirm(message)) {
+            onConfirm();
+        } else {
+            onCancel();
+        }
+    };
+
+    return confirmAction;
+};
+
+const approvalConfirm = () => {
+
+  axios.post('/api/s010100150/userLogout')
+  .then(response => {
+    if (response.data.logoutResult == true) {
+      alert('로그아웃 하였습니다.');
+      sessionStorage.removeItem('member');
+      sessionStorage.clear();
+      props.history.push('/');
+    }else if(response.data.loginResult == false){
+      alert(response.data.message);
+      alert('아이디 또는 비밀번호를 확인하세요.');
+    }
+  })
+
+}
+
+const cancelConfirm = () => alert('삭제를 취소하였습니다.');
+
+const onLogoutHandler = useConfirm(
+    "로그아웃 하시겠습니까?",
+    approvalConfirm,
+    cancelConfirm
+);
+
+
   const onSubmitHandler = (event) => {
     event.preventDefault();
     let body = {
@@ -174,15 +223,18 @@ function S010100150() {
       password: password
     }
 
-    axios.post('/api/login/userLogin', body)
+    axios.post('/api/s010100150/userLogin', body)
       .then(response => {
         if (response.data.loginResult == true) {
           alert('로그인 되었습니다.');
-        // }else if(response.data.loginResult == 'nonePwd'){
-        //   alert('비밀번호가 올바르지 않습니다.');
-        // }else if(response.data.loginResult == 'noneEmail'){
-        //   alert('이메일이 올바르지 않습니다.');
+          let arr = [response.data.cf,response.data.mI];
+          // console.log('response.data.cf',response.data.cf);
+          sessionStorage.setItem('member',JSON.stringify(arr));
+          props.history.push('/member');
+          // console.log(sessionStorage.getItem('member'));
+       
         }else if(response.data.loginResult == false){
+          alert(response.data.message);
           alert('가입되어 있지 않은 사용자 입니다.');
         }
       })
@@ -230,8 +282,7 @@ function S010100150() {
         </div>
         <Divider />
         <List>{mainListItems}</List>
-        <Divider />
-        <List>{secondaryListItems}</List>
+      
       </Drawer>
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
@@ -240,72 +291,81 @@ function S010100150() {
             <Container component="main" maxWidth="xs">
               <CssBaseline />
               <div className={classes.paper}>
-                <Avatar className={classes.avatar}>
-                  <LockOutlinedIcon />
-                </Avatar>
-                <Typography component="h1" variant="h5">
-                  로그인
-        </Typography>
+              <img  src={logos} width="true"></img>
+
+                <div hidden ={sessionStorage.getItem('member') != null}>
+                  <Typography component="h1" variant="h5">
+                    로그인
+                  </Typography>
+                </div>
+                <div hidden ={sessionStorage.getItem('member') === null} style={{marginTop:'5px'}}>
+                  <Typography component="h1" variant="h5">
+                    로그아웃
+                  </Typography>
+                </div>
                 <form onSubmit={onSubmitHandler} >
-                  <TextField
-                    variant="outlined"
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="email"
-                    label="이메일을 입력하세요"
-                    name="email"
-                    autoComplete="email"
-                    autoFocus
-                    value={email}
-                    onChange={onEmailHandler}
-                  />
-                  <TextField
-                    variant="outlined"
-                    margin="normal"
-                    required
-                    fullWidth
-                    name="password"
-                    label="비밀번호를 입력하세요"
-                    type="password"
-                    id="password"
-                    autoComplete="current-password"
-                    value={password}
-                    onChange={onPasswordHandler}
-                  />
-
-                  <FormControlLabel
-                    control={<Checkbox value="remember" color="primary" />}
-                    label="로그인 유지"
-                  />
-
-                  <Button type="submit"
-                    fullWidth
-                    variant="contained"
-                    color="primary"
-                    className={classes.submit}
-                  > 로그인 </Button>
-
+                  <div hidden ={sessionStorage.getItem('member') != null}>
+                    <TextField
+                      variant="outlined"
+                      margin="normal"
+                      required
+                      fullWidth
+                      id="email"
+                      label="이메일을 입력하세요"
+                      name="email"
+                      autoComplete="email"
+                      autoFocus
+                      value={email}
+                      onChange={onEmailHandler}
+                    />
+                    <TextField
+                      variant="outlined"
+                      margin="normal"
+                      required
+                      fullWidth
+                      name="password"
+                      label="비밀번호를 입력하세요"
+                      type="password"
+                      id="password"
+                      autoComplete="current-password"
+                      value={password}
+                      onChange={onPasswordHandler}
+                    />
+                  </div>
+                  <div hidden ={sessionStorage.getItem('member') != null}> 
+                    <Button type="submit"
+                      fullWidth
+                      variant="contained"
+                      color="primary"
+                      className={classes.submit}
+                    > 로그인 </Button>
+                  </div>
+                  
+                  <div hidden ={sessionStorage.getItem('member') === null}>
+                    <Button onClick = {onLogoutHandler}
+                      fullWidth
+                      variant="contained"
+                      color="primary"
+                      className={classes.submit}
+                    > 로그아웃 </Button>
+                  </div>
                   <Grid container>
-                    <Grid item xs>
-                      <Link href="#" variant="body2">
-                        아이디 / 비밀번호찾기
-              </Link>
-                    </Grid>
                     <Grid item>
-                      <Link href="#" variant="body2">
-                        {/* {"Don't have an account? Sign Up"} */}
-                        회원 가입
+                      <Link href="/findemailPwd" variant="body2">
+                        아이디 / 비밀번호찾기
                       </Link>
                     </Grid>
                   </Grid>
+
+
+         
                 </form>
               </div>
 
             </Container>
 
           </Grid>
-
+         
         </Container>
       </main>
     </div>

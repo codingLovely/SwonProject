@@ -13,6 +13,7 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 
 import Pagination from './utils/Pagination';
+import ReactPaginate from 'react-paginate';
 
 import xlsx from 'xlsx';
 
@@ -114,21 +115,9 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 
-let sequenceChk = [];
+
 
 function S010100070(props) {
-    //const classes = useStyles();
-    // const [open, setOpen] = React.useState(true);
-    // const [mOpen, setMOpen] = React.useState(false);
-    // const [storeOpen, setStoreOpen] = React.useState(false);
-
-    // const handleDrawerOpen = () => {
-    //     setOpen(true);
-    // };
-
-    // const handleDrawerClose = () => {
-    //     setOpen(false);
-    // };
 
     const [paymentMemberNm, setPaymentMemberNm] = useState('');
     const [paymentPeriod, setPaymentPeriod] = useState('');
@@ -144,6 +133,17 @@ function S010100070(props) {
     const indexOfLastPost = currentPage * postsPerPage;
 
     const [checked, setChecked] = useState([]);
+    const [sequenceChk, setSequenceChk] = useState('');
+    const [checkStatusChk, setCheckStatusChk] = useState('');
+
+    const [pageNumber,setPageNumber] = useState(0);
+    const usersPerPage = 12;
+    const pagesVisited = pageNumber * usersPerPage;
+    const pageCount = Math.ceil(paymentStatusList/usersPerPage);
+        
+    const changePage = ({selected}) => {
+        setPageNumber(selected);
+    }
 
     const paymentMemberNmHandler = (event) => {
         setPaymentMemberNm(event.currentTarget.value);
@@ -173,16 +173,15 @@ function S010100070(props) {
         setPayMethod(event.currentTarget.value);
     }
 
-
     const paymentStList = () => {
-        axios.get(`/api/payStList/insert/tb_s10_contract020_by_id?id=${dataContracId}`)
+        axios.get(`/api/s010100070/insert/tb_s10_contract020_by_id?id=${dataContracId}`)
             .then(response => {
                 if (response.data.success) {
                     //초기값 세팅
                     response.data.rows.map((row) => {
                         if (row.PAYED_DATE === null || row.PAYED_DATE === undefined) row.PAYED_DATE = makeYYMMDD(new Date());
                         if (row.CONTRACT_COMMENT === null || row.CONTRACT_COMMENT === undefined) row.CONTRACT_COMMENT = '';
-                        console.log('row', row);
+                        // console.log('row', row);
                     })
 
 
@@ -198,6 +197,7 @@ function S010100070(props) {
                     setPayMethod(response.data.rows[0].PAY_METHOD_M);
 
                 } else {
+                    alert(response.data.message);
                     alert("데이터 조회를 실패하였습니다.")
                 }
 
@@ -210,28 +210,25 @@ function S010100070(props) {
 
     let newChecked;
 
-
     const toggleHandler = (event) => {
 
-        const currentIndex = checked.indexOf(event.target.id);
-        // const currentIndex = checked.findIndex((items,idx) => 
-        // {return items.PAY_PLAN_DATE !== event.target.id});
-        //전체 Checked된 State에서 현재 누를 Checkbox가 있는지 확인
-        // console.log('event.target.id[0]',event.target.id);
-        // console.log('event.target.className',event.target.className[0]);
-        newChecked = checked;
 
-        if (currentIndex === -1) {
-            newChecked.push(event.target.id)
-        } else {
-            newChecked.splice(currentIndex, 1)
-        }
-        setChecked(newChecked);
-
-        sequenceChk.push('2');
+            const currentIndex = checked.indexOf(event.target.id);
+            // const currentIndex = checked.findIndex((items,idx) => 
+            // {return items.PAY_PLAN_DATE !== event.target.id});
+            //전체 Checked된 State에서 현재 누를 Checkbox가 있는지 확인
+            // console.log('event.target.id[0]',event.target.id);
+            // console.log('event.target.className',event.target.className[0]);
+            newChecked = checked;
+           
+            if (currentIndex === -1) {
+                newChecked.push(event.target.id)
+            } else {
+                newChecked.splice(currentIndex, 1)
+            }
+            setChecked(newChecked);
+            // console.log('Checked',checked);
       
-
-        // console.log('newChecked', newChecked);
     }
 
     const snsBtnHandler = (event) => {
@@ -266,21 +263,18 @@ function S010100070(props) {
 
     let dataContracId = props.dataContracId;
 
-
-
-
     const makeYYMMDD = (value) => {
         let year = (value.getFullYear() + '').substring(2);
-        //console.log('year',year);
+        // console.log('year',year);
         let month = value.getMonth() + 1;
         let date = value.getDate();
         month = month < 10 ? '0' + month : month;
         date = date < 10 ? '0' + date : date;
-        return year + '.' + month + '.' + date;
+        return year + '-' + month + '-' + date;
     }
 
 
-    const s010100070R = paymentStatusList.map((paymentStatus, index) => {
+    const displayUsers = paymentStatusList.slice(pagesVisited,pagesVisited + usersPerPage).map((paymentStatus, index) => {
         let insertPayDate = paymentStatus.PAYED_DATE
             ? new Date('20' + paymentStatus.PAYED_DATE)
             : new Date();
@@ -309,7 +303,7 @@ function S010100070(props) {
                                             : changePaymentStatus
                                     ))
 
-                                    // sequenceChk.push('1');
+                                    setSequenceChk('dateChecked');
                             }
                         }
                         selectsStart
@@ -338,6 +332,35 @@ function S010100070(props) {
     });
 
     const payCancelBtnHandler = (event) => {
+        let modalContractId = props.dataContracId;
+        let modalPayPlanDate = checked;
+        // console.log(checked);
+        // console.log('modalContractId', modalContractId);
+
+        if(checked.length > 0){
+            let body = {
+                modalContractId: modalContractId,
+                modalPayPlanDate: modalPayPlanDate,
+                payMethodM: payMethodM,
+                newChecked: newChecked,
+                checked: checked
+            }
+    
+            axios.post('/api/s010100070/paymentCancel', body)
+                .then(response => {
+                    if (response.data.success) {
+                        alert('취소처리되었습니다.');
+                        paymentStList();
+                        setSequenceChk('');
+                    } else {
+                        alert(response.data.message);
+                        alert('취소처리를 실패하였습니다.');
+                    }
+                })
+            // paymentStList();
+        }else if(checked.length === 0){
+            alert('선택하세요');
+        }
         
     }
 
@@ -367,27 +390,31 @@ function S010100070(props) {
         let modalPayPlanDate = checked;
         // console.log(checked);
         // console.log('modalContractId', modalContractId);
-
+    if(checked.length > 0){
         let body = {
             modalContractId: modalContractId,
             modalPayPlanDate: modalPayPlanDate,
             payMethodM: payMethodM,
-            newChecked: newChecked
+            newChecked: newChecked,
+            checked: checked
         }
-        console.log('newChecked', body);
+        // console.log('newChecked', body);
 
-        axios.post('/api/payStList/paymentUpdate', body)
+        axios.post('/api/s010100070/paymentUpdate', body)
             .then(response => {
                 if (response.data.success) {
                     alert('납부처리되었습니다.');
                     paymentStList();
+                    setSequenceChk('');
                 } else {
+                    alert(response.data.message);
                     alert('납부처리를 실패하였습니다.');
                 }
             })
         // paymentStList();
-        newChecked = [];
-    
+    }else if(checked.length === 0){
+        alert('선택하세요');
+    }
     
 
     }
@@ -395,14 +422,15 @@ function S010100070(props) {
     const cancelConfirm = () => alert('납부처리를 취소하였습니다.');
 
     const payBtnHandler = useConfirm(
+        
         paymentMemberNm+'('+ paymentCeoNm+')님의 계약건을 납부처리 하시겠습니까?',
         approvalConfirm,
         cancelConfirm
     );
 
-    const indexOfFirstPost = indexOfLastPost - postsPerPage;
-    const currentPosts = s010100070R.slice(indexOfFirstPost, indexOfLastPost);
-    const paginate = pageNumber => setCurrentPage(pageNumber);
+    // const indexOfFirstPost = indexOfLastPost - postsPerPage;
+    // const currentPosts = s010100070R.slice(indexOfFirstPost, indexOfLastPost);
+    // const paginate = pageNumber => setCurrentPage(pageNumber);
 
     const [payMethodM, setPayMethodM] = useState('');
 
@@ -504,13 +532,25 @@ function S010100070(props) {
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {currentPosts}
+                                { displayUsers}
                                 </TableBody>
                             </Table>
                             
                         </React.Fragment>
                         <div className="pageCenter">
-                            <Pagination postsPerPage={postsPerPage} totalPosts={s010100070R.length} paginate={paginate} />
+                        <div id = "reactPage">
+                                                <ReactPaginate
+                                                    previousLabel = {"Previous"}
+                                                    nextLabel = {"Next"}
+                                                    pageCount = {pageCount}
+                                                    onPageChange = {changePage}
+                                                    containerClassName={"paginationBtns"}
+                                                    previousLinkClassName={"previousBtn"}
+                                                    nextLinkClassName={"nextBtn"}
+                                                    disabledClassName={"paginationDisabled"}
+                                                    activeClassName={"paginationActive"}   
+                                                />
+                                            </div>
                         </div>
                         <div id="btnAlign">
                             <Button variant="contained" color="primary" style={{ width: 70 }}

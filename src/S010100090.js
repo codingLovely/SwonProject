@@ -171,9 +171,23 @@ function S010100090() {
         setPageNumber(selected);
     }
 
+
+
+    // useEffect(() => {
+    //     axios.post('/api/s010100150/session')
+    //         .then(response => {
+    //             if (response.data.success) {
+                  
+
+    //             } else {
+    //                 alert(response.data.message);
+    //             }
+    //         })
+    // }, [])
+    
     // 직원 구분
     useEffect(() => {
-        axios.post('/api/employeeSt/classification')
+        axios.post('/api/s010100090/classification')
             .then(response => {
                 if (response.data.success) {
                     let arr = [{ key: '전체', value: '전체' }]
@@ -186,6 +200,7 @@ function S010100090() {
                     setStaffClasses(arr);
 
                 } else {
+                    alert(response.data.message);
                     alert("문의구분 데이터를 불러오는데 실패하였습니다.");
                 }
             })
@@ -207,22 +222,12 @@ function S010100090() {
             endDate
         }
 
-        axios.post('/api/employeeSt/empList', body)
+        axios.post('/api/s010100090/empList', body)
             .then(response => {
                 if (response.data.success) {
-
                     setEmpInfo(response.data.rows);
-
-                    // for(let i=0; response.data.rows.length>i; i++){
-                    //     if(response.data.rows[i].RETIRE_DATE == '00-00-00'){
-                    //         response.data.rows[i].RETIRE_DATE ='';
-                    //     }
-                       
-                    // }
-                    // console.log('response.data.rows.RETIRE_DATE ',response.data.rows[0].RETIRE_DATE );
-                    
-
                 } else {
+                    alert(response.data.message);
                     alert("직원 데이터를 불러오는데 실패하였습니다.");
                 }
             })
@@ -264,7 +269,6 @@ function S010100090() {
         // 승인empId 현재 index값
         const currentIndex = retireChecked.indexOf(event.target.id);
         // 등록시 회사명
-    
 
         //전체 Checked된 State에서 현재 누를 Checkbox가 있는지 확인
         const newChecked = retireChecked;
@@ -298,7 +302,7 @@ function S010100090() {
             newChecked.splice(currentIndex, 1)
         }
         setChecked(newChecked);
-        console.log(checked);
+        // console.log(checked);
         newChecked.length > 0 ? chkSt = 'check' : chkSt = '';
 
     }
@@ -339,7 +343,6 @@ function S010100090() {
         }
     }
 
-
     const useConfirm = (message = null, onConfirm, onCancel) => {
         if (!onConfirm || typeof onConfirm !== "function") {
             return;
@@ -359,20 +362,25 @@ function S010100090() {
         return confirmAction;
     };
 
-    const approvalConfirm = () => {
+    const approvalConfirm = (event) => {
+        let checkedMemberId;
 
+        for(let i = 0; checked.length > i; i++){
+           checkedMemberId = checked[i].split(',');    
+    }
 
-        if (checked.length === 0) {
+    if(JSON.parse(sessionStorage.getItem("member"))[1] != checkedMemberId[0]){
+        alert('자회사의 직원승인만 가능합니다.');
+    }else if (checked.length === 0) {
             alert('승인할 회원을 선택하세요');
         } else {
             let arr = [];
-            // for(let i = 0; checked.length > i; i++){
-            //     arr.push(checked.get(i))
-            // }
 
             for(let i = 0; checked.length > i; i++){
                 const checkedList = checked[i].split(',');
-                // console.log('checkedList',checkedList[1]);
+                console.log('checkedList[1]',checkedList[1]);
+                console.log('checkedList[0]',checkedList[0]);
+                console.log('checkedList',checkedList);
                
                 arr.push(checkedList[1]);
 
@@ -382,14 +390,13 @@ function S010100090() {
                 arr
             }
             
-            axios.post('/api/employeeSt/approval', body)
+            axios.post('/api/s010100090/approval', body)
                 .then(response => {
                     if (response.data.success) {
-
                         alert('승인처리 되었습니다.');
-                        
-
+                        empList();
                     } else {
+                        alert(response.data.message);
                         alert('승인처리에 실패하였습니다.');
                     }
                 })
@@ -497,8 +504,7 @@ function S010100090() {
                     </div>
                     <Divider />
                     <List>{mainListItems}</List>
-                    <Divider />
-                    <List>{secondaryListItems}</List>
+                  
                 </Drawer>
                 <main className={classes.content}>
                     <div className={classes.appBarSpacer} />
@@ -576,8 +582,10 @@ function S010100090() {
                                                 onClick={onRegistHandler}> 등록 </Button>
                                             <Button variant="contained" style={{ width: 100 }} color="primary" href="#contained-buttons"
                                                 onClick={onModifyHandler}> 수정 </Button>
+                                            <span hidden ={JSON.parse(sessionStorage.getItem("member"))[0] === 'N'}>
                                             <Button variant="contained" style={{ width: 100 }} color="primary" href="#contained-buttons"
                                                 onClick={onApprovalHandler}> 승인 </Button>
+                                            </span>
                                         </td>
                                         <td id="alignRight">
                                             <Button variant="contained" style={{ width: 140 }} color="primary" href="#contained-buttons" onClick={excelHandler}> 엑셀다운로드 </Button>
@@ -642,7 +650,7 @@ function S010100090() {
             <Dialog
                 maxWidth={"lg"}
                 open={storeOpen}>
-                <S010100100 name={empName} memId={memberId} empIdM={empIdM} dataForm={dataForm} onHandleClickClose={onHandleClickClose} />
+                <S010100100 name={empName} memId={memberId} empIdM={empIdM} dataForm={dataForm} empList={empList} onHandleClickClose={onHandleClickClose} setStoreOpen={setStoreOpen}/>
             </Dialog>
         </Fragment>
     );

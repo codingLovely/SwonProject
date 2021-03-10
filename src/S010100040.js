@@ -30,7 +30,7 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Title from './Title';
 import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
+
 
 import Form from 'react-bootstrap/Form';
 
@@ -160,7 +160,6 @@ function S010100040() {
         setPageNumber(selected);
     }
 
-
     const handleDrawerOpen = () => {
         setOpen(true);
     };
@@ -171,7 +170,7 @@ function S010100040() {
 
     useEffect(() => {
 
-        axios.get('/api/memStList/selectMemberTp')
+        axios.get('/api/s010100040/selectMemberTp')
             .then(response => {
                 if (response.data.success) {
                     let arr = [{ key: '전체', value: '전체' }]
@@ -186,6 +185,7 @@ function S010100040() {
                     setMemberType(arr);
 
                 } else {
+                    alert(response.data.message);
                     alert("회원상태 데이터를 불러오는데 실패하였습니다.");
                 }
             })
@@ -197,7 +197,7 @@ function S010100040() {
 
     useEffect(() => {
 
-        axios.get('/api/memStList/selectMemberSt')
+        axios.get('/api/s010100040/selectMemberSt')
             .then(response => {
                 if (response.data.success) {
                     let arr = [{ key: '전체', value: '전체' }]
@@ -212,6 +212,7 @@ function S010100040() {
                     setMemberStatus(arr);
 
                 } else {
+                    alert(response.data.message);
                     alert("회원상태 데이터를 불러오는데 실패하였습니다.");
                 }
             })
@@ -233,12 +234,13 @@ function S010100040() {
         // console.log('starDate',startDate);
         // console.log('endDate',endDate);
 
-        axios.post('/api/memStList/searchMember', body)
+        axios.post('/api/s010100040/searchMember', body)
             .then(response => {
                 if (response.data.success) {
-                    console.log(response.data.rows);
                     setTbMember(response.data.rows);
+                    // console.log('response.data.success',response.data.rows);
                 } else {
+                    alert(response.data.message);
                     alert("데이터 목록을 가져오는 것을 실패하였습니다.")
                 }
             })
@@ -287,6 +289,7 @@ function S010100040() {
 
     const onHandleDetailClickOpen = (event) => {
         memberId = event.target.id;
+        console.log('memberId',memberId);
         setMemberIdModal(memberId);
         setModalOpen(true);
     }
@@ -385,8 +388,8 @@ function S010100040() {
                     </div>
                     <Divider />
                     <List>{mainListItems}</List>
-                    <Divider />
-                    <List>{secondaryListItems}</List>
+                    
+                  
                 </Drawer>
                 <main className={classes.content}>
                     <div className={classes.appBarSpacer} />
@@ -564,7 +567,7 @@ function S010100040() {
                 maxWidth={"lg"}
                 open={modalOpen}
                 onClose={onHandleDetailClickClose}>
-                <S010100050 dataMemId={memberIdModal} dataForm={"U"} onHandleDetailClickClose={onHandleDetailClickClose} />
+                <S010100050 dataMemId={memberIdModal} dataForm={"U"} memberList={memberList} onHandleDetailClickClose={onHandleDetailClickClose} setModalOpen={setModalOpen} setModalOpen={setModalOpen}/>
             </Dialog>
 
             {/* 신규등록 */}
@@ -572,7 +575,7 @@ function S010100040() {
                 maxWidth={"lg"}
                 open={storeOpen}
                 onClose={onHandleClickClose}>
-                <S010100010 onHandleClickClose={onHandleClickClose}/>
+                <S010100010 onHandleClickClose={onHandleClickClose} setStoreOpen={setStoreOpen} memberList={memberList}/>
             </Dialog>
 
         </Fragment>

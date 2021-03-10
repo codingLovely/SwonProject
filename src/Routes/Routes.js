@@ -9,41 +9,57 @@ import S010100130 from '../S010100130';
 import S010100140 from '../S010100140';
 import S010100150 from '../S010100150';
 import S010100160 from '../S010100160';
-import test from '../test';
+import S010100151 from '../S010100151';
+import PrivateRoute from '../utils/PrivateRoute';
 
 import LeaseAgreement from '../utils/LeaseAgreement';
 //export default
- function Routes (){
+ function Routes (props){
    return(
   <Router>
           {/* 메인 */}
-          <Route exact path = "/" component = {S010100130}></Route>
-
-
+          <Route exact path = "/" component = {S010100150}></Route>
+          <Route exact path = "/findemailPwd" component = {S010100151}></Route>
           {/* 회원현황 */}
-          <Route exact path = "/member" component = {S010100040}></Route> 
+          {/* <Route exact path = "/member" component = {S010100040}></Route>  */}
+          {/* <PrivateRoute exact path = "/member" component = {S010100040} /> */}
           {/* 납부현황 */}
-          <Route exact path = "/paymentStatus" component = {S010100060}></Route>
+          {/* <PrivateRoute exact path = "/paymentStatus" component = {S010100060} /> */}
           {/* 상담현황 */}
-          <Route exact path = "/consultationStatus" component = {S010100130}></Route>
+          {/* <PrivateRoute exact path = "/consultationStatus" component = {S010100130} /> */}
           {/* 직원현황 */}
-          <Route exact path = "/staff" component = {S010100090}></Route>
+          {/* <PrivateRoute exact path = "/staff" component = {S010100090} /> */}
           {/* 계약현황 */}
-          <Route exact path = "/contractStatus" component = {S010100160}></Route>
-          {/* 로그인/로그아웃*/}
+          {/* <PrivateRoute exact path = "/contractStatus" component = {S010100160} /> */}
+
+          <Route exact path = "/member" component = {S010100040} />
+         
+          <Route exact path = "/paymentStatus" component = {S010100060} />
+         
+          <Route exact path = "/consultationStatus" component = {S010100130} />
+        
+          <Route exact path = "/staff" component = {S010100090} />
+          
+          <Route exact path = "/contractStatus" component = {S010100160} /> 
+          
           <Route exact path = "/login" component = {S010100150}></Route>
-
-            {/* test*/}
-            <Route exact path = "/andy" component = {test}></Route>
-
           {/* 상담등록 */}
-          <Route exact path = "/registration" component = {S010100140}></Route>
+          {/* <PrivateRoute exact path = "/registration" component = {S010100140} /> */}
           {/* 이용계약서  */}
-          <Route exact path = "/useContract" component = {S010100010}></Route>
+          {/* <PrivateRoute exact path = "/useContract" component = {S010100010} /> */}
           {/* 회원상세현황 */}
-          <Route exact path = "/memberDetails" component = {S010100050}></Route>
-          {/* 임대차계약서 */}
-          <Route exact path = "/leasAgreement" component = {LeaseAgreement}></Route>
+          {/* <PrivateRoute exact path = "/memberDetails" component = {S010100050} />
+          임대차계약서 */}
+          {/* <PrivateRoute exact path = "/leasAgreement" component = {LeaseAgreement} /> */}
+
+         
+           <Route exact path = "/registration" component = {S010100140} />
+        
+          <Route exact path = "/useContract" component = {S010100010} />
+        
+          <Route exact path = "/memberDetails" component = {S010100050} />
+        
+          <Route exact path = "/leasAgreement" component = {LeaseAgreement} /> *\
           
           
 

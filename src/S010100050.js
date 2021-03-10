@@ -23,6 +23,8 @@ import Form from 'react-bootstrap/Form';
 
 import Pagination from "./utils/Pagination";
 
+import ReactPaginate from 'react-paginate';
+import fileDownload from 'file-saver';
 
 const drawerWidth = 240;
 
@@ -164,7 +166,16 @@ function S010100050(props) {
     const [conOpen, setConOpen] = React.useState(false);
     const [newOpen, setNewOpen] = React.useState(false);
     const [detailMemberId, setDetailMemberId] = useState('');
-    const [mEndFlag,setMEndFlag] = useState('');
+    const [mEndFlag, setMEndFlag] = useState('');
+
+    const [pageNumber, setPageNumber] = useState(0);
+    const usersPerPage = 10;
+    const pagesVisited = pageNumber * usersPerPage;
+    const pageCount = Math.ceil(detailAllInfo / usersPerPage);
+
+    const changePage = ({ selected }) => {
+        setPageNumber(selected);
+    }
 
 
     const [currentPage, setCurrentPage] = useState(1);
@@ -192,7 +203,7 @@ function S010100050(props) {
 
     useEffect(() => {
 
-        axios.get('/api/memDetail/memberTpDetail')
+        axios.get('/api/s010100050/memberTpDetail')
             .then(response => {
                 if (response.data.success) {
                     let arr = [{ key: '선택', value: '선택' }]
@@ -205,6 +216,7 @@ function S010100050(props) {
 
                     memberTpDetail = arr;
                 } else {
+                    alert(response.data.message);
                     alert(" 데이터를 불러오는데 실패하였습니다.");
                 }
             })
@@ -218,10 +230,10 @@ function S010100050(props) {
         }
         // console.log('dataMemId',dataMemId);
 
-        axios.post('/api/memDetail/detailMember_by_id', body)
+        axios.post('/api/s010100050/detailMember_by_id', body)
             .then(response => {
                 if (response.data.success) {
-                    //console.log('memberId', response.data.rows[0]);
+                    console.log('memberId', response.data.rows[0]);
 
                     const memberId = response.data.rows[0].MEMBER_ID;
                     const modalMemberNm = response.data.rows[0].MEMBER_NM;
@@ -273,6 +285,7 @@ function S010100050(props) {
                     setDetailCeoIdCardImg(modalIdImg);
                     setDetailRegistCardImg(modalRegistImg);
                 } else {
+                    alert(response.data.message);
                     alert('상세정보 데이터를 불러오는데 실패하였습니다.');
                 }
             })
@@ -284,7 +297,7 @@ function S010100050(props) {
 
     // 회원정보수정 함수
     const tempAddMember = () => {
-        const url = '/api/memDetail/modifyMember';
+        const url = '/api/s010100050/modifyMember';
         const formData = new FormData();
         // console.log('memberId',memberId);
         const dataMemId = props.dataMemId;
@@ -336,10 +349,16 @@ function S010100050(props) {
     // 회원정보 수정
     const onModifyHandler = (event) => {
         event.preventDefault();
-        
+
         tempAddMember().then((response) => {
-            alert('정상적으로 수정 되었습니다.');
-            detailMemberList();
+            if (response.data.success) {
+                alert('정상적으로 수정 되었습니다.');
+                props.setModalOpen(false);
+                props.memberList();
+            } else {
+                alert(response.data.message);
+                alert('수정에 실패하였습니다.');
+            }
         })
     }
 
@@ -416,7 +435,7 @@ function S010100050(props) {
     });
 
     // 신규계약 닫기
-    const onNewContractHandler = useCallback(()=> {
+    const onNewContractHandler = useCallback(() => {
         setNewOpen(false);
         detailMemberList();
     });
@@ -425,21 +444,72 @@ function S010100050(props) {
         setNewOpen(true);
     }
 
-    const onIdDownloadHandler = (event) => {
-        event.preventDefault();
-        console.log('dataMemId', dataMemId);
 
-        axios.get(`/api/s01010050/download/tb_s10_member010_by_id?id=${dataMemId}&type=single`)
-            .then(response => {
-                if (response) {
-                    alert('res');
-                    // console.log(response);
+    function onIdDownloadHandler() {
 
-                } else {
-                    alert("다운로드에 실패하였습니다.");
-                }
-            })
     }
+    //     const onIdDownloadHandler = async event => {
+    //         event.preventDefault();
+    //         // axios({
+    //         //     url: decodeURIComponent('1f39da861fcdab5734f147f53718d12a.jpg'),
+    //         //     method: 'GET',
+    //         //     responseType: 'blob'
+    //         //   }).then((response) => {
+    //         //     const url = window.URL.createObjectURL(new Blob([response.data]))
+    //         //     const link = document.createElement('a')
+    //         //     link.href = url
+    //         //     link.setAttribute('download', '1f39da861fcdab5734f147f53718d12a.jpg')
+    //         //     document.body.appendChild(link)
+    //         //     link.click()
+    //         //   })
+    // //           const response = await fetch(
+    // //             "../1f39da861fcdab5734f147f53718d12a.jpg"
+    // //             );
+    // //             if (response.status === 200) {
+    // //             const blob = await response.blob();
+    // //             console.log('blob',blob);
+    // //             const url = URL.createObjectURL(blob);
+    // //             console.log('url',url);
+    // //             const link = document.createElement("a");
+    // //             link.href = url;
+    // //             link.download = "image";
+    // //             document.body.appendChild(link);
+    // //             link.click();
+    // //             link.remove();
+    // //             return { success: true };
+    // //  }
+    //         // console.log('dataMemId', dataMemId);
+
+    //         axios.get(`/api/s01010050/download/tb_s10_member010_by_id?id=${dataMemId}&type=single`)
+    //             .then(response => {
+    //                 if (response) {
+    //                     alert('res');
+    //                      console.log(response);
+
+    //                 } else {
+    //                     alert("다운로드에 실패하였습니다.");
+    //                 }
+    //             })
+    //     }
+
+
+    // }
+    // const onIdDownloadHandler = async (file_name, file_path) => {
+    //     const res = await CustomFetch('/fileDownload', {
+    //       responseType: 'blob',
+    //       method: 'POST', headers: {
+    //         'Content-Type': 'application/json',
+    //       },
+    //     }, {
+    //       "_id": noticeId,
+    //       file_name,
+    //       file_path
+    //     });
+
+    //     fileDownload(await (await new Response(res.body)).blob(), file_name);
+
+    //   }
+
 
     const onRegDownloadHandler = (event) => {
         // event.preventDefault();
@@ -457,7 +527,7 @@ function S010100050(props) {
     }
 
 
-    const s010100050R = detailAllInfo.map((detailAllInfo, index) => {
+    const displayUsers = detailAllInfo.slice(pagesVisited, pagesVisited + usersPerPage).map((detailAllInfo, index) => {
         return (
             <TableRow key={index}>
                 <TableCell onClick={onDetailClickOpen} className='underLineForDetail' id={detailAllInfo.CONTRACT_ID}>{detailAllInfo.CONTRACT_ID}</TableCell>
@@ -503,9 +573,6 @@ function S010100050(props) {
     };
 
 
-    const indexOfFirstPost = indexOfLastPost - postsPerPage;
-    const currentPosts = s010100050R.slice(indexOfFirstPost, indexOfLastPost);
-    const paginate = pageNumber => setCurrentPage(pageNumber);
 
 
     return (
@@ -523,172 +590,172 @@ function S010100050(props) {
                 <div className="memberInfoWrap">
                     {/* 회원정보란 */}
                     <h5 id="infoTitle">회원 정보</h5>
-                    
+
                     <table id="memberDetailTable">
-                    <tbody>
-                        <tr>
-                            <th colSpan="2">회원명</th>
-                            
-                            <td>
+                        <tbody>
+                            <tr>
+                                <th colSpan="2">회원명</th>
 
-                                <Form.Control style={{ width: 5 + 'em', display: 'inline' }} size="sm"
-                                    type="text" value={detailMemberNm} id="detailMemberNm" name="detailMemberNm"
-                                    onChange={onDetailMemberNmHandler} />
+                                <td>
 
-                            </td>
-                            <th>사업자번호</th>
-                            <td colSpan="2">
+                                    <Form.Control style={{ width: 5 + 'em', display: 'inline' }} size="sm"
+                                        type="text" value={detailMemberNm} id="detailMemberNm" name="detailMemberNm"
+                                        onChange={onDetailMemberNmHandler} />
 
-                                <Form.Control style={{ width: 5 + 'em', display: 'inline' }} size="sm"
-                                    type="text" value={detailFstRegNo} id="detailRegNo" name="detailRegNo"
-                                    onChange={onDetailFstRegNoHandler} />
+                                </td>
+                                <th>사업자번호</th>
+                                <td colSpan="2">
+
+                                    <Form.Control style={{ width: 5 + 'em', display: 'inline' }} size="sm"
+                                        type="text" value={detailFstRegNo} id="detailRegNo" name="detailRegNo"
+                                        onChange={onDetailFstRegNoHandler} />
                                 &nbsp; - &nbsp;
 
                                 <Form.Control style={{ width: 3 + 'em', display: 'inline' }} size="sm"
-                                    type="text" value={detailSndRegNo} id="detailRegNo" name="detailRegNo"
-                                    onChange={onDetailSndRegNoHandler} />
+                                        type="text" value={detailSndRegNo} id="detailRegNo" name="detailRegNo"
+                                        onChange={onDetailSndRegNoHandler} />
                                 &nbsp; - &nbsp;
 
                                 <Form.Control style={{ width: 7 + 'em', display: 'inline' }} size="sm"
-                                    type="text" value={detailThdRegNo} id="detailRegNo" name="detailRegNo"
-                                    onChange={onDetailThdRegNoHandler} />
+                                        type="text" value={detailThdRegNo} id="detailRegNo" name="detailRegNo"
+                                        onChange={onDetailThdRegNoHandler} />
 
-                            </td>
-                            <th>회원구분</th>
-                            <td>
+                                </td>
+                                <th>회원구분</th>
+                                <td>
 
-                                <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm" as="select" multiple={false} onChange={onDetailMemberTpHandler} value={detailMemberTp|| ''}>
-                                    {memberTpDetail.map((item,index) => (
-                                        <option key={index} value={item.key}>{item.value}</option>
-                                    ))}
-                                </Form.Control>
+                                    <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm" as="select" multiple={false} onChange={onDetailMemberTpHandler} value={detailMemberTp || ''}>
+                                        {memberTpDetail.map((item, index) => (
+                                            <option key={index} value={item.key}>{item.value}</option>
+                                        ))}
+                                    </Form.Control>
 
-                            </td>
-                            <th>퇴실일자</th>
-                            <td>
+                                </td>
+                                <th>퇴실일자</th>
+                                <td>
 
-                                <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm"
-                                    type="text" value={endDateTest} disabled />
+                                    <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm"
+                                        type="text" value={endDateTest} disabled />
 
-                            </td>
-                        </tr>
+                                </td>
+                            </tr>
 
-                        <tr>
-                            <th rowSpan="2">대표자</th>
+                            <tr>
+                                <th rowSpan="2">대표자</th>
 
-                            <th>성명</th>
-                            <td>
+                                <th>성명</th>
+                                <td>
 
-                                <Form.Control style={{ width: 5 + 'em', display: 'inline' }} size="sm"
-                                    type="text" value={detailName} id="detailName" name="detailName"
-                                    onChange={onDetailNameHandler} />
-                            </td>
-                            <th>연락처</th>
-                            <td colSpan="2">
+                                    <Form.Control style={{ width: 5 + 'em', display: 'inline' }} size="sm"
+                                        type="text" value={detailName} id="detailName" name="detailName"
+                                        onChange={onDetailNameHandler} />
+                                </td>
+                                <th>연락처</th>
+                                <td colSpan="2">
 
-                                <Form.Control style={{ width: 5 + 'em', display: 'inline' }} size="sm"
-                                    type="text" value={detailFstEmpHp} id="detailEmpHp" name="detailEmpHp"
-                                    onChange={onDetailFstEmpHpHandler} />
+                                    <Form.Control style={{ width: 5 + 'em', display: 'inline' }} size="sm"
+                                        type="text" value={detailFstEmpHp} id="detailEmpHp" name="detailEmpHp"
+                                        onChange={onDetailFstEmpHpHandler} />
 
                                      &nbsp; - &nbsp;
                                      <Form.Control style={{ width: 5 + 'em', display: 'inline' }} size="sm"
-                                    type="text" value={detailSndEmpHp} id="detailEmpHp" name="detailEmpHp"
-                                    onChange={onDetailSndEmpHpHandler} />
+                                        type="text" value={detailSndEmpHp} id="detailEmpHp" name="detailEmpHp"
+                                        onChange={onDetailSndEmpHpHandler} />
 
 
                                      &nbsp; - &nbsp;
                                     <Form.Control style={{ width: 5 + 'em', display: 'inline' }} size="sm"
-                                    type="text" value={detailThdEmpHp} id="detailEmpHp" name="detailEmpHp"
-                                    onChange={onDetailThdEmpHpHandler} />
+                                        type="text" value={detailThdEmpHp} id="detailEmpHp" name="detailEmpHp"
+                                        onChange={onDetailThdEmpHpHandler} />
 
-                            </td>
-                            <th>E-mail</th>
+                                </td>
+                                <th>E-mail</th>
 
-                            <td colSpan="3">
+                                <td colSpan="3">
 
-                                <Form.Control style={{ width: 7 + 'em', display: 'inline' }} size="sm"
-                                    type="text" value={detailEmpEmail} id="detailEmpEmail" name="detailEmpEmail"
-                                    onChange={onDetailEmpEmailHandler} />
+                                    <Form.Control style={{ width: 7 + 'em', display: 'inline' }} size="sm"
+                                        type="text" value={detailEmpEmail} id="detailEmpEmail" name="detailEmpEmail"
+                                        onChange={onDetailEmpEmailHandler} />
 
 
                             &nbsp; @ &nbsp;
                             <Form.Control style={{ width: 10 + 'em', display: 'inline' }} size="sm"
-                                    type="text" value={detailDomain} id="detailEmpEmail" name="detailEmpEmail"
-                                    onChange={onDetailDomainHandler} />
+                                        type="text" value={detailDomain} id="detailEmpEmail" name="detailEmpEmail"
+                                        onChange={onDetailDomainHandler} />
 
 
-                            </td>
-                        </tr>
-                        <tr>
-                        <th>주소</th>
-                        <td colSpan="8">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>주소</th>
+                                <td colSpan="8">
 
-                            <Form.Control style={{ width: 7 + 'em', display: 'inline' }} size="sm"
-                                type="text" value={detailZipcode} id="detailAddress" name="detailAddress"
-                                onChange={onDetailZipcodeHandler} />
+                                    <Form.Control style={{ width: 7 + 'em', display: 'inline' }} size="sm"
+                                        type="text" value={detailZipcode} id="detailAddress" name="detailAddress"
+                                        onChange={onDetailZipcodeHandler} />
 
 
                             &nbsp;
                             <Button variant="contained" color="primary" style={{ width: 70 }} onClick={handleOpen}>우편</Button>&nbsp;
 
                             <Modal
-                                className={classes.modal}
-                                open={isPostOpen}
-                                onClose={handleClose}
-                                closeAfterTransition
-                                BackdropComponent={Backdrop}
-                                BackdropProps={{
-                                    timeout: 500,
-                                }}
-                            >
-                                <Fade in={isPostOpen}>
-                                    <div className={classes.paper}>
-                                        <DaumPostcode autoClose style={postCodeStyle} onComplete={handleComplete} />
-                                    </div>
-                                </Fade>
-                            </Modal>
+                                        className={classes.modal}
+                                        open={isPostOpen}
+                                        onClose={handleClose}
+                                        closeAfterTransition
+                                        BackdropComponent={Backdrop}
+                                        BackdropProps={{
+                                            timeout: 500,
+                                        }}
+                                    >
+                                        <Fade in={isPostOpen}>
+                                            <div className={classes.paper}>
+                                                <DaumPostcode autoClose style={postCodeStyle} onComplete={handleComplete} />
+                                            </div>
+                                        </Fade>
+                                    </Modal>
 
-                            <Form.Control style={{ width: 30 + 'em', display: 'inline' }} size="sm"
-                                type="text" value={detailAddress} id="detailAddress" name="detailAddress"
-                                onChange={onDetailAddressHandler} />
-
-
-
-                            <Form.Control style={{ width: 45 + 'em', display: 'inline' }} size="sm"
-                                type="text" value={detailDetailAddress} id="detailAddress" name="detailAddress"
-                                onChange={onDetailDetailAddressHandler} />
+                                    <Form.Control style={{ width: 30 + 'em', display: 'inline' }} size="sm"
+                                        type="text" value={detailAddress} id="detailAddress" name="detailAddress"
+                                        onChange={onDetailAddressHandler} />
 
 
-                        </td>
-                        </tr>
-                        <tr>
 
-                            <th rowSpan="2" colSpan="2">첨부파일</th>
-                            <td colSpan="8">
-                                <a href='#' onClick={onIdDownloadHandler} >{detailCeoIdCardImg}</a>&nbsp;
+                                    <Form.Control style={{ width: 45 + 'em', display: 'inline' }} size="sm"
+                                        type="text" value={detailDetailAddress} id="detailAddress" name="detailAddress"
+                                        onChange={onDetailDetailAddressHandler} />
+
+
+                                </td>
+                            </tr>
+                            <tr>
+                                {/* onClick={onIdDownloadHandler} */}
+                                <th rowSpan="2" colSpan="2">첨부파일</th>
+                                <td colSpan="8">
+                                    <a href="#" onClick={onIdDownloadHandler} >{detailCeoIdCardImg}</a>&nbsp;
                                 <input type='file'
-                                    file={idCardFile}
-                                    name='idCardFile'
-                                    value={idCardFileName}
-                                    onChange={idCardHandleFileChange}
-                                />
-                            </td>
+                                        file={idCardFile}
+                                        name='idCardFile'
+                                        value={idCardFileName}
+                                        onChange={idCardHandleFileChange}
+                                    />
+                                </td>
 
-                        </tr>
-                        <tr>
-                            <td colSpan="8">
-                                <a href='#' onClick={onRegDownloadHandler}>{detailRegistCardImg}</a>&nbsp;
+                            </tr>
+                            <tr>
+                                <td colSpan="8">
+                                    <a href='#' onClick={onRegDownloadHandler}>{detailRegistCardImg}</a>&nbsp;
                                 <input type='file'
-                                    file={registCardFile}
-                                    name='registCardFile'
-                                    value={registCardFileName}
-                                    onChange={registCardHandleFileChange}
-                                />
-                            </td>
-                        </tr>
+                                        file={registCardFile}
+                                        name='registCardFile'
+                                        value={registCardFileName}
+                                        onChange={registCardHandleFileChange}
+                                    />
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
-                   
+
                     <React.Fragment >
                         <Title>상담 현황</Title>
                         <Table size="small">
@@ -708,31 +775,31 @@ function S010100050(props) {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                              {currentPosts}
+                                {displayUsers}
                             </TableBody>
                         </Table>
-                        <div id="reactPage">
-                            {/* <ReactPaginate
-                                                    previousLabel = {"Previous"}
-                                                    nextLabel = {"Next"}
-                                                    pageCount = {pageCount}
-                                                    onPageChange = {changePage}
-                                                    containerClassName={"paginationBtns"}
-                                                    previousLinkClassName={"previousBtn"}
-                                                    nextLinkClassName={"nextBtn"}
-                                                    disabledClassName={"paginationDisabled"}
-                                                    activeClassName={"paginationActive"}   
-                                                /> */}
-                        </div>
+
                     </React.Fragment>
                     {/* </Paper> */}
                     {/* </Grid> */}
                     <div className="pageCenter">
-                            <Pagination postsPerPage={postsPerPage} totalPosts={s010100050R.length} paginate={paginate} />
+                        <div id="reactPage">
+                            <ReactPaginate
+                                previousLabel={"Previous"}
+                                nextLabel={"Next"}
+                                pageCount={pageCount}
+                                onPageChange={changePage}
+                                containerClassName={"paginationBtns"}
+                                previousLinkClassName={"previousBtn"}
+                                nextLinkClassName={"nextBtn"}
+                                disabledClassName={"paginationDisabled"}
+                                activeClassName={"paginationActive"}
+                            />
                         </div>
+                    </div>
 
                     <div id="btnAlign">
-            
+
                         <Button variant="contained" color="primary" style={{ width: 100 }} id="btn-centerN" onClick={onNewOpenContractHandler} >
                             신규계약
                         </Button>
@@ -751,7 +818,7 @@ function S010100050(props) {
                 maxWidth={"lg"}
                 open={conOpen}
                 onClose={onConContractHandler}>
-                <S010100010 dataNum={rNum} cDataForm={'I'} endFlag = {mEndFlag} onConContractHandler={onConContractHandler}/>
+                <S010100010 dataNum={rNum} cDataForm={'I'} detailMemberList={detailMemberList} endFlag={mEndFlag} onConContractHandler={onConContractHandler} setConOpen={setConOpen} />
             </Dialog>
 
             {/*신규계약 멤버ID클릭*/}
@@ -759,7 +826,7 @@ function S010100050(props) {
                 maxWidth={"lg"}
                 open={newOpen}
                 onClose={onNewContractHandler}>
-                <S010100010 dataMem={detailMemberId} newDataForm={'N'} onNewContractHandler={onNewContractHandler}/>
+                <S010100010 dataMem={detailMemberId} newDataForm={'N'} detailMemberList={detailMemberList} onNewContractHandler={onNewContractHandler} setNewOpen={setNewOpen} />
             </Dialog>
 
         </form>

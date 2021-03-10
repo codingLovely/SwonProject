@@ -3,60 +3,13 @@ const router = express.Router();
 
 const dbconfig = require('../config/database.js')();
 const connection = dbconfig.init();
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
 
 const multer = require('multer');
 let upload = multer({ dest: './src/uploads' })
 
-// 직원 구분
-router.post('/classification', (req, res) => {
 
-    let sql = 'SELECT CD_V,CD_V_MEANING FROM TB_S10_CODE WHERE CD_TP = "EMP_TP"';
-    connection.query(sql, (error, rows) => {
-        if (error) throw error;
-        res.send({ success: true, rows });
-    });
-})
-
-router.post('/empList', (req, res) => {
-    let staffName = req.body.staffName;
-    let memberNm = req.body.memberNm;
-    let staffClass = req.body.staffClass;
-    let closeStatus = req.body.retireChecked[0];
-    let startDate = req.body.startDate.toString().substring(0, 10);
-    let endDate = req.body.endDate.toString().substring(0, 10);
-    
-    // console.log('closeStatus',closeStatus);
-    let sql = 'SELECT ' +
-                    'MEM.MEMBER_NM,EMP.MEMBER_ID,EMP.EMP_NUMBER,EMP.NAME,EMP.BIRTH_DATE,EMP.DEPT_NM, ' +
-                    'EMP.EMP_ID,EMP.EMP_HP,(SELECT CD_V_MEANING FROM TB_S10_CODE WHERE CD_TP = "EMP_TP" AND CD_V = EMP.EMP_TP)AS "EMP_TP",'+
-                    'EMP.APPROVAL_FLAG,EMP.EMP_EMAIL,EMP.PWD,EMP.CEO_FLAG, ' +
-                    'DATE_FORMAT(EMP.JOIN_DATE,"%y-%m-%d")AS "JOIN_DATE",DATE_FORMAT(EMP.RETIRE_DATE,"%y-%m-%d")AS "RETIRE_DATE" ' +
-                'FROM TB_S10_EMP010 EMP INNER JOIN TB_S10_MEMBER010 MEM ON EMP.MEMBER_ID = MEM.MEMBER_ID '+
-                'INNER JOIN (SELECT distinct(MEMBER_ID)FROM TB_S10_CONTRACT010) CON ON CON.MEMBER_ID = MEM.MEMBER_ID'
-              ' WHERE CON.CONTRACT_DATE BETWEEN "' + startDate + '" AND "' + endDate + '"'
-
-    if (memberNm != null && memberNm != ""&& memberNm != undefined)
-        sql += 'WHERE MEM.MEMBER_NM LIKE "%' + memberNm + '%"'
-    if (staffName != null && staffName != ""&&staffName != undefined)
-        sql += ' AND EMP.NAME LIKE "%' + staffName + '%"'
-    if (staffClass != null && staffClass != "" && staffClass != "전체")
-        sql += ' AND EMP.EMP_TP= "' + staffClass + '" '
-
-    if (closeStatus == "Y") {
-        sql += ' AND EMP.RETIRE_FLAG = "' + closeStatus + '" '
-    } else {
-        sql += ' AND (EMP.RETIRE_FLAG != "' + closeStatus + '" OR EMP.RETIRE_FLAG IS NULL) '
-    }
-
-    sql += 'AND EMP.RETIRE_FLAG = "N" ORDER BY EMP.MEMBER_ID DESC';
-
-
-
-    connection.query(sql, (error, rows) => {
-        if (error) throw error;
-        res.send({ success: true, rows });
-    });
-})
 
 router.post('/empDetail', (req, res) => {
     let empId = req.body.empId;
@@ -65,14 +18,21 @@ router.post('/empDetail', (req, res) => {
         '       EMP.IMAGE_BANKBOOK,EMP.EMP_NUMBER,EMP.EMP_LEVEL,EMP.JOIN_DATE,EMP.DEPT_NM,EMP.PWD,EMP.WAGES,EMP.RETIRE_DATE,EMP.BIRTH_DATE,' +
         '       EMP.EMP_COMMENT ' +
         ' FROM TB_S10_EMP010 EMP INNER JOIN TB_S10_MEMBER010 MEM ' +
-        ' ON EMP.MEMBER_ID = MEM.MEMBER_ID'+
+        ' ON EMP.MEMBER_ID = MEM.MEMBER_ID' +
         ' WHERE EMP_ID=' + empId;
 
     connection.query(sql, (error, rows) => {
-        if (error) throw error;
-        res.send({ success: true, rows });
+        if (error){
+            setImmediate(()=>{
+                next(new Error(error));
+            })
+        }else{
+            res.send({ success: true, rows });
+        }
     });
 })
+
+
 
 router.post('/insertEmp', upload.fields([{ name: 'famRelCertificate', maxCount: 3 }, { name: 'graduationCertificate', maxCount: 5 }, { name: 'copyOfBankbook', maxCount: 5 }]), (req, res) => {
 
@@ -113,12 +73,17 @@ router.post('/insertEmp', upload.fields([{ name: 'famRelCertificate', maxCount: 
     let joinDate = req.body.joinDate;
     let deptNm = req.body.deptNm;
     let pwd = req.body.pwd;
+    const encryptedPassword = bcrypt.hash(pwd, saltRounds);
+
+
+
+
     let wages = req.body.wages;
     let retireDate = req.body.retireDate;
     let birthDate = req.body.birthDate;
     let empComment = req.body.empComment;
     let retireFlag = req.body.retireFlag;
-    
+
     let famRelCertificateAddr;
     let famRelCertificatename;
     let famRelCertificatePath;
@@ -191,8 +156,14 @@ router.post('/insertEmp', upload.fields([{ name: 'famRelCertificate', maxCount: 
             deptNm, pwd, wages, retireDate, fstResidentRegiNum, empComment];
 
         connection.query(empSql, empParams, (error, rows) => {
-            if (error) throw error;
-            res.send({ success: true, rows });
+            if (error){
+                setImmediate(()=>{
+                    next(new Error(error));
+                })
+            }else{
+                res.send({ success: true, rows });
+            }
+           
         });
 
 
@@ -224,8 +195,14 @@ router.post('/insertEmp', upload.fields([{ name: 'famRelCertificate', maxCount: 
             deptNm, pwd, wages, retireDate, fstResidentRegiNum, empComment];
 
         connection.query(empSql, empParams, (error, rows) => {
-            if (error) throw error;
-            res.send({ success: true, rows });
+            if (error){
+                setImmediate(()=>{
+                    next(new Error(error));
+                })
+            }else{
+                res.send({ success: true, rows });
+            }
+           
         });
 
     } else if ((existfamRelCertificate == null || existfamRelCertificate == undefined) && (existgraduationCertificate != null || existgraduationCertificate != undefined)
@@ -254,8 +231,14 @@ router.post('/insertEmp', upload.fields([{ name: 'famRelCertificate', maxCount: 
             deptNm, pwd, wages, retireDate, fstResidentRegiNum, empComment];
 
         connection.query(empSql, empParams, (error, rows) => {
-            if (error) throw error;
-            res.send({ success: true, rows });
+            if (error){
+                setImmediate(()=>{
+                    next(new Error(error));
+                })
+            }else{
+                res.send({ success: true, rows });
+            }
+           
         });
 
     } else if ((existfamRelCertificate == null || existfamRelCertificate == undefined) && (existgraduationCertificate == null || existgraduationCertificate == undefined)
@@ -284,8 +267,14 @@ router.post('/insertEmp', upload.fields([{ name: 'famRelCertificate', maxCount: 
             deptNm, pwd, wages, retireDate, fstResidentRegiNum, empComment];
 
         connection.query(empSql, empParams, (error, rows) => {
-            if (error) throw error;
-            res.send({ success: true, rows });
+            if (error){
+                setImmediate(()=>{
+                    next(new Error(error));
+                })
+            }else{
+                res.send({ success: true, rows });
+            }
+           
         });
 
     } else if ((existfamRelCertificate == null || existfamRelCertificate == undefined) && (existgraduationCertificate == null || existgraduationCertificate == undefined)
@@ -311,8 +300,13 @@ router.post('/insertEmp', upload.fields([{ name: 'famRelCertificate', maxCount: 
             deptNm, pwd, wages, retireDate, fstResidentRegiNum, empComment];
 
         connection.query(empSql, empParams, (error, rows) => {
-            if (error) throw error;
-            res.send({ success: true, rows });
+            if (error){
+                setImmediate(()=>{
+                    next(new Error(error));
+                })
+            }else{
+                res.send({ success: true, rows });
+            }
         });
 
     } else if ((existfamRelCertificate != null || existfamRelCertificate != undefined) && (existgraduationCertificate != null || existgraduationCertificate != undefined)
@@ -339,8 +333,13 @@ router.post('/insertEmp', upload.fields([{ name: 'famRelCertificate', maxCount: 
             deptNm, pwd, wages, retireDate, fstResidentRegiNum, empComment];
 
         connection.query(empSql, empParams, (error, rows) => {
-            if (error) throw error;
-            res.send({ success: true, rows });
+            if (error){
+                setImmediate(()=>{
+                    next(new Error(error));
+                })
+            }else{
+                res.send({ success: true, rows });
+            }
         });
 
     } else if ((existfamRelCertificate == null || existfamRelCertificate == undefined) && (existgraduationCertificate != null || existgraduationCertificate != undefined)
@@ -367,8 +366,14 @@ router.post('/insertEmp', upload.fields([{ name: 'famRelCertificate', maxCount: 
             deptNm, pwd, wages, retireDate, fstResidentRegiNum, empComment];
 
         connection.query(empSql, empParams, (error, rows) => {
-            if (error) throw error;
-            res.send({ success: true, rows });
+            if (error){
+                setImmediate(()=>{
+                    next(new Error(error));
+                })
+            }else{
+                res.send({ success: true, rows });
+            }
+            
         });
 
     } else if ((existfamRelCertificate != null || existfamRelCertificate != undefined) && (existgraduationCertificate == null || existgraduationCertificate == undefined)
@@ -392,11 +397,17 @@ router.post('/insertEmp', upload.fields([{ name: 'famRelCertificate', maxCount: 
         let empParams = [memberId, empName, fstResidentRegiNum, sndResidentRegiNum, empTp, finalSchoolName, empHp, empEmail,
             zipcode, empAddress, empDetailAddress, famRelCertificatename, famRelCertificateAddr, famRelCertificatePath,
             copyOfBankbookname, copyOfBankbookAddr, copyOfBankbookPath, empNum, empLevel, joinDate,
-            deptNm, pwd, wages, retireDate, fstResidentRegiNum, empComment];
+            deptNm, encryptedPassword, wages, retireDate, fstResidentRegiNum, empComment];
 
         connection.query(empSql, empParams, (error, rows) => {
-            if (error) throw error;
-            res.send({ success: true, rows });
+            if (error){
+                setImmediate(()=>{
+                    next(new Error(error));
+                })
+            }else{
+                res.send({ success: true, rows });
+            }
+            
         });
 
     }
@@ -591,8 +602,13 @@ router.post('/modifyEmp', upload.fields([{ name: 'famRelCertificate', maxCount: 
     empModifySql += ' WHERE EMP_ID =' + empId;
 
     connection.query(empModifySql, (error, rows) => {
-        if (error) throw error;
-        res.send({ success: true, rows });
+        if (error){
+            setImmediate(()=>{
+                next(new Error(error));
+            })
+        }else{
+            res.send({ success: true, rows });
+        }
     });
 })
 // 주민번호 중복확인 
@@ -608,9 +624,15 @@ router.post('/regNoCheck', (req, res) => {
         '        WHERE REG_NUMBER2= "' + sndResidentRegiNum + '"';
 
     connection.query(sndRegNumberChkSql, (error, number) => {//쿼리문
-        if (error) throw error;
-        res.send({ success: true, number })
-        sndRegNumberChkSql = number[0].RowNum;
+        if (error){
+            setImmediate(()=>{
+                next(new Error(error));
+            })
+        }else{
+            res.send({ success: true, number })
+            sndRegNumberChkSql = number[0].RowNum;
+        }
+     
         //console.log(number[0].RowNum);
         //console.log(number.RowDataPacket.RowNum);
     });
@@ -620,7 +642,7 @@ router.post('/regNoCheck', (req, res) => {
 })
 
 
-router.post('/emailCheck', (req, res) => {
+router.post('/emailCheck', (req, res, next) => {
     let memId = req.body.memId;
     let empEmailId = req.body.empEmailId;
     let domainAddress = req.body.domainAddress;
@@ -632,50 +654,20 @@ router.post('/emailCheck', (req, res) => {
         '        WHERE EMP_EMAIL = "' + empEmail + '" AND MEMBER_ID = ' + memId;
 
     connection.query(emailChkSql, (error, number) => {//쿼리문
-        if (error) throw error;
-        res.send({ success: true, number })
-        emailChkSql = number[0].RowNum;
+        if (error){
+            setImmediate(()=>{
+                next(new Error(error));
+            })
+        }else{
+            res.send({ success: true, number })
+            emailChkSql = number[0].RowNum;
+        }
+       
         //console.log(number[0].RowNum);
         //console.log(number.RowDataPacket.RowNum);
     });
 
-
-
 })
-
-
-
-
-router.post('/approval', (req, res) => {
-
-    let checkEmpId = req.body. arr;
-
-    if(checkEmpId.length > 1){
-    // console.log('checkEmpId',checkEmpId);
-        for (let i = 0; i < checkEmpId.length; i++) {
-            let sql = 'UPDATE TB_S10_EMP010 ' +
-                'SET APPROVAL_FLAG = "Y" ' +
-                'WHERE EMP_ID = ' + checkEmpId[i];
-
-            connection.query(sql, (error) => {//쿼리문
-                if (error) throw error;
-                
-            });
-        }
-        res.send({ success: true })
-    }else{
-            let sql = 'UPDATE TB_S10_EMP010 ' +
-            'SET APPROVAL_FLAG = "Y" ' +
-            'WHERE EMP_ID = ' + checkEmpId[0];
-
-            connection.query(sql, (error) => {//쿼리문
-                if (error) throw error;
-                res.send({ success: true })
-            });
-    }
-
-})
-
 
 
 module.exports = router;

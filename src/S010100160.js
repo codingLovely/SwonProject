@@ -183,29 +183,13 @@ function S010100160(props) {
             contractSt
         }
 
-        //console.log('startDate',startDate);
-        //console.log('endDate',endDate);
-
-        //console.log('ask_tp', ask_tp);
-        //console.log("조회조건", body);
-        // alert('startDate day:'+startAsk_date.getDay());
-        // alert('endDate year:'+endAsk_date.getFullYear());
-        // alert('endDate day:'+endAsk_date.getDate());
-        // alert('endDate month:'+endAsk_date.getMonth()+1);
-        // alert(endAsk_date.getFullYear() + '/' + (endAsk_date.getMonth()+1) +'/'+endAsk_date.getDate());
-        // alert('startDate:'+startAsk_date.getMonth());
-
-        axios.post('/api/contractList/search', body).then(response => {
-            if (response.data.success) {
   
-                // for(let i = 0; i < response.data.rows.length; i++){
-                //     if(response.data.rows[i].END_FLAG == 'Y'){
-                //         response.data.rows[i].MEMBER_ST = '종료';
-                //     }
-                // }
+
+        axios.post('/api/s010100160/search', body).then(response => {
+            if (response.data.success) {
                 setContractList(response.data.rows);
-                          
             } else {
+                alert(response.data.message);
                 alert('데이터를 불러오는데 실패 하였습니다.')
             }
         })
@@ -214,7 +198,7 @@ function S010100160(props) {
 
     useEffect(() => {
 
-        axios.post('/api/contractList/contractTp')
+        axios.post('/api/s010100160/contractTp')
             .then(response => {
                 if (response.data.success) {
                     
@@ -227,6 +211,7 @@ function S010100160(props) {
 
                     setContractTps(arr);
                 } else {
+                    alert(response.data.message);
                     alert(" 데이터를 불러오는데 실패하였습니다.");
                 }
             })
@@ -236,7 +221,7 @@ function S010100160(props) {
 
     useEffect(() => {
 
-        axios.post('/api/contractList/contractSt')
+        axios.post('/api/s010100160/contractSt')
             .then(response => {
                 if (response.data.success) {
                     let arr = [{ key: '전체', value: '전체' }]
@@ -250,6 +235,7 @@ function S010100160(props) {
                         
                         setContractSts(arr);
                 } else {
+                    alert(response.data.message);
                     alert(" 데이터를 불러오는데 실패하였습니다.");
                 }
             })
@@ -378,8 +364,7 @@ function S010100160(props) {
                 </div>
                 <Divider />
                 <List>{mainListItems}</List>
-                <Divider />
-                <List>{secondaryListItems}</List>
+             
             </Drawer>
 
 

@@ -8,8 +8,14 @@ router.post('/contractTp',(req,res)=>{
     let sql = 'SELECT CD_V,CD_V_MEANING FROM TB_S10_CODE WHERE CD_TP = "CONTRACT_TP"';
 
     connection.query(sql, (error, rows) => {//쿼리문
-        if (error) throw error;
-        res.send({ success: true, rows });
+        if (error){
+            setImmediate(()=>{
+                next(new Error(error));
+            })
+        }else{
+            res.send({ success: true, rows });
+        }
+       
     });
 })
 
@@ -17,8 +23,14 @@ router.post('/contractSt',(req,res)=>{
     let sql = 'SELECT CD_V,CD_V_MEANING FROM TB_S10_CODE WHERE CD_TP = "CONTRACT_ST"';
 
     connection.query(sql, (error, rows) => {//쿼리문
-        if (error) throw error;
-        res.send({ success: true, rows });
+        if (error){
+            setImmediate(()=>{
+                next(new Error(error));
+            })
+        }else{
+            res.send({ success: true, rows });
+        }
+      
     });
 })
 
@@ -71,8 +83,14 @@ router.post('/search',(req,res)=>{
                 sql += ' AND CON.END_FLAG ="Y"'
 
     connection.query(sql, (error, rows) => {//쿼리문
-        if (error) throw error;
-        res.send({ success: true, rows });
+        if (error){
+            setImmediate(()=>{
+                next(new Error(error));
+            })
+        }else{
+            res.send({ success: true, rows });
+        }
+      
     });
 })
 

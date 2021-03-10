@@ -160,15 +160,14 @@ function S010100060() {
             endDate: endDate
         }
 
-        console.log('startDate',startDate);
-        console.log('endDate',endDate);
-
-        axios.post('/api/payStList/list', body)
+    
+        axios.post('/api/s010100060/list', body)
             .then(response => {
                 if (response.data.success) {
                     // console.log('list60', response.data.rows);
                     setPayStatusList(response.data.rows);
                 } else {
+                    alert(response.data.message);
                     alert('데이터 조회를 실패하였습니다.')
                 }
 
@@ -187,12 +186,13 @@ function S010100060() {
         }
 
         console.log(body);
-        axios.post('/api/payStList/list', body)
+        axios.post('/api/s010100060/list', body)
             .then(response => {
                 if (response.data.success) {
                     //console.log('list60', response.data.rows);
                     setPayStatusList(response.data.rows);
                 } else {
+                    alert(response.data.message);
                     alert('데이터 조회를 실패하였습니다.')
                 }
 
@@ -344,8 +344,7 @@ function S010100060() {
                     </div>
                     <Divider />
                     <List>{mainListItems}</List>
-                    <Divider />
-                    <List>{secondaryListItems}</List>
+                   
                 </Drawer>
                 <main className={classes.content}>
                     <div className={classes.appBarSpacer} />

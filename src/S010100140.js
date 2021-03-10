@@ -22,7 +22,7 @@ function S010100140(props) {
       
         if (props.dataForm === 'U') {
 
-            axios.get(`/api/askStList/tb_s10_ask010_by_id?id=${rNum}&type=single`)
+            axios.get(`/api/s010100140/tb_s10_ask010_by_id?id=${rNum}&type=single`)
                 .then(response => {
                     if (response.data.success) {
                         // console.log(response.data)
@@ -42,6 +42,7 @@ function S010100140(props) {
                         setModalAskContent(askContent);
                         setStartDate(new Date(askDate));
                     } else {
+                        alert(response.data.message);
                         alert("상세 정보 가져오기를 실패하였습니다.")
                     }
                 })
@@ -80,7 +81,7 @@ function S010100140(props) {
 
     async function getLovByCdTp(cdTp, attribute2) {
         let arr = [{ key: '선택', value: '선택' }];
-        return await axios.post('/api/askStList/selectTest', { firstVal: cdTp, secondVal: attribute2 })
+        return await axios.post('/api/s010100140/selectTest', { firstVal: cdTp, secondVal: attribute2 })
             .then(response => {
                 if (response.data.success) {
                     //console.log('modalAskTp',response.data.rows);
@@ -98,9 +99,11 @@ function S010100140(props) {
                     if (cdTp === 'CONTRACT_TP')
                         setModalAccessPathLov(arr);
                 } else {
+                    alert(response.data.message);
                     alert("문의구분 데이터를 불러오는데 실패하였습니다.")
                 }
             }).catch(() => {
+               
                 alert("문의구분 데이터를 불러오는데 실패하였습니다.");
             })
         // return arr;
@@ -173,11 +176,14 @@ function S010100140(props) {
             modalAskContent: modalAskContent
         }
 
-        axios.post('/api/askStList/modify', body)
+        axios.post('/api/s010100140/modify', body)
             .then(response => {
                 if (response.data.success) {
-                    alert('정상적으로 수정되었습니다.')
+                    alert('정상적으로 수정되었습니다.');
+                    props.setMOpen(false);
+                    props.searchAsk();
                 } else {
+                    alert(response.data.message);
                     alert('수정에 실패하였습니다.')
                 }
             })
@@ -223,11 +229,14 @@ function S010100140(props) {
             modalAskContent: modalAskContent
         }
 
-        axios.post('/api/askStList/insert', body)
+        axios.post('/api/s010100140/insert', body)
             .then(response => {
                 if (response.data.success) {
-                    alert('정상적으로 등록되었습니다.')
+                    alert('정상적으로 등록되었습니다.');
+                    props.setStoreOpen(false);
+                    props.searchAsk();
                 } else {
+                    alert(response.data.message);
                     alert('등록에 실패하였습니다.')
                 }
             })
@@ -259,17 +268,7 @@ function S010100140(props) {
 
                                 <th>문의일자</th>
                                 <td>
-                                    {/* <DatePicker
-                                                locale="ko"
-                                                selected={new Date()}
-                                                value={modalAskDate}
-                                                onChange={date => setModalAskDate(date)}
-                                                minDate={new Date()}
-                                                maxDate={addDays(new Date(), 0)}
-                                                dateFormat="yy.MM.dd (eee)"
-
-                                            /> */}
-
+                                
                                     <DatePicker
                                         id="dateSize"
                                         locale="ko"

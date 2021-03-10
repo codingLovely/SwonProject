@@ -2,6 +2,7 @@ import React, { Fragment, useEffect, useState, useCallback } from 'react';
 import './css/S010100130.css';
 import axios from 'axios';
 import S010100140 from './S010100140';
+import test from './utils/test';
 // import 'react-datepicker/dist/react-datepicker.css';
 // import 'react-datepicker/dist/react-datepicker-cssmodules.min.css';
 
@@ -133,7 +134,7 @@ const useStyles = makeStyles((theme) => ({
     },
     
 }));
-
+<test/>
 
 let num = '';
 let rNum = 0;
@@ -191,7 +192,7 @@ function S010100130() {
         // console.log('startAsk_date',startAsk_date);
         // console.log('endAsk_date',endAsk_date);
 
-        axios.post("/api/askStList/search", body).then(response => {
+        axios.post("/api/s010100130/search", body).then(response => {
             if (response.data.success) {
                 // console.log('검색결과:'+response.data.rows);
                 setTb_s10_ask010(response.data.rows);
@@ -207,7 +208,7 @@ function S010100130() {
 
     // 문의 구분
     useEffect(() => {
-        axios.post('/api/askStList/ask_tp')
+        axios.post('/api/s010100130/ask_tp')
             .then(response => {
                 if (response.data.success) {
                     //console.log('Lov-ask_tp',response.data);
@@ -309,14 +310,14 @@ function S010100130() {
         }  else {
             let askIdArray = checked;
        
-            axios.post('/api/askStList/delete', askIdArray)
+            axios.post('/api/s010100130/delete', askIdArray)
                 .then(response => {
                     if (response.data.success) {
                             alert('삭제 하였습니다.');
                             searchAsk();
                     } else {
-                        alert("error")
-                        
+                        alert(response.data.message);
+                        alert("삭제에 실패하였습니다.")
                     }
                 })
             chkSt = '';        
@@ -346,17 +347,8 @@ function S010100130() {
             ask_tp,
             endAsk_date
         }
-        // console.log(startAsk_date); ->실제시간보다 10분정도 느린 것 체크하기
-        // console.log('ask_tp', ask_tp);
-        // console.log("조회조건", body);
-        // alert('startDate day:'+startAsk_date.getDay());
-        // alert('endDate year:'+endAsk_date.getFullYear());
-        // alert('endDate day:'+endAsk_date.getDate());
-        // alert('endDate month:'+endAsk_date.getMonth()+1);
-        // alert(endAsk_date.getFullYear() + '/' + (endAsk_date.getMonth()+1) +'/'+endAsk_date.getDate());
-        // alert('startDate:'+startAsk_date.getMonth());
-
-        axios.post("/api/askStList/search", body).then(response => {
+    
+        axios.post("/api/s010100130/search", body).then(response => {
             if (response.data.success) {
                 // console.log('검색결과:'+response.data.rows);
                 setTb_s10_ask010(response.data.rows);
@@ -454,8 +446,7 @@ function S010100130() {
                     </div>
                     <Divider />
                     <List>{mainListItems}</List>
-                    <Divider />
-                    <List>{secondaryListItems}</List>
+                
                 </Drawer>
 
 
@@ -594,13 +585,13 @@ function S010100130() {
             <Dialog
                 maxWidth={"lg"}
                 open={mOpen}>
-                <S010100140 dataForm={"U"} num={numForDetail} onDetailHandleClickClose={onDetailHandleClickClose}/>
+                <S010100140 dataForm={"U"} num={numForDetail} searchAsk ={searchAsk} onDetailHandleClickClose={onDetailHandleClickClose} setMOpen={setMOpen}/>
             </Dialog>
                       
             <Dialog
                 maxWidth={"lg"}
                 open={storeOpen}>
-                <S010100140 dataForm={data} num={numForDetail} onHandleClickClose={onHandleClickClose} />
+                <S010100140 dataForm={data} num={numForDetail} searchAsk ={searchAsk} onHandleClickClose={onHandleClickClose} setStoreOpen={setStoreOpen} />
             </Dialog>
            
         </Fragment>

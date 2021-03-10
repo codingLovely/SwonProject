@@ -73,7 +73,7 @@ function S010100100(props) {
     const [retireDate, setRetireDate] = useState(new Date(''));
     const [birthDate, setBirthDate] = useState('');
     const [empComment, setEmpComment] = useState('');
-
+  
     // 중복확인
     const [regNumCheckBtn, setRegNumCheckBtn] = useState('');
     const [emailCheckBtn, setEmailCheckBtn] = useState('');
@@ -121,7 +121,7 @@ function S010100100(props) {
 
     // 직원 구분
     useEffect(() => {
-        axios.post('/api/employeeSt/classification')
+        axios.post('/api/s010100090/classification')
             .then(response => {
                 if (response.data.success) {
                     let arr = [{ key: '전체', value: '전체' }]
@@ -134,6 +134,7 @@ function S010100100(props) {
                     setEmpTps(arr);
 
                 } else {
+                    alert(response.data.message);
                     alert("문의구분 데이터를 불러오는데 실패하였습니다.");
                 }
             })
@@ -147,7 +148,7 @@ function S010100100(props) {
         let date = today.getDate();  // 날짜
 
         let todayForProcess = year+'-'+month+'-'+date;
-        console.log('todayForProcess',todayForProcess);
+        // console.log('todayForProcess',todayForProcess);
 
         if(retire == todayForProcess){
             formData.append('retireFlag',"Y");
@@ -156,7 +157,7 @@ function S010100100(props) {
 
     // 저장 함수
     const addEmp = () => {
-        const url = '/api/employeeSt/insertEmp';
+        const url = '/api/s010100100/insertEmp';
         const formData = new FormData();
         let memId = props.memId;
 
@@ -164,7 +165,7 @@ function S010100100(props) {
         let retire = retireDate.getFullYear()+'-'+ (retireDate.getMonth()+1)+'-'+retireDate.getDate();
         let join = joinDate.getFullYear()+'-'+ (joinDate.getMonth()+1)+'-'+joinDate.getDate();
 
-        console.log('retire',retire);
+        // console.log('retire',retire);
         
         formData.append('memId', memId);
         formData.append('memberNm', memberNm);
@@ -213,66 +214,70 @@ function S010100100(props) {
     const onSubmitHandler = (event) => {
         event.preventDefault();
 
-        // // 회원명 NUll체크
-        // if (memberNm == null || memberNm == '') {
-        //     return alert("회원명을 선택하세요.");
-        // }
+        // 회원명 NUll체크
+        if (memberNm == null || memberNm == '') {
+            return alert("회원명을 선택하세요.");
+        }
 
-        // // 성명 NUll체크
-        // if (empName == null || empName == '' ) {
-        //     return alert("이름을 입력하세요.");
-        // }
+        // 성명 NUll체크
+        if (empName == null || empName == '' ) {
+            return alert("이름을 입력하세요.");
+        }
 
-        // // 주민번호 NUll체크
-        // if (fstResidentRegiNum == null || fstResidentRegiNum == '' || sndResidentRegiNum == null || sndResidentRegiNum == '') {
-        //     return alert("주민번호를 입력하세요.");
-        // }
+        // 주민번호 NUll체크
+        if (fstResidentRegiNum == null || fstResidentRegiNum == '' || sndResidentRegiNum == null || sndResidentRegiNum == '') {
+            return alert("주민번호를 입력하세요.");
+        }
 
-        // // 연락처 NUll체크
-        // if (firstEmpHp == null || firstEmpHp == ''||secondEmpHp == null || secondEmpHp == ''|| thirdEmpHp == null || thirdEmpHp == '') {
-        //     return alert("연락처를 입력하세요.");
-        // }
+        // 연락처 NUll체크
+        if (firstEmpHp == null || firstEmpHp == ''||secondEmpHp == null || secondEmpHp == ''|| thirdEmpHp == null || thirdEmpHp == '') {
+            return alert("연락처를 입력하세요.");
+        }
 
-        // // E-mail NUll체크
-        // if (empEmailId == null || empEmailId == '' || domainAddress == null || domainAddress == '') {
-        //     return alert("E-mail을 입력하세요.");
-        // }
+        // E-mail NUll체크
+        if (empEmailId == null || empEmailId == '' || domainAddress == null || domainAddress == '') {
+            return alert("E-mail을 입력하세요.");
+        }
 
-        // // Password NUll체크
-        // if (pwd == null || pwd == '') {
-        //     return alert("Password를 입력하세요.");
-        // }
-
-        if((fstResidentRegiNum.length < 6 )||(fstResidentRegiNum.length < 7 ) ){
-            alert('주민번호 형식을 확인하세요.');
+        // Password NUll체크
+        if (pwd == null || pwd == '') {
+            return alert("Password를 입력하세요.");
         }
 
         // // 중복확인
-        // if (regNumCheckBtn == '') {
-        //     alert('주민번호번호 중복확인 하세요.');
-        // } else if (emailCheckBtn == '') {
-        //     alert('이메일 중복확인 하세요.');
-        // } else if (regNumCheckBtn == 'check' && emailCheckBtn == 'check') {
-        addEmp().then((response) => {
-            alert('정상적으로 등록 되었습니다.');
-        })
-        // }
-
+        if (regNumCheckBtn == '') {
+            return alert('주민번호번호 중복확인 하세요.');
+        } 
+        if (emailCheckBtn == '') {
+            return alert('이메일 중복확인 하세요.');
+        }
+           
+        if((firstEmpHp.length != 3)||(secondEmpHp.length != 4)||(thirdEmpHp.length != 4)){
+            return alert('연락처 형식을 확인하세요');
+        }
+                addEmp().then((response) => {
+                    if(response.data.success){
+                        alert('정상적으로 등록 되었습니다.');
+                        props.setStoreOpen(false);
+                        props.empList();
+                    }else{
+                        alert(response.data.message);
+                        alert('등록에 실패하였습니다.');
+                    }
+                })
     }
 
 
     // 수정
     const modifyEmp = (event) => {
 
-        const url = '/api/employeeSt/modifyEmp';
+        const url = '/api/s010100100/modifyEmp';
         const formData = new FormData();
 
         let empId = props.empIdM;
         // console.log('memId', memId);
         let retire = retireDate.getFullYear()+'-'+ (retireDate.getMonth()+1)+'-'+retireDate.getDate();
         let join = joinDate.getFullYear()+'-'+ (joinDate.getMonth()+1)+'-'+joinDate.getDate();
-        console.log('retire',retire);
-        console.log('join',join);
         
         formData.append('empId', empId);
         formData.append('memberNm', memberNm);
@@ -339,14 +344,20 @@ function S010100100(props) {
 
     const approvalConfirm = () => {
 
-        if((fstResidentRegiNum.length < 6 )||(fstResidentRegiNum.length < 7 ) ){
-            alert('주민번호 형식을 확인하세요.');
+        if((firstEmpHp.length != 3)||(secondEmpHp.length != 4)||(thirdEmpHp.length != 4)){
+            alert('연락처 형식을 확인하세요');
+        }else{
+            modifyEmp().then((response) => {
+                if(response.data.success){
+                    alert('정상적으로 수정 되었습니다.');
+                    props.setStoreOpen(false);
+                    props.empList();
+                }else{
+                    alert(response.data.message);
+                    alert('수정에 실패하였습니다.');
+                }
+            })
         }
-
-        modifyEmp().then((response) => {
-            alert('정상적으로 수정 되었습니다.');
-        })
-
     }
 
     const cancelConfirm = () => alert('수정을 취소하였습니다.');
@@ -359,6 +370,20 @@ function S010100100(props) {
 
     let dataForm = props.dataForm;
     let memId = props.memId;
+
+    useEffect(() => {
+
+        axios.get('/api/s010100040/selectMemberTp')
+            .then(response => {
+                if (response.data.success) {
+                    
+
+                } else {
+                    alert(response.data.message);
+                    alert("회원상태 데이터를 불러오는데 실패하였습니다.");
+                }
+            })
+    }, [])
     
     // 직원 등록
     useEffect(() => {
@@ -381,7 +406,7 @@ function S010100100(props) {
           
             console.log('empIdMd',props.empIdM);
 
-            axios.post('/api/employeeSt/empDetail', body)
+            axios.post('/api/s010100100/empDetail', body)
                 .then(response => {
                     if (response.data.success) {
                     
@@ -394,7 +419,7 @@ function S010100100(props) {
                         }
 
                         setEmpTp(response.data.rows[0].EMP_TP);
-                        // console.log('response.data.rows[0].EMP_TP',response.data.rows[0].EMP_TP);
+                     
                         setFinalSchoolName(response.data.rows[0].FINAL_SCHOOL_NAME);
                         setFirstEmpHp(((response.data.rows[0].EMP_HP).split("-"))[0]);
                         setSecondEmpHp(((response.data.rows[0].EMP_HP).split("-"))[1]);
@@ -422,14 +447,13 @@ function S010100100(props) {
                         setWages(response.data.rows[0].WAGES);
 
                         const modalRetireDate = response.data.rows[0].RETIRE_DATE;
-                        // console.log('retireDate',retireDate);
+                       
                         if((modalRetireDate != null)&&(modalRetireDate != "")&&(modalRetireDate != undefined)){
                             setRetireDate(new Date(modalRetireDate));
                         }else{
                             setRetireDate(new Date(''))
                         }
 
-                        
                         setBirthDate(response.data.rows[0].BIRTH_DATE);
                         setEmpComment(response.data.rows[0].EMP_COMMENT);
 
@@ -439,6 +463,7 @@ function S010100100(props) {
 
                       
                     } else {
+                        alert(response.data.message);
                         alert("직원 상세 데이터를 불러오는데 실패하였습니다.");
                     }
                 })
@@ -446,6 +471,10 @@ function S010100100(props) {
         }
 
     }, [])
+
+    const getRegexData = (regex,data) => {
+        return data.replace(regex, "");
+    }
 
     const onMemberNmHandler = (event) => {
         setMemberNm(event.currentTarget.value);
@@ -456,11 +485,15 @@ function S010100100(props) {
     }
 
     const onFstResidentRegiNumHandler = (event) => {
-        setFstResidentRegiNum(event.currentTarget.value);
+        const regexData = getRegexData(/[^0-9]/g,event.currentTarget.value);
+        setFstResidentRegiNum(regexData);      
     }
+    
 
     const onSndResidentRegiNumHandler = (event) => {
-        setSndResidentRegiNum(event.currentTarget.value);
+        const regexData = getRegexData(/[^0-9]/g,event.currentTarget.value);
+        setSndResidentRegiNum(regexData);
+        
     }
 
     const onEmpTpHandler = (event) => {
@@ -484,11 +517,13 @@ function S010100100(props) {
     }
 
     const onEmpEmailIdHandler = (event) => {
-        setEmpEmailId(event.currentTarget.value);
+        const regexData = getRegexData(/[^-A-Za-z0-9_]/g,event.currentTarget.value);
+        setEmpEmailId(regexData);
     }
 
     const onDomainAddressHandler = (event) => {
-        setDomainAddress(event.currentTarget.value);
+        const regexData = getRegexData(/[^a-zA-Z0-9.]+$/,event.currentTarget.value);
+        setDomainAddress(regexData);
     }
 
     const onZipcodeHandler = (event) => {
@@ -545,10 +580,6 @@ function S010100100(props) {
         setEmpLevel(event.currentTarget.value);
     }
 
-    // const onJoinDateHandler = (event) => {
-    //     setJoinDate(event.currentTarget.value);
-    // }
-
     const onDeptNmHandler = (event) => {
         setDeptNm(event.currentTarget.value);
     }
@@ -561,10 +592,6 @@ function S010100100(props) {
         setWages(event.currentTarget.value);
     }
 
-    // const onRetireDateHandler = (event) => {
-    //     setRetireDate(event.currentTarget.value);
-    // }
-
     const onBirthDateHandler = (event) => {
         setBirthDate(event.currentTarget.value);
     }
@@ -572,7 +599,6 @@ function S010100100(props) {
     const onEmpCommentHandler = (event) => {
         setEmpComment(event.currentTarget.value);
     }
-
 
     // 중복확인
     const onRegNumCheckHandler = (event) => {
@@ -583,21 +609,26 @@ function S010100100(props) {
             fstResidentRegiNum,
             sndResidentRegiNum
         }
-
-        axios.post('/api/employeeSt/regNoCheck', body)
+        if((fstResidentRegiNum.length != 6)||(sndResidentRegiNum.length != 7)||(fstResidentRegiNum.length === 0)||(sndResidentRegiNum.length === 0)){
+            alert('주민번호 형식을 확인하세요');
+        }else{
+        axios.post('/api/s010100100/regNoCheck', body)
             .then(response => {
                 if (response.data.success) {
                     if (response.data.number[0].RowNum >= 1) {
                         alert('이미 존재하는 주민번호입니다.');
                         setRegNumCheckBtn('');
+                        
                     } else if (response.data.number[0].RowNum === 0) {
                         alert('사용할 수 있는 주민번호입니다.')
                         setRegNumCheckBtn('check');
                     }
                 } else {
+                    alert(response.data.message);
                     alert('중복체크에 실패 하였습니다.')
                 }
             })
+        }
     }
 
     const onEmpEmailChkHandler = (event) => {
@@ -610,8 +641,10 @@ function S010100100(props) {
             empEmailId,
             domainAddress
         }
-
-        axios.post('/api/employeeSt/emailCheck', body)
+        if((empEmailId.length === 0)||(domainAddress.length === 0)){
+            alert('이메일 형식을 확인하세요');
+        }else{
+        axios.post('/api/s010100100/emailCheck', body)
             .then(response => {
                 if (response.data.success) {
                     if (response.data.number[0].RowNum >= 1) {
@@ -622,10 +655,11 @@ function S010100100(props) {
                         setEmailCheckBtn('check');
                     }
                 } else {
+                    alert(response.data.message);
                     alert('중복체크에 실패 하였습니다.')
                 }
             })
-
+        }
     }
 
 
@@ -655,7 +689,7 @@ function S010100100(props) {
                             <tr>
                                 <th className="memberInfo">회원명<span className="star">(*)</span></th>
                                 <td>
-                                    <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm"
+                                    <Form.Control style={{ width: 12 + 'em', display: 'inline' }} size="sm"
                                         type="text"
                                         onChange={onMemberNmHandler} disabled value={memberNm} id="memberNm" name="memberNm"
                                     />
@@ -705,7 +739,7 @@ function S010100100(props) {
                                 <th className="memberInfo">최종학교명</th>
                                 <td>
 
-                                    <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm"
+                                    <Form.Control style={{ width: 9 + 'em', display: 'inline' }} size="sm"
                                         type="text" value={finalSchoolName|| ''}
                                         onChange={onFinalSchoolNameHandler} id="finalSchoolName" name="finalSchoolName" />
 
@@ -715,20 +749,20 @@ function S010100100(props) {
                                 <td colSpan="2">
 
                                     <Form.Control style={{ width: 5 + 'em', display: 'inline' }} size="sm"
-                                        type="text" value={firstEmpHp} id="firstEmpHp" name="firstEmpHp"
+                                        type="text" value={firstEmpHp} maxLength ="3" id="firstEmpHp" name="firstEmpHp"
                                         onChange={onFirstEmpHpHandler} />
 
                                     &nbsp;
                                     -
                                     &nbsp;
                                     <Form.Control style={{ width: 5 + 'em', display: 'inline' }} size="sm"
-                                        type="text" value={secondEmpHp} id="secondEmpHp" name="secondEmpHp" name="firstEmpHp"
+                                        type="text" value={secondEmpHp} maxLength ="4" id="secondEmpHp" name="secondEmpHp" name="firstEmpHp"
                                         onChange={onSecondEmpHpHandler} />
                                     &nbsp;
                                     -
                                     &nbsp;
                                     <Form.Control style={{ width: 5 + 'em', display: 'inline' }} size="sm"
-                                        type="text" value={thirdEmpHp} id="thirdEmpHp" name="thirdEmpHp"
+                                        type="text" value={thirdEmpHp} maxLength ="4" id="thirdEmpHp" name="thirdEmpHp"
                                         onChange={onThirdEmpHpHandler} />
                                 </td>
 
