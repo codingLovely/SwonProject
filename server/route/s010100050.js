@@ -10,16 +10,16 @@ let fs = require('fs');
 
 
 
-router.get('/download', function(req,res,next){
-	let filename = "./src/uploads/1f39da861fcdab5734f147f53718d12a.jpg";
-	res.download("./src/uploads/1f39da861fcdab5734f147f53718d12a.jpg", "a.jpg", function(err){
-    	if(err){
-        	res.json({err:err});
-        }else{
-        	res.end();
-        }
-    })
-})
+// router.get('/download', function(req,res,next){
+// 	let filename = "./src/uploads/1f39da861fcdab5734f147f53718d12a.jpg";
+// 	res.download("./src/uploads/1f39da861fcdab5734f147f53718d12a.jpg", "a.jpg", function(err){
+//     	if(err){
+//         	res.json({err:err});
+//         }else{
+//         	res.end();
+//         }
+//     })
+// })
 
 // 회원정보
 
@@ -234,20 +234,29 @@ router.get('/api/s01010050/download/tb_s10_member010_by_id', function (req, res 
 
     let sql = 'SELECT CEO_IMAGE_ID_SERVER,CEO_IMAGE_ID,CEO_IMAGE_ID_PATH FROM TB_S10_MEMBER010 ' +
         ' WHERE MEMBER_ID = ' + memberIdForDown;
-        savedPath = 'C:/Users/team_/Desktop/mysqltestCopy/src/uploads'
-    connection.query(sql, (error, rows) => {
-        if (error) throw error;
-        //res.send({ success: true, rows });
-        console.log('전체조회rows:' + rows[0].CEO_IMAGE_ID_PATH);
-        savedFileNm = rows[0].CEO_IMAGE_ID_PATH;
-        console.log(savedPath+"/"+rows[0].CEO_IMAGE_ID);
-        mimetype = rows[0].CEO_IMAGE_ID_PATH+'.jpg';//.substring(rows[0].CEO_IMAGE_ID_PATH+'.jpg'.lastIndexOf("."))  //'jpg'//mime.getType(rows[0].CEO_IMAGE_ID_PATH);
-        console.log('mimetype',mimetype);
-        res.setHeader('Content-disposition', 'attachment; filename = "' + rows[0].CEO_IMAGE_ID + '"');
-        res.setHeader('Content-type', mimetype);
-        let filestream = fs.createReadStream(savedFileNm);
-        console.log('filestream:' + filestream);
-        filestream.pipe(res);
+
+        savedPath = 'C:/Users/team_/Desktop/mysqltestCopy/src/uploads';
+
+        connection.query(sql, (error, rows) => {
+            if (error) throw error;
+
+            //res.send({ success: true, rows });
+            console.log('전체조회rows:' + rows[0].CEO_IMAGE_ID_PATH);
+
+            savedFileNm = rows[0].CEO_IMAGE_ID_PATH;
+
+            console.log(savedPath+"/"+rows[0].CEO_IMAGE_ID);
+
+            mimetype = rows[0].CEO_IMAGE_ID_PATH+'.jpg';//.substring(rows[0].CEO_IMAGE_ID_PATH+'.jpg'.lastIndexOf("."))  //'jpg'//mime.getType(rows[0].CEO_IMAGE_ID_PATH);
+            console.log('mimetype',mimetype);
+            
+            res.setHeader('Content-disposition', 'attachment; filename = "' + rows[0].CEO_IMAGE_ID + '"');
+            res.setHeader('Content-type', mimetype);
+            
+            let filestream = fs.createReadStream(savedFileNm);
+            console.log('filestream:' + filestream);
+            
+            filestream.pipe(res);
 
     });
 
