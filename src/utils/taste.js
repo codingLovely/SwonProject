@@ -10,8 +10,8 @@ import BarChartIcon from '@material-ui/icons/BarChart';
 import LayersIcon from '@material-ui/icons/Layers';
 import { Link } from 'react-router-dom';
 
-export const mainListItems = (
-
+function taste () {
+return(
   <div>
     <div hidden ={sessionStorage.getItem('member') == null}>
     <ListItem button>
@@ -60,10 +60,7 @@ export const mainListItems = (
       </ListItem>
     </div>
   </div>
-);
+  );
+}
 
-export const secondaryListItems = (
-   <div>
-  
-   </div>
-);
+export default taste;

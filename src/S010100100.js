@@ -36,7 +36,7 @@ function S010100100(props) {
     const [empName, setEmpName] = useState('');
     const [fstResidentRegiNum, setFstResidentRegiNum] = useState('');
     const [sndResidentRegiNum, setSndResidentRegiNum] = useState('');
-    const [empTp, setEmpTp] = useState();
+    const [empTp, setEmpTp] = useState('');
     const [empTps, setEmpTps] = useState([{}]);
     const [finalSchoolName, setFinalSchoolName] = useState('');
     const [firstEmpHp, setFirstEmpHp] = useState('');
@@ -68,9 +68,9 @@ function S010100100(props) {
     const [empLevel, setEmpLevel] = useState('');
     const [deptNm, setDeptNm] = useState('');
     const [pwd, setPwd] = useState('');
-    const [wages, setWages] = useState('');
-    const [joinDate, setJoinDate] = useState(new Date(''));
-    const [retireDate, setRetireDate] = useState(new Date(''));
+    const [wages, setWages] = useState('0');
+    const [joinDate, setJoinDate] = useState('');
+    const [retireDate, setRetireDate] = useState('');
     const [birthDate, setBirthDate] = useState('');
     const [empComment, setEmpComment] = useState('');
   
@@ -140,20 +140,7 @@ function S010100100(props) {
             })
     }, [])
 
-    const retireProcessing = (formData,retire) =>{
-        let today = new Date();   
-
-        let year = today.getFullYear(); // 년도
-        let month = today.getMonth() + 1;  // 월
-        let date = today.getDate();  // 날짜
-
-        let todayForProcess = year+'-'+month+'-'+date;
-        // console.log('todayForProcess',todayForProcess);
-
-        if(retire == todayForProcess){
-            formData.append('retireFlag',"Y");
-        }
-    }
+   
 
     // 저장 함수
     const addEmp = () => {
@@ -161,11 +148,29 @@ function S010100100(props) {
         const formData = new FormData();
         let memId = props.memId;
 
+        let retire;
+        let join;
+        console.log('joinDate',joinDate);
+        console.log('retireDate',retireDate);
+        console.log(retireDate == '' || retireDate == undefined || retireDate == null);
+        if(retireDate){
+           
+            retire = retireDate.getFullYear()+'-'+ (retireDate.getMonth()+1)+'-'+retireDate.getDate();
+        }
+        if(joinDate){
+          
+            join = joinDate.getFullYear()+'-'+ (joinDate.getMonth()+1)+'-'+joinDate.getDate();
+        }
+        if(retireDate == '' || retireDate == undefined || retireDate == null ){
+         
+            retire='0000-00-00';
+        }
+        if(joinDate == '' || joinDate == undefined || joinDate == null){
+           
+            join='0000-00-00';
+        }
 
-        let retire = retireDate.getFullYear()+'-'+ (retireDate.getMonth()+1)+'-'+retireDate.getDate();
-        let join = joinDate.getFullYear()+'-'+ (joinDate.getMonth()+1)+'-'+joinDate.getDate();
-
-        // console.log('retire',retire);
+        console.log('retire',retire);
         
         formData.append('memId', memId);
         formData.append('memberNm', memberNm);
@@ -276,8 +281,31 @@ function S010100100(props) {
 
         let empId = props.empIdM;
         // console.log('memId', memId);
-        let retire = retireDate.getFullYear()+'-'+ (retireDate.getMonth()+1)+'-'+retireDate.getDate();
-        let join = joinDate.getFullYear()+'-'+ (joinDate.getMonth()+1)+'-'+joinDate.getDate();
+        let retire;
+        let join;
+        let wages;
+
+        if(retireDate){
+           
+            retire = retireDate.getFullYear()+'-'+ (retireDate.getMonth()+1)+'-'+retireDate.getDate();
+        }
+        if(joinDate){
+          
+            join = joinDate.getFullYear()+'-'+ (joinDate.getMonth()+1)+'-'+joinDate.getDate();
+        }
+        if(retireDate == '' || retireDate == undefined || retireDate == null ){
+         
+            retire='0000-00-00';
+        }
+        if(joinDate == '' || joinDate == undefined || joinDate == null){
+           
+            join='0000-00-00';
+        }
+        if(wages == null){
+            wages = 0;
+        }
+
+
         
         formData.append('empId', empId);
         formData.append('memberNm', memberNm);
@@ -312,6 +340,7 @@ function S010100100(props) {
         formData.append('retireDate', retire);
         formData.append('empComment', empComment);
         // formData.append('birthDate',birthDate);
+        console.log('wages',wages);
 
         const config = {
             headers: {
@@ -436,10 +465,12 @@ function S010100100(props) {
 
                         const modalJoinDate = response.data.rows[0].JOIN_DATE;
                         
-                        if((modalJoinDate != null)&&(modalJoinDate != "")&&(modalJoinDate != undefined)){
-                            setJoinDate(new Date(modalJoinDate));
+                        if(modalJoinDate === '0000-00-00'){
+                            console.log('조인날짜 00000');
+                            setJoinDate('')
                         }else{
-                            setJoinDate(new Date(''))
+                            console.log('조인날짜 있음');
+                            setJoinDate(new Date(modalJoinDate));
                         }
                         
                         setDeptNm(response.data.rows[0].DEPT_NM);
@@ -448,10 +479,10 @@ function S010100100(props) {
 
                         const modalRetireDate = response.data.rows[0].RETIRE_DATE;
                        
-                        if((modalRetireDate != null)&&(modalRetireDate != "")&&(modalRetireDate != undefined)){
-                            setRetireDate(new Date(modalRetireDate));
+                        if(modalRetireDate === '0000-00-00'){
+                            setRetireDate('')
                         }else{
-                            setRetireDate(new Date(''))
+                            setRetireDate(new Date(modalRetireDate));
                         }
 
                         setBirthDate(response.data.rows[0].BIRTH_DATE);
@@ -505,15 +536,18 @@ function S010100100(props) {
     }
 
     const onFirstEmpHpHandler = (event) => {
-        setFirstEmpHp(event.currentTarget.value);
+        const regexData = getRegexData(/[^0-9]/g, event.currentTarget.value);
+        setFirstEmpHp(regexData);
     }
 
     const onSecondEmpHpHandler = (event) => {
-        setSecondEmpHp(event.currentTarget.value);
+        const regexData = getRegexData(/[^0-9]/g, event.currentTarget.value);
+        setSecondEmpHp(regexData);
     }
 
     const onThirdEmpHpHandler = (event) => {
-        setThirdEmpHp(event.currentTarget.value);
+        const regexData = getRegexData(/[^0-9]/g, event.currentTarget.value);
+        setThirdEmpHp(regexData);
     }
 
     const onEmpEmailIdHandler = (event) => {
@@ -895,7 +929,7 @@ function S010100100(props) {
                                 <DatePicker
                                         className="dateSize"
                                         locale="ko"
-                                        selected={joinDate.setHours(9, 0, 0, 0)}
+                                        selected={joinDate}// .setHours(9, 0, 0, 0)
                                         onChange={date => setJoinDate(date)}
                                         dateFormat="yyyy-MM-dd"
                                        
@@ -926,9 +960,9 @@ function S010100100(props) {
                                 <th >급여</th>
                                 <td>
 
-                                    <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm"
+                                <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm"
                                         type="text"
-                                        onChange={onWagesHandler} value={wages|| ''} id="wages" name="wages" />
+                                        onChange={onWagesHandler} value={wages || ''} id="wages" name="wages"  />
 
                                 </td>
 
@@ -938,7 +972,7 @@ function S010100100(props) {
                                 <DatePicker
                                         className="dateSize"
                                         locale="ko"
-                                        selected={retireDate.setHours(9, 0, 0, 0)}
+                                        selected={retireDate}//.setHours(9, 0, 0, 0)
                                         onChange={date => setRetireDate(date)}
                                         dateFormat="yyyy-MM-dd"
                                      

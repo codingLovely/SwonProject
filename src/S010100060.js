@@ -30,6 +30,17 @@ import Title from './Title';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
+import ListSubheader from '@material-ui/core/ListSubheader';
+import DashboardIcon from '@material-ui/icons/Dashboard';
+import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
+import PeopleIcon from '@material-ui/icons/People';
+import BarChartIcon from '@material-ui/icons/BarChart';
+import LayersIcon from '@material-ui/icons/Layers';
+import { Link } from 'react-router-dom';
+
 
 import Form from 'react-bootstrap/Form';
 
@@ -214,18 +225,19 @@ function S010100060() {
 
     const onPayHandleClickClose = useCallback(() => {
         setStoreOpen(false);
+        setChecked('');
         paymentSearchHandler();
     });
 
 
-    const handleToggle = (e) => {
+    const handleToggle = (value) => {
         //console.log('event', e.target.id);
-        const currentIndex = checked.indexOf(e.target.id);
+        const currentIndex = checked.indexOf(value);
         //전체 Checked된 State에서 현재 누를 Checkbox가 있는지 확인
-        const newChecked = checked;
+        const newChecked = [...checked];
 
         if (currentIndex === -1) {
-            newChecked.push(e.target.id)
+            newChecked.push(value)
         } else {
             newChecked.splice(currentIndex, 1)
         }
@@ -281,12 +293,12 @@ function S010100060() {
     const displayPayStList = payStatusList.slice(pagesVisited, pagesVisited + usersPerPage).map((payStatusList, index) => {
         return (
             <TableRow key={payStatusList.CONTRACT_ID}>
-                <TableCell><input type='checkbox' onChange={handleToggle} id={payStatusList.CONTRACT_ID} /></TableCell>
+                <TableCell><input type='checkbox' checked = {checked.indexOf(payStatusList.CONTRACT_ID) === -1 ? false:true} onChange={()=>handleToggle(payStatusList.CONTRACT_ID)} id={payStatusList.CONTRACT_ID} /></TableCell>
                 <TableCell>{payStatusList.CONTRACT_ID}</TableCell>
                 <TableCell>{payStatusList.MEMBER_NM}</TableCell>
                 <TableCell>{payStatusList.PAY_PLAN_DATE}</TableCell>
                 <TableCell>{payStatusList.PAYED_FLAG}</TableCell>
-                <TableCell>{payStatusList.PAYED_DATE}</TableCell>
+                <TableCell>{payStatusList.PAYED_DATE=== '00-00-00'||null ? '' :payStatusList.PAYED_DATE}</TableCell>
                 <TableCell>{payStatusList.START_DATE} ~ {payStatusList.END_DATE}</TableCell>
                 <TableCell>{payStatusList.NAME}</TableCell>
                 <TableCell>{payStatusList.EMP_HP}</TableCell>
@@ -320,13 +332,9 @@ function S010100060() {
                             <MenuIcon />
                         </IconButton>
                         <Typography component='h1' variant='h6' color='inherit' noWrap className={classes.title}>
-                            Dashboard
-          </Typography>
-                        <IconButton color='inherit'>
-                            <Badge badgeContent={4} color='secondary'>
-                                <NotificationsIcon />
-                            </Badge>
-                        </IconButton>
+                        SwonTech 고객관리시스템
+                        </Typography>
+                        
                     </Toolbar>
                 </AppBar>
                 {/* 왼쪽 메뉴바 */}
@@ -343,7 +351,56 @@ function S010100060() {
                         </IconButton>
                     </div>
                     <Divider />
-                    <List>{mainListItems}</List>
+                    <List>
+                        <div>
+                            <div hidden ={sessionStorage.getItem('member') == null}>
+                            <ListItem button>
+                            <ListItemIcon>
+                            <PeopleIcon />
+                            </ListItemIcon>
+                            <Link to="/member"><ListItemText primary="회원현황" /></Link>
+                            </ListItem>
+                            <ListItem button>
+                            <ListItemIcon>
+                                <ShoppingCartIcon />
+                            </ListItemIcon>
+                            <Link to ="/paymentStatus"><ListItemText primary="납부현황" /></Link>
+                            </ListItem>
+                            <ListItem button>
+                            <ListItemIcon>
+                            <DashboardIcon />
+                            </ListItemIcon>
+                            <Link to ="/consultationStatus"><ListItemText primary="상담현황" /></Link>
+                            </ListItem>
+                            <ListItem button>
+                            <ListItemIcon>
+                                <BarChartIcon />
+                            </ListItemIcon>
+                            <Link to ="/staff"><ListItemText primary="직원현황" /></Link>
+                            </ListItem>
+                            <ListItem button>
+                            <ListItemIcon>
+                            <DashboardIcon />
+                            </ListItemIcon>
+                            <Link to ="/contractStatus"><ListItemText primary="계약현황" /></Link>
+                            </ListItem>
+                            <ListItem button>
+                                <ListItemIcon>
+                                <LayersIcon />
+                                </ListItemIcon>
+                                <Link to ="/"><ListItemText primary="로그아웃" /></Link>
+                            </ListItem>
+                            </div>
+                        <div hidden ={sessionStorage.getItem('member') != null}>
+                            <ListItem button>
+                                <ListItemIcon>
+                                <LayersIcon />
+                                </ListItemIcon>
+                                <Link to ="/"><ListItemText primary="로그인" /></Link>
+                            </ListItem>
+                            </div>
+                        </div>
+                    </List>
                    
                 </Drawer>
                 <main className={classes.content}>
@@ -356,7 +413,6 @@ function S010100060() {
                                     <form
                                         onSubmit={onSubmitHandler}
                                     >
-
                                         납부예정일&nbsp;
                    
                                         <DatePicker
@@ -476,7 +532,11 @@ function S010100060() {
                 maxWidth={'lg'}
                 open={storeOpen}
                 onClose={onPayHandleClickClose}>
-                <S010100070 dataContracId={dataAllContract} onPayHandleClickClose={onPayHandleClickClose}/>
+                <S010100070 
+                    dataContracId={dataAllContract} 
+                    onPayHandleClickClose={onPayHandleClickClose} 
+                    setStoreOpen={setStoreOpen}
+                />
             </Dialog>
         </Fragment>
     );

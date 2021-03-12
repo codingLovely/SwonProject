@@ -46,7 +46,7 @@ router.post('/list', (req, res) => {
     if (paymentStatus != null && paymentStatus != "" && userName != "undefined")
         sql += ' AND CON2.PAYED_FLAG = "' + paymentStatus + '"';
 
-    sql += ' ORDER BY CON2.CONTRACT_ID DESC';
+    sql += ' AND MEM.MEMBER_ST = "C" ORDER BY CON2.CONTRACT_ID DESC';
 
     connection.query(sql, (error, rows) => {
         if (error){

@@ -599,7 +599,7 @@ function S010100050(props) {
 
                                 <td>
 
-                                    <Form.Control style={{ width: 5 + 'em', display: 'inline' }} size="sm"
+                                    <Form.Control style={{ width: 12 + 'em', display: 'inline' }} size="sm"
                                         type="text" value={detailMemberNm} id="detailMemberNm" name="detailMemberNm"
                                         onChange={onDetailMemberNmHandler} />
 

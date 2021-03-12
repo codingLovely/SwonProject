@@ -30,19 +30,17 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Form from 'react-bootstrap/Form';
 import logos from './css/logos.png';
 import S010100151 from './S010100151';
-function Copyright() {
-  return (
-    <Typography variant="body2" color="textSecondary" align="center">
-      {'Copyright © '}
-      <Link color="inherit" href="https://material-ui.com/">
-        Your Website
-      </Link>{' '}
-      {new Date().getFullYear()}
-      {'.'}
-    </Typography>
-  );
-}
 
+
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
+import ListSubheader from '@material-ui/core/ListSubheader';
+import DashboardIcon from '@material-ui/icons/Dashboard';
+import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
+import PeopleIcon from '@material-ui/icons/People';
+import BarChartIcon from '@material-ui/icons/BarChart';
+import LayersIcon from '@material-ui/icons/Layers';
 
 const drawerWidth = 240;
 
@@ -149,7 +147,7 @@ function S010100150(props) {
 
   const classes = useStyles();
 
-  const [open, setOpen] = React.useState(true);
+  const [open, setOpen] = React.useState(false);
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -199,6 +197,7 @@ const approvalConfirm = () => {
       sessionStorage.removeItem('member');
       sessionStorage.clear();
       props.history.push('/');
+      console.log(sessionStorage.getItem('member'));
     }else if(response.data.loginResult == false){
       alert(response.data.message);
       alert('아이디 또는 비밀번호를 확인하세요.');
@@ -207,7 +206,7 @@ const approvalConfirm = () => {
 
 }
 
-const cancelConfirm = () => alert('삭제를 취소하였습니다.');
+const cancelConfirm = () => alert('취소하였습니다.');
 
 const onLogoutHandler = useConfirm(
     "로그아웃 하시겠습니까?",
@@ -228,13 +227,14 @@ const onLogoutHandler = useConfirm(
         if (response.data.loginResult == true) {
           alert('로그인 되었습니다.');
           let arr = [response.data.cf,response.data.mI];
-          // console.log('response.data.cf',response.data.cf);
+          
           sessionStorage.setItem('member',JSON.stringify(arr));
           props.history.push('/member');
-          // console.log(sessionStorage.getItem('member'));
-       
+               
+        }else if(response.data.pwdResult == false){
+          alert('비밀번호를 확인하세요');
         }else if(response.data.loginResult == false){
-          alert(response.data.message);
+          // alert(response.data.message);
           alert('가입되어 있지 않은 사용자 입니다.');
         }
       })
@@ -258,13 +258,9 @@ const onLogoutHandler = useConfirm(
             <MenuIcon />
           </IconButton>
           <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
-            Dashboard
-        </Typography>
-          <IconButton color="inherit">
-            <Badge badgeContent={4} color="secondary">
-              <NotificationsIcon />
-            </Badge>
-          </IconButton>
+          SwonTech 고객관리시스템
+          </Typography>
+         
         </Toolbar>
       </AppBar>
       {/* 왼쪽 메뉴바 */}
@@ -281,7 +277,54 @@ const onLogoutHandler = useConfirm(
           </IconButton>
         </div>
         <Divider />
-        <List>{mainListItems}</List>
+        <List><div>
+    <div hidden ={sessionStorage.getItem('member') == null}>
+    <ListItem button>
+      <ListItemIcon>
+      <PeopleIcon />
+      </ListItemIcon>
+      <Link to="/member"><ListItemText primary="회원현황" /></Link>
+    </ListItem>
+    <ListItem button>
+      <ListItemIcon>
+        <ShoppingCartIcon />
+      </ListItemIcon>
+      <Link to ="/paymentStatus"><ListItemText primary="납부현황" /></Link>
+    </ListItem>
+    <ListItem button>
+      <ListItemIcon>
+      <DashboardIcon />
+      </ListItemIcon>
+      <Link to ="/consultationStatus"><ListItemText primary="상담현황" /></Link>
+    </ListItem>
+    <ListItem button>
+      <ListItemIcon>
+        <BarChartIcon />
+      </ListItemIcon>
+      <Link to ="/staff"><ListItemText primary="직원현황" /></Link>
+    </ListItem>
+    <ListItem button>
+      <ListItemIcon>
+      <DashboardIcon />
+      </ListItemIcon>
+      <Link to ="/contractStatus"><ListItemText primary="계약현황" /></Link>
+    </ListItem>
+    <ListItem button>
+        <ListItemIcon>
+          <LayersIcon />
+        </ListItemIcon>
+        <Link to ="/"><ListItemText primary="로그아웃" /></Link>
+      </ListItem>
+    </div>
+   <div hidden ={sessionStorage.getItem('member') != null}>
+      <ListItem button>
+        <ListItemIcon>
+          <LayersIcon />
+        </ListItemIcon>
+        <Link to ="/"><ListItemText primary="로그인" /></Link>
+      </ListItem>
+    </div>
+  </div></List>
       
       </Drawer>
       <main className={classes.content}>

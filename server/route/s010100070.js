@@ -6,7 +6,7 @@ const connection = dbconfig.init();
 
 // 납부 현황
 
-router.post('/list', (req, res) => {
+router.post('/list', (req, res,next) => {
 
     let startDate = req.body.startDate.toString().substring(0, 10);;
     let endDate = req.body.endDate.toString().substring(0, 10);;
@@ -62,7 +62,7 @@ router.post('/list', (req, res) => {
 })
 
 
-router.get('/insert/tb_s10_contract020_by_id', (req, res) => {
+router.get('/insert/tb_s10_contract020_by_id', (req, res,next) => {
 
     let type = req.query.type;
     let dataContracId = req.query.id;
@@ -93,7 +93,7 @@ router.get('/insert/tb_s10_contract020_by_id', (req, res) => {
         'LEFT JOIN TB_S10_CODE CODE1  ' +
         'ON MEM.MEMBER_ST = CODE1.CD_V  ' +
         'AND CODE1.CD_TP ="MEMBER_ST"  ' +
-        'WHERE PCON.CONTRACT_ID = ' + dataContracId;
+        'WHERE PCON.CONTRACT_ID = ' + dataContracId ;
 
     connection.query(sql, (error, rows) => {//쿼리문
         //console.log(rows);
@@ -110,7 +110,7 @@ router.get('/insert/tb_s10_contract020_by_id', (req, res) => {
 })
 
 
-router.post('/paymentCancel', (req, res) => {
+router.post('/paymentCancel', (req, res,next) => {
 
     let modalContractId = req.body.modalContractId;
 
@@ -170,7 +170,7 @@ router.post('/paymentCancel', (req, res) => {
 
 
 //let payFlagNum;
-router.post('/paymentUpdate', (req, res) => {
+router.post('/paymentUpdate', (req, res,next) => {
 
     let modalContractId = req.body.modalContractId;
 

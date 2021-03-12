@@ -96,6 +96,7 @@ router.post('/searchMember', (req, res, next) => {
         sql += ' AND emp010.NAME LIKE "%' + name + '%"';
     
     sql += ' ORDER BY member010.MEMBER_ID DESC';
+    console.log(sql);
    
     connection.query(sql, (error, rows) => {
         if (error){

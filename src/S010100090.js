@@ -31,6 +31,18 @@ import TableRow from '@material-ui/core/TableRow';
 import Title from './Title';
 import Dialog from '@material-ui/core/Dialog';
 
+
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
+import ListSubheader from '@material-ui/core/ListSubheader';
+import DashboardIcon from '@material-ui/icons/Dashboard';
+import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
+import PeopleIcon from '@material-ui/icons/People';
+import BarChartIcon from '@material-ui/icons/BarChart';
+import LayersIcon from '@material-ui/icons/Layers';
+import { Link } from 'react-router-dom';
+
 import Form from 'react-bootstrap/Form';
 
 import { DatePicker } from "antd";
@@ -131,7 +143,6 @@ let empNm = '';
 let chkSt = '';
 let memberId;
 let empIdM;
-let empIdMarr =[];
 
 function S010100090() {
     const classes = useStyles();
@@ -161,6 +172,7 @@ function S010100090() {
     const [memId, setMemId] = useState(0);
     const [empId,setEmpId] = useState();
     const [dataForm, setdataForm] = useState('');
+    const [retireChecked, setRetireChecked] = useState([]);
 
     const [pageNumber, setPageNumber] = useState(0);
     const usersPerPage = 20;
@@ -171,20 +183,6 @@ function S010100090() {
         setPageNumber(selected);
     }
 
-
-
-    // useEffect(() => {
-    //     axios.post('/api/s010100150/session')
-    //         .then(response => {
-    //             if (response.data.success) {
-                  
-
-    //             } else {
-    //                 alert(response.data.message);
-    //             }
-    //         })
-    // }, [])
-    
     // 직원 구분
     useEffect(() => {
         axios.post('/api/s010100090/classification')
@@ -206,13 +204,12 @@ function S010100090() {
             })
     }, [])
 
-
-
     useEffect(() => {
         empList();
     }, [])
 
     const empList = () => {
+
         let body = {
             staffName,
             memberNm,
@@ -231,6 +228,7 @@ function S010100090() {
                     alert("직원 데이터를 불러오는데 실패하였습니다.");
                 }
             })
+
     }
 
 
@@ -262,20 +260,21 @@ function S010100090() {
         empList();
     }
 
-    const [retireChecked, setRetireChecked] = useState([]);
+    
 
-    const retireHandleToggle = (event) => {
+    const retireHandleToggle = (value) => {
 
         // 승인empId 현재 index값
-        const currentIndex = retireChecked.indexOf(event.target.id);
+        const currentIndex = retireChecked.indexOf(value);
         // 등록시 회사명
 
         //전체 Checked된 State에서 현재 누를 Checkbox가 있는지 확인
-        const newChecked = retireChecked;
       
-
+        const newChecked = [...retireChecked];
+        console.log('newChecked',newChecked);
+        console.log(checked);
         if (currentIndex === -1) {
-            newChecked.push(event.target.id)
+            newChecked.push(value)
         } else {
             newChecked.splice(currentIndex, 1)
         }
@@ -284,30 +283,31 @@ function S010100090() {
 
     }
 
-    const handleToggle = (event) => {
+    const handleToggle = (value) => {
 
         // 승인empId 현재 index값
-        const currentIndex = checked.indexOf(event.target.id);
-        // 등록시 회사명
-        empNm = event.target.className;
-      
+        const currentIndex = checked.indexOf(value);
+    
 
         //전체 Checked된 State에서 현재 누를 Checkbox가 있는지 확인
-        const newChecked = checked;
-      
+        
+        const newChecked = [...checked];
 
         if (currentIndex === -1) {
-            newChecked.push(event.target.id)
+            newChecked.push(value)
         } else {
             newChecked.splice(currentIndex, 1)
         }
         setChecked(newChecked);
-        // console.log(checked);
+        console.log(checked);
         newChecked.length > 0 ? chkSt = 'check' : chkSt = '';
 
     }
-    
-    const onRegistHandler = (event) => {
+
+
+
+    // 등록
+    const onRegistHandler = () => {
         if (checked.length === 0) {
             alert('선택하세요');
         } else if (checked.length > 1) {
@@ -315,18 +315,18 @@ function S010100090() {
         } else {
             const checkedList = checked[0].split(',');
             console.log(checkedList[0]);
-            
+             // empNm = event.target.className;
             memberId = checkedList[0];
-            setEmpName(empNm);
+            setEmpName(checkedList[2]);
             setMemId(checkedList[0]);
             setdataForm('I');
             console.log('empNm',empNm);
             setStoreOpen(true);
-            
-        
+            //setChecked('');
         }
     }
     
+    // 수정
     const onModifyHandler = (event) => {
         if (checked.length === 0) {
             alert('선택하세요');
@@ -339,7 +339,7 @@ function S010100090() {
             setdataForm('U');
             setEmpId(empIdM);
             setStoreOpen(true);
-        
+        //setChecked('');
         }
     }
 
@@ -365,15 +365,20 @@ function S010100090() {
     const approvalConfirm = (event) => {
         let checkedMemberId;
 
-        for(let i = 0; checked.length > i; i++){
-           checkedMemberId = checked[i].split(',');    
-    }
+        console.log('checkedMemberId',checkedMemberId);
+        console.log('checked',checked);
 
-    if(JSON.parse(sessionStorage.getItem("member"))[1] != checkedMemberId[0]){
+        for(let i = 0; checked.length > i; i++){
+            
+            console.log('checked[i].split',checked[i].split(','));
+            checkedMemberId = checked[i].split(',');    
+    }
+    
+    if (checkedMemberId == undefined ||checkedMemberId == null) {
+        alert('승인할 회원을 선택하세요');
+    }else if(JSON.parse(sessionStorage.getItem("member"))[1] != checkedMemberId[0]){
         alert('자회사의 직원승인만 가능합니다.');
-    }else if (checked.length === 0) {
-            alert('승인할 회원을 선택하세요');
-        } else {
+    }else{
             let arr = [];
 
             for(let i = 0; checked.length > i; i++){
@@ -385,7 +390,7 @@ function S010100090() {
                 arr.push(checkedList[1]);
 
         }
-            // console.log(arr);
+        
             let body = {
                 arr
             }
@@ -395,6 +400,7 @@ function S010100090() {
                     if (response.data.success) {
                         alert('승인처리 되었습니다.');
                         empList();
+                        setChecked('');
                     } else {
                         alert(response.data.message);
                         alert('승인처리에 실패하였습니다.');
@@ -443,7 +449,7 @@ function S010100090() {
         return (
             <TableRow key={index}>
                 <TableCell>
-                    <input type="checkbox" onChange={handleToggle} id={empInfo.MEMBER_ID + ',' + empInfo.EMP_ID} className={empInfo.MEMBER_NM} />
+                    <input type="checkbox" checked={checked.indexOf(empInfo.MEMBER_ID + ',' + empInfo.EMP_ID + ',' + empInfo.MEMBER_NM)===-1? false :true} onChange={()=> handleToggle(empInfo.MEMBER_ID + ',' + empInfo.EMP_ID + ',' + empInfo.MEMBER_NM)} id={empInfo.MEMBER_ID + ',' + empInfo.EMP_ID} className={empInfo.MEMBER_NM} />
                 </TableCell>
                 <TableCell>{empInfo.MEMBER_NM}</TableCell>
                 <TableCell>{empInfo.EMP_NUMBER}</TableCell>
@@ -480,13 +486,9 @@ function S010100090() {
                             <MenuIcon />
                         </IconButton>
                         <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
-                            Dashboard
-          </Typography>
-                        <IconButton color="inherit">
-                            <Badge badgeContent={4} color="secondary">
-                                <NotificationsIcon />
-                            </Badge>
-                        </IconButton>
+                        SwonTech 고객관리시스템
+                        </Typography>
+                        
                     </Toolbar>
                 </AppBar>
                 {/* 왼쪽 메뉴바 */}
@@ -503,7 +505,55 @@ function S010100090() {
                         </IconButton>
                     </div>
                     <Divider />
-                    <List>{mainListItems}</List>
+                    <List>
+                        <div>
+                            <div hidden ={sessionStorage.getItem('member') == null}>
+                            <ListItem button>
+                            <ListItemIcon>
+                            <PeopleIcon />
+                            </ListItemIcon>
+                            <Link to="/member"><ListItemText primary="회원현황" /></Link>
+                            </ListItem>
+                            <ListItem button>
+                            <ListItemIcon>
+                                <ShoppingCartIcon />
+                            </ListItemIcon>
+                            <Link to ="/paymentStatus"><ListItemText primary="납부현황" /></Link>
+                            </ListItem>
+                            <ListItem button>
+                            <ListItemIcon>
+                            <DashboardIcon />
+                            </ListItemIcon>
+                            <Link to ="/consultationStatus"><ListItemText primary="상담현황" /></Link>
+                            </ListItem>
+                            <ListItem button>
+                            <ListItemIcon>
+                                <BarChartIcon />
+                            </ListItemIcon>
+                            <Link to ="/staff"><ListItemText primary="직원현황" /></Link>
+                            </ListItem>
+                            <ListItem button>
+                            <ListItemIcon>
+                            <DashboardIcon />
+                            </ListItemIcon>
+                            <Link to ="/contractStatus"><ListItemText primary="계약현황" /></Link>
+                            </ListItem>
+                            <ListItem button>
+                                <ListItemIcon>
+                                <LayersIcon />
+                                </ListItemIcon>
+                                <Link to ="/"><ListItemText primary="로그아웃" /></Link>
+                            </ListItem>
+                            </div>
+                            <div hidden ={sessionStorage.getItem('member') != null}>
+                            <ListItem button>
+                                <ListItemIcon>
+                                <LayersIcon />
+                                </ListItemIcon>
+                                <Link to ="/"><ListItemText primary="로그인" /></Link>
+                            </ListItem>
+                            </div>
+                        </div></List>
                   
                 </Drawer>
                 <main className={classes.content}>
@@ -558,9 +608,9 @@ function S010100090() {
                                             ))}
 
                                         </Form.Control>
-                                       &nbsp;&nbsp;
+                                        &nbsp;&nbsp;
                                         퇴사여부&nbsp;&nbsp;
-                                        <input type="checkbox" onChange={retireHandleToggle} id="Y" />
+                                        <input type="checkbox" checked = {retireChecked.indexOf("Y") ===-1 ? false:true} onChange={() => retireHandleToggle("Y")} />
 
                                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 

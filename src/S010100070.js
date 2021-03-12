@@ -177,13 +177,12 @@ function S010100070(props) {
         axios.get(`/api/s010100070/insert/tb_s10_contract020_by_id?id=${dataContracId}`)
             .then(response => {
                 if (response.data.success) {
-                    //초기값 세팅
+                    // 초기값 세팅
                     response.data.rows.map((row) => {
                         if (row.PAYED_DATE === null || row.PAYED_DATE === undefined) row.PAYED_DATE = makeYYMMDD(new Date());
                         if (row.CONTRACT_COMMENT === null || row.CONTRACT_COMMENT === undefined) row.CONTRACT_COMMENT = '';
                         // console.log('row', row);
                     })
-
 
                     setPaymentStatusList(response.data.rows);
                     setPaymentMemberNm(response.data.rows[0].MEMBER_NM);
@@ -209,26 +208,25 @@ function S010100070(props) {
     }, [])
 
     let newChecked;
-
-    const toggleHandler = (event) => {
-
-
-            const currentIndex = checked.indexOf(event.target.id);
-            // const currentIndex = checked.findIndex((items,idx) => 
-            // {return items.PAY_PLAN_DATE !== event.target.id});
-            //전체 Checked된 State에서 현재 누를 Checkbox가 있는지 확인
-            // console.log('event.target.id[0]',event.target.id);
-            // console.log('event.target.className',event.target.className[0]);
-            newChecked = checked;
+   
+    const toggleHandler = (value) => {
+            // console.log('event.target.id',event.target.id);
+            // setChkAfterchangeDate(event.target.id);
+            // console.log('chkAfterchangeDate',chkAfterchangeDate);
+            
+            const currentIndex = checked.indexOf(value);
+            console.log(checked);
+          
+            const newChecked = [...checked];
            
             if (currentIndex === -1) {
-                newChecked.push(event.target.id)
+                newChecked.push(value)
             } else {
                 newChecked.splice(currentIndex, 1)
             }
             setChecked(newChecked);
             // console.log('Checked',checked);
-      
+            
     }
 
     const snsBtnHandler = (event) => {
@@ -272,7 +270,8 @@ function S010100070(props) {
         date = date < 10 ? '0' + date : date;
         return year + '-' + month + '-' + date;
     }
-
+ 
+  
 
     const displayUsers = paymentStatusList.slice(pagesVisited,pagesVisited + usersPerPage).map((paymentStatus, index) => {
         let insertPayDate = paymentStatus.PAYED_DATE
@@ -282,7 +281,7 @@ function S010100070(props) {
         return (
             <TableRow key={index}>
                 <TableCell>
-                    <input type="checkbox" onChange={toggleHandler} id={paymentStatus.PAY_PLAN_DATE + ',' + paymentStatus.PAYED_DATE + ',' + paymentStatus.CONTRACT_COMMENT} />
+                    <input type="checkbox" checked = {checked.indexOf(paymentStatus.PAY_PLAN_DATE + ',' + paymentStatus.PAYED_DATE + ',' + paymentStatus.CONTRACT_COMMENT)=== -1 ? false : true} onChange={()=>toggleHandler(paymentStatus.PAY_PLAN_DATE + ',' + paymentStatus.PAYED_DATE + ',' + paymentStatus.CONTRACT_COMMENT)} id={paymentStatus.PAY_PLAN_DATE + ',' + paymentStatus.PAYED_DATE + ',' + paymentStatus.CONTRACT_COMMENT} />
                 </TableCell>
                 <TableCell id={paymentStatus.CONTRACT_ID}>{paymentStatus.CONTRACT_ID}</TableCell>
                 <TableCell>{paymentStatus.PAY_PLAN_DATE}</TableCell>
@@ -308,7 +307,7 @@ function S010100070(props) {
                         }
                         selectsStart
                         startDate={insertPayDate}
-                        dateFormat="yyyy.MM.dd (eee)"
+                        dateFormat="yyyy-MM-dd (eee)"
                     />
                 </TableCell>
                 <TableCell>
@@ -351,10 +350,14 @@ function S010100070(props) {
                     if (response.data.success) {
                         alert('취소처리되었습니다.');
                         paymentStList();
-                        setSequenceChk('');
+                        setChecked('');
+                        props.setStoreOpen(false);
+                       
                     } else {
                         alert(response.data.message);
                         alert('취소처리를 실패하였습니다.');
+                        props.setStoreOpen(false);
+                      
                     }
                 })
             // paymentStList();
@@ -390,7 +393,9 @@ function S010100070(props) {
         let modalPayPlanDate = checked;
         // console.log(checked);
         // console.log('modalContractId', modalContractId);
-    if(checked.length > 0){
+        setSequenceChk('');
+
+        if(checked.length > 0){
         let body = {
             modalContractId: modalContractId,
             modalPayPlanDate: modalPayPlanDate,
@@ -399,19 +404,30 @@ function S010100070(props) {
             checked: checked
         }
         // console.log('newChecked', body);
+         
 
-        axios.post('/api/s010100070/paymentUpdate', body)
+            if(sequenceChk ==''){
+                alert('날짜먼저 선택한 후 체크하세요.');
+                setChecked('');
+            }
+            else{
+            axios.post('/api/s010100070/paymentUpdate', body)
             .then(response => {
                 if (response.data.success) {
-                    alert('납부처리되었습니다.');
+                    alert('납부처리 되었습니다.');
                     paymentStList();
-                    setSequenceChk('');
+                    setChecked('');
+                    props.setStoreOpen(false);
                 } else {
                     alert(response.data.message);
                     alert('납부처리를 실패하였습니다.');
+                    props.setStoreOpen(false);
+                   
                 }
             })
-        // paymentStList();
+        
+        }
+       
     }else if(checked.length === 0){
         alert('선택하세요');
     }
@@ -419,7 +435,11 @@ function S010100070(props) {
 
     }
 
-    const cancelConfirm = () => alert('납부처리를 취소하였습니다.');
+    const cancelConfirm = () => {
+        alert('납부처리를 취소하였습니다.');
+        props.setStoreOpen(false);
+    
+    }
 
     const payBtnHandler = useConfirm(
         
@@ -472,7 +492,7 @@ function S010100070(props) {
                                 <td >
 
                                     <Form.Control style={{ width: 5 + 'em', display: 'inline' }} size="sm"
-                                        type="text" value={payMethod} id="payMethod" name="payMethod"
+                                        type="text" value={payMethod|| ''} id="payMethod" name="payMethod"
                                         onChange={payMethodHandler} />
 
                                 </td>

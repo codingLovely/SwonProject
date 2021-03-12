@@ -3,15 +3,19 @@ const router = express.Router();
 
 const dbconfig = require('../config/database.js')();
 const connection = dbconfig.init();
-const bcrypt = require('bcrypt');
-const saltRounds = 10;
+
 
 const multer = require('multer');
 let upload = multer({ dest: './src/uploads' })
 
+const bcrypt = require('bcrypt');                                                    
+const saltRounds = 7;                                                              
 
 
-router.post('/empDetail', (req, res) => {
+
+
+
+router.post('/empDetail', (req, res ,next) => {
     let empId = req.body.empId;
     let sql = 'SELECT MEM.MEMBER_NM,EMP.NAME,EMP.REG_NUMBER1,EMP.REG_NUMBER2,EMP.EMP_TP,EMP.FINAL_SCHOOL_NAME,EMP.EMP_HP,EMP.EMP_EMAIL, ' +
         '       EMP.ZIP_CODE,EMP.ADDRESS,EMP.DETAIL_ADDRESS,EMP.IMAGE_FAMRELCERTIFICATE,EMP.IMAGE_GRADCERTIFICATE,' +
@@ -34,7 +38,7 @@ router.post('/empDetail', (req, res) => {
 
 
 
-router.post('/insertEmp', upload.fields([{ name: 'famRelCertificate', maxCount: 3 }, { name: 'graduationCertificate', maxCount: 5 }, { name: 'copyOfBankbook', maxCount: 5 }]), (req, res) => {
+router.post('/insertEmp', upload.fields([{ name: 'famRelCertificate', maxCount: 3 }, { name: 'graduationCertificate', maxCount: 5 }, { name: 'copyOfBankbook', maxCount: 5 }]), (req, res ,next) => {
 
     let memberId = req.body.memId;
     let memberNm = req.body.memberNm;
@@ -83,6 +87,7 @@ router.post('/insertEmp', upload.fields([{ name: 'famRelCertificate', maxCount: 
     let birthDate = req.body.birthDate;
     let empComment = req.body.empComment;
     let retireFlag = req.body.retireFlag;
+    console.log('retireDate',retireDate);
 
     let famRelCertificateAddr;
     let famRelCertificatename;
@@ -123,37 +128,39 @@ router.post('/insertEmp', upload.fields([{ name: 'famRelCertificate', maxCount: 
         copyOfBankbookname = req.files['copyOfBankbook'][0].originalname;
         copyOfBankbookPath = req.files['copyOfBankbook'][0].path;
     }
+    let empSqlquery='INSERT INTO  ' +
+    '       TB_S10_EMP010 ( MEMBER_ID,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,' +
+    '                       NAME,REG_NUMBER1,REG_NUMBER2,EMP_TP, FINAL_SCHOOL_NAME,EMP_HP,EMP_EMAIL,ZIP_CODE,' +
+    '                       ADDRESS,DETAIL_ADDRESS,IMAGE_FAMRELCERTIFICATE,IMAGE_FAMRELCERTIFICATE_SERVER,' +
+    '                       IMAGE_FAMRELCERTIFICATE_PATH,IMAGE_GRADCERTIFICATE,IMAGE_GRADCERTIFICATE_SERVER,' +
+    '                       IMAGE_GRADCERTIFICATE_PATH,IMAGE_BANKBOOK,IMAGE_BANKBOOK_SERVER,IMAGE_BANKBOOK_PATH, ' +
+    '                       EMP_NUMBER,EMP_LEVEL,JOIN_DATE,' +
+    '                       DEPT_NM,' +
+    '                       PWD,' +
+    '                       WAGES,' +
+    '                       RETIRE_DATE,' +
+    '                       BIRTH_DATE,' +
+    '                       EMP_COMMENT,' +
+    '                       CEO_FLAG)' ;
 
     if (existfamRelCertificate && existgraduationCertificate && existcopyOfBankbook) {
-        let empSql =
-            'INSERT INTO  ' +
-            '       TB_S10_EMP010 ( MEMBER_ID,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,' +
-            '                       NAME,REG_NUMBER1,REG_NUMBER2,EMP_TP, FINAL_SCHOOL_NAME,EMP_HP,EMP_EMAIL,ZIP_CODE,' +
-            '                       ADDRESS,DETAIL_ADDRESS,IMAGE_FAMRELCERTIFICATE,IMAGE_FAMRELCERTIFICATE_SERVER,' +
-            '                       IMAGE_FAMRELCERTIFICATE_PATH,IMAGE_GRADCERTIFICATE,IMAGE_GRADCERTIFICATE_SERVER,' +
-            '                       IMAGE_GRADCERTIFICATE_PATH,IMAGE_BANKBOOK,IMAGE_BANKBOOK_SERVER,IMAGE_BANKBOOK_PATH, ' +
-            '                       EMP_NUMBER,EMP_LEVEL,JOIN_DATE,' +
-            '                       DEPT_NM,' +
-            '                       PWD,' +
-            '                       WAGES,' +
-            '                       RETIRE_DATE,' +
-            '                       BIRTH_DATE,' +
-            '                       EMP_COMMENT,' +
-            '                       CEO_FLAG)' +
-            '    VALUES (?,SYSDATE(),"S010100100",SYSDATE(),"S010100100",' +
-            '?,?,?,?,?,?,?,?,' +
-            '?,?,?,?,' +
-            '?,?,?,' +
-            '?,?,?,?,' +
-            '?,?,?,' +
-            '?,?,?,?,?,?,"N")';
+        console.log('3개 다 존재');
+        bcrypt.hash(pwd, saltRounds, function(err, hash) {
+        let empSql = empSqlquery +
+                            '    VALUES (?,SYSDATE(),"S010100100",SYSDATE(),"S010100100",' +
+                            '?,?,?,?,?,?,?,?,' +
+                            '?,?,?,?,' +
+                            '?,?,?,' +
+                            '?,?,?,?,' +
+                            '?,?,?,' +
+                            '?,?,?,?,?,?,"N")';
 
 
         let empParams = [memberId, empName, fstResidentRegiNum, sndResidentRegiNum, empTp, finalSchoolName, empHp, empEmail,
             zipcode, empAddress, empDetailAddress, famRelCertificatename, famRelCertificateAddr, famRelCertificatePath,
             graduationCertificatename, graduationCertificateAddr, graduationCertificatePath,
             copyOfBankbookname, copyOfBankbookAddr, copyOfBankbookPath, empNum, empLevel, joinDate,
-            deptNm, pwd, wages, retireDate, fstResidentRegiNum, empComment];
+            deptNm, hash, wages, retireDate, fstResidentRegiNum, empComment];
 
         connection.query(empSql, empParams, (error, rows) => {
             if (error){
@@ -165,34 +172,21 @@ router.post('/insertEmp', upload.fields([{ name: 'famRelCertificate', maxCount: 
             }
            
         });
-
+    });
 
 
     } else if ((existfamRelCertificate != null || existfamRelCertificate != undefined) && (existgraduationCertificate == null || existgraduationCertificate == undefined)
         && (existcopyOfBankbook == null || existcopyOfBankbook == undefined)) {
-
-        let empSql =
-            'INSERT INTO  ' +
-            '       TB_S10_EMP010 ( MEMBER_ID,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,' +
-            '                       NAME,REG_NUMBER1,REG_NUMBER2,EMP_TP, FINAL_SCHOOL_NAME,EMP_HP,EMP_EMAIL,ZIP_CODE,' +
-            '                       ADDRESS,DETAIL_ADDRESS,IMAGE_FAMRELCERTIFICATE,IMAGE_FAMRELCERTIFICATE_SERVER,' +
-            '                       IMAGE_FAMRELCERTIFICATE_PATH,IMAGE_GRADCERTIFICATE,IMAGE_GRADCERTIFICATE_SERVER,' +
-            '                       IMAGE_GRADCERTIFICATE_PATH,IMAGE_BANKBOOK,IMAGE_BANKBOOK_SERVER,IMAGE_BANKBOOK_PATH, ' +
-            '                       EMP_NUMBER,EMP_LEVEL,JOIN_DATE,' +
-            '                       DEPT_NM,' +
-            '                       PWD,' +
-            '                       WAGES,' +
-            '                       RETIRE_DATE,' +
-            '                       BIRTH_DATE,' +
-            '                       EMP_COMMENT,' +
-            '                       CEO_FLAG)' +
-            '    VALUES (?,SYSDATE(),"S010100100",SYSDATE(),"S010100100",?,?,?,?,?,?,?,?,?,?,?,?,?,null,null,null,null,null,null,?,?,?,?,?,?,?,?,?,"N")';
+            console.log('첫번째하나 존재');
+            bcrypt.hash(pwd, saltRounds, function(err, hash) {
+        let empSql = empSqlquery +
+                   '    VALUES (?,SYSDATE(),"S010100100",SYSDATE(),"S010100100",?,?,?,?,?,?,?,?,?,?,?,?,?,null,null,null,null,null,null,?,?,?,?,?,?,?,?,?,"N")';
 
 
         let empParams = [memberId, empName, fstResidentRegiNum, sndResidentRegiNum, empTp, finalSchoolName, empHp, empEmail,
             zipcode, empAddress, empDetailAddress, famRelCertificatename, famRelCertificateAddr, famRelCertificatePath,
             empNum, empLevel, joinDate,
-            deptNm, pwd, wages, retireDate, fstResidentRegiNum, empComment];
+            deptNm, hash, wages, retireDate, fstResidentRegiNum, empComment];
 
         connection.query(empSql, empParams, (error, rows) => {
             if (error){
@@ -204,31 +198,20 @@ router.post('/insertEmp', upload.fields([{ name: 'famRelCertificate', maxCount: 
             }
            
         });
-
+    });
     } else if ((existfamRelCertificate == null || existfamRelCertificate == undefined) && (existgraduationCertificate != null || existgraduationCertificate != undefined)
         && (existcopyOfBankbook == null || existcopyOfBankbook == undefined)) {
-        let empSql =
-            'INSERT INTO  ' +
-            '       TB_S10_EMP010 ( MEMBER_ID,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,' +
-            '                       NAME,REG_NUMBER1,REG_NUMBER2,EMP_TP, FINAL_SCHOOL_NAME,EMP_HP,EMP_EMAIL,ZIP_CODE,' +
-            '                       ADDRESS,DETAIL_ADDRESS,IMAGE_FAMRELCERTIFICATE,IMAGE_FAMRELCERTIFICATE_SERVER,' +
-            '                       IMAGE_FAMRELCERTIFICATE_PATH,IMAGE_GRADCERTIFICATE,IMAGE_GRADCERTIFICATE_SERVER,' +
-            '                       IMAGE_GRADCERTIFICATE_PATH,IMAGE_BANKBOOK,IMAGE_BANKBOOK_SERVER,IMAGE_BANKBOOK_PATH, ' +
-            '                       EMP_NUMBER,EMP_LEVEL,JOIN_DATE,' +
-            '                       DEPT_NM,' +
-            '                       PWD,' +
-            '                       WAGES,' +
-            '                       RETIRE_DATE,' +
-            '                       BIRTH_DATE,' +
-            '                       EMP_COMMENT,' +
-            '                       CEO_FLAG)' +
-            '    VALUES (?,SYSDATE(),"S010100100",SYSDATE(),"S010100100",?,?,?,?,?,?,?,?,?,?,null,null,null,?,?,?,null,null,null,?,?,?,?,?,?,?,?,?,"N")';
+            console.log('두번째하나 존재');
+            bcrypt.hash(pwd, saltRounds, function(err, hash) {
+            let empSql =
+                        empSqlquery +
+                        '    VALUES (?,SYSDATE(),"S010100100",SYSDATE(),"S010100100",?,?,?,?,?,?,?,?,?,?,null,null,null,?,?,?,null,null,null,?,?,?,?,?,?,?,?,?,"N")';
 
 
         let empParams = [memberId, empName, fstResidentRegiNum, sndResidentRegiNum, empTp, finalSchoolName, empHp, empEmail,
             zipcode, empAddress, empDetailAddress, famRelCertificatename, famRelCertificateAddr, famRelCertificatePath,
             copyOfBankbookname, copyOfBankbookAddr, copyOfBankbookPath, empNum, empLevel, joinDate,
-            deptNm, pwd, wages, retireDate, fstResidentRegiNum, empComment];
+            deptNm, hash, wages, retireDate, fstResidentRegiNum, empComment];
 
         connection.query(empSql, empParams, (error, rows) => {
             if (error){
@@ -240,31 +223,20 @@ router.post('/insertEmp', upload.fields([{ name: 'famRelCertificate', maxCount: 
             }
            
         });
-
+    });
     } else if ((existfamRelCertificate == null || existfamRelCertificate == undefined) && (existgraduationCertificate == null || existgraduationCertificate == undefined)
         && (existcopyOfBankbook != null || existcopyOfBankbook != undefined)) {
-        let empSql =
-            'INSERT INTO  ' +
-            '       TB_S10_EMP010 ( MEMBER_ID,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,' +
-            '                       NAME,REG_NUMBER1,REG_NUMBER2,EMP_TP, FINAL_SCHOOL_NAME,EMP_HP,EMP_EMAIL,ZIP_CODE,' +
-            '                       ADDRESS,DETAIL_ADDRESS,IMAGE_FAMRELCERTIFICATE,IMAGE_FAMRELCERTIFICATE_SERVER,' +
-            '                       IMAGE_FAMRELCERTIFICATE_PATH,IMAGE_GRADCERTIFICATE,IMAGE_GRADCERTIFICATE_SERVER,' +
-            '                       IMAGE_GRADCERTIFICATE_PATH,IMAGE_BANKBOOK,IMAGE_BANKBOOK_SERVER,IMAGE_BANKBOOK_PATH, ' +
-            '                       EMP_NUMBER,EMP_LEVEL,JOIN_DATE,' +
-            '                       DEPT_NM,' +
-            '                       PWD,' +
-            '                       WAGES,' +
-            '                       RETIRE_DATE,' +
-            '                       BIRTH_DATE,' +
-            '                       EMP_COMMENT,' +
-            '                       CEO_FLAG)' +
-            '    VALUES (?,SYSDATE(),"S010100100",SYSDATE(),"S010100100",?,?,?,?,?,?,?,?,?,?,null,null,null,null,null,null,?,?,?,?,?,?,?,?,?,?,?,?,"N")';
+            console.log('세번째하나 존재');
+            bcrypt.hash(pwd, saltRounds, function(err, hash) {
+            let empSql =
+                        empSqlquery +
+                        '    VALUES (?,SYSDATE(),"S010100100",SYSDATE(),"S010100100",?,?,?,?,?,?,?,?,?,?,null,null,null,null,null,null,?,?,?,?,?,?,?,?,?,?,?,?,"N")';
 
 
         let empParams = [memberId, empName, fstResidentRegiNum, sndResidentRegiNum, empTp, finalSchoolName, empHp, empEmail,
             zipcode, empAddress, empDetailAddress,
             copyOfBankbookname, copyOfBankbookAddr, copyOfBankbookPath, empNum, empLevel, joinDate,
-            deptNm, pwd, wages, retireDate, fstResidentRegiNum, empComment];
+            deptNm, hash, wages, retireDate, fstResidentRegiNum, empComment];
 
         connection.query(empSql, empParams, (error, rows) => {
             if (error){
@@ -276,61 +248,52 @@ router.post('/insertEmp', upload.fields([{ name: 'famRelCertificate', maxCount: 
             }
            
         });
-
+    });
     } else if ((existfamRelCertificate == null || existfamRelCertificate == undefined) && (existgraduationCertificate == null || existgraduationCertificate == undefined)
         && (existcopyOfBankbook == null || existcopyOfBankbook == undefined)) {
-        let empSql =
-            'INSERT INTO  ' +
-            '       TB_S10_EMP010 ( MEMBER_ID,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,' +
-            '                       NAME,REG_NUMBER1,REG_NUMBER2,EMP_TP, FINAL_SCHOOL_NAME,EMP_HP,EMP_EMAIL,ZIP_CODE,' +
-            '                       ADDRESS,DETAIL_ADDRESS,IMAGE_FAMRELCERTIFICATE,IMAGE_FAMRELCERTIFICATE_SERVER,' +
-            '                       IMAGE_FAMRELCERTIFICATE_PATH,IMAGE_GRADCERTIFICATE,IMAGE_GRADCERTIFICATE_SERVER,' +
-            '                       IMAGE_GRADCERTIFICATE_PATH,IMAGE_BANKBOOK,IMAGE_BANKBOOK_SERVER,IMAGE_BANKBOOK_PATH, ' +
-            '                       EMP_NUMBER,EMP_LEVEL,JOIN_DATE,DEPT_NM,PWD,WAGES,RETIRE_DATE,BIRTH_DATE,EMP_COMMENT,' +
-            '                       CEO_FLAG)' +
-            '    VALUES (?,SYSDATE(),"S010100100",SYSDATE(),"S010100100",' +
-            '?,?,?,?,?,?,?,?,' +
-            '?,?,null,null,' +
-            'null,null,null,' +
-            'null,null,null,null,' +
-            '?,?,?,?,?,?,?,?,?,"N")';
+            console.log('전부다 존재안함');
+            bcrypt.hash(pwd, saltRounds, function(err, hash) {                 
+                // Store hash in your password DB.
+                console.log('hash',hash);
+                let empSql =
+                            empSqlquery +
+                                '    VALUES (?,SYSDATE(),"S010100100",SYSDATE(),"S010100100",' +
+                                '?,?,?,?,?,?,?,?,' +
+                                '?,?,null,null,' +
+                                'null,null,null,' +
+                                'null,null,null,null,' +
+                                '?,?,?,?,?,?,?,?,?,"N")';
 
-        let empParams = [memberId, empName, fstResidentRegiNum, sndResidentRegiNum, empTp, finalSchoolName, empHp, empEmail,
-            zipcode, empAddress, empDetailAddress, empNum, empLevel, joinDate,
-            deptNm, pwd, wages, retireDate, fstResidentRegiNum, empComment];
+                let empParams = [memberId, empName, fstResidentRegiNum, sndResidentRegiNum, empTp, finalSchoolName, empHp, empEmail,
+                    zipcode, empAddress, empDetailAddress, empNum, empLevel, joinDate,
+                    deptNm, hash, wages, retireDate, fstResidentRegiNum, empComment];
 
-        connection.query(empSql, empParams, (error, rows) => {
-            if (error){
-                setImmediate(()=>{
-                    next(new Error(error));
-                })
-            }else{
-                res.send({ success: true, rows });
-            }
-        });
-
+                connection.query(empSql, empParams, (error, rows) => {
+                    if (error){
+                        setImmediate(()=>{
+                            next(new Error(error));
+                        })
+                    }else{
+                        res.send({ success: true, rows });
+                    }
+                });
+            })
     } else if ((existfamRelCertificate != null || existfamRelCertificate != undefined) && (existgraduationCertificate != null || existgraduationCertificate != undefined)
         && (existcopyOfBankbook == null || existcopyOfBankbook == undefined)) {
+            bcrypt.hash(pwd, saltRounds, function(err, hash) {
         let empSql =
-            'INSERT INTO  ' +
-            '       TB_S10_EMP010 ( MEMBER_ID,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,' +
-            '                       NAME,REG_NUMBER1,REG_NUMBER2,EMP_TP, FINAL_SCHOOL_NAME,EMP_HP,EMP_EMAIL,ZIP_CODE,' +
-            '                       ADDRESS,DETAIL_ADDRESS,IMAGE_FAMRELCERTIFICATE,IMAGE_FAMRELCERTIFICATE_SERVER,' +
-            '                       IMAGE_FAMRELCERTIFICATE_PATH,IMAGE_GRADCERTIFICATE,IMAGE_GRADCERTIFICATE_SERVER,' +
-            '                       IMAGE_GRADCERTIFICATE_PATH,IMAGE_BANKBOOK,IMAGE_BANKBOOK_SERVER,IMAGE_BANKBOOK_PATH, ' +
-            '                       EMP_NUMBER,EMP_LEVEL,JOIN_DATE,DEPT_NM,PWD,WAGES,RETIRE_DATE,BIRTH_DATE,EMP_COMMENT,' +
-            '                       CEO_FLAG)' +
-            '    VALUES (?,SYSDATE(),"S010100100",SYSDATE(),"S010100100",' +
-            '?,?,?,?,?,?,?,?,' +
-            '?,?,?,?,' +
-            '?,?,?,' +
-            '?,null,null,null,' +
-            '?,?,?,?,?,?,?,?,?,"N")';
+                    empSqlquery +
+                        '    VALUES (?,SYSDATE(),"S010100100",SYSDATE(),"S010100100",' +
+                        '?,?,?,?,?,?,?,?,' +
+                        '?,?,?,?,' +
+                        '?,?,?,' +
+                        '?,null,null,null,' +
+                        '?,?,?,?,?,?,?,?,?,"N")';
 
         let empParams = [memberId, empName, fstResidentRegiNum, sndResidentRegiNum, empTp, finalSchoolName, empHp, empEmail,
             zipcode, empAddress, empDetailAddress, famRelCertificatename, famRelCertificateAddr, famRelCertificatePath,
             graduationCertificatename, graduationCertificateAddr, graduationCertificatePath, empNum, empLevel, joinDate,
-            deptNm, pwd, wages, retireDate, fstResidentRegiNum, empComment];
+            deptNm, hash, wages, retireDate, fstResidentRegiNum, empComment];
 
         connection.query(empSql, empParams, (error, rows) => {
             if (error){
@@ -341,29 +304,23 @@ router.post('/insertEmp', upload.fields([{ name: 'famRelCertificate', maxCount: 
                 res.send({ success: true, rows });
             }
         });
-
+    });
     } else if ((existfamRelCertificate == null || existfamRelCertificate == undefined) && (existgraduationCertificate != null || existgraduationCertificate != undefined)
         && (existcopyOfBankbook != null || existcopyOfBankbook != undefined)) {
+            bcrypt.hash(pwd, saltRounds, function(err, hash) {
         let empSql =
-            'INSERT INTO  ' +
-            '       TB_S10_EMP010 ( MEMBER_ID,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,' +
-            '                       NAME,REG_NUMBER1,REG_NUMBER2,EMP_TP, FINAL_SCHOOL_NAME,EMP_HP,EMP_EMAIL,ZIP_CODE,' +
-            '                       ADDRESS,DETAIL_ADDRESS,IMAGE_FAMRELCERTIFICATE,IMAGE_FAMRELCERTIFICATE_SERVER,' +
-            '                       IMAGE_FAMRELCERTIFICATE_PATH,IMAGE_GRADCERTIFICATE,IMAGE_GRADCERTIFICATE_SERVER,' +
-            '                       IMAGE_GRADCERTIFICATE_PATH,IMAGE_BANKBOOK,IMAGE_BANKBOOK_SERVER,IMAGE_BANKBOOK_PATH, ' +
-            '                       EMP_NUMBER,EMP_LEVEL,JOIN_DATE,DEPT_NM,PWD,WAGES,RETIRE_DATE,BIRTH_DATE,EMP_COMMENT,' +
-            '                       CEO_FLAG)' +
-            '    VALUES (?,SYSDATE(),"S010100100",SYSDATE(),"S010100100",' +
-            '?,?,?,?,?,?,?,?,' +
-            '?,?,null,null,' +
-            'null,?,?,' +
-            '?,?,?,?,' +
-            '?,?,?,?,?,?,?,?,?,"N")';
+                empSqlquery +   
+                    '    VALUES (?,SYSDATE(),"S010100100",SYSDATE(),"S010100100",' +
+                    '?,?,?,?,?,?,?,?,' +
+                    '?,?,null,null,' +
+                    'null,?,?,' +
+                    '?,?,?,?,' +
+                    '?,?,?,?,?,?,?,?,?,"N")';
 
         let empParams = [memberId, empName, fstResidentRegiNum, sndResidentRegiNum, empTp, finalSchoolName, empHp, empEmail,
             zipcode, empAddress, empDetailAddress, graduationCertificatename, graduationCertificateAddr, graduationCertificatePath,
             copyOfBankbookname, copyOfBankbookAddr, copyOfBankbookPath, empNum, empLevel, joinDate,
-            deptNm, pwd, wages, retireDate, fstResidentRegiNum, empComment];
+            deptNm, hash, wages, retireDate, fstResidentRegiNum, empComment];
 
         connection.query(empSql, empParams, (error, rows) => {
             if (error){
@@ -375,29 +332,26 @@ router.post('/insertEmp', upload.fields([{ name: 'famRelCertificate', maxCount: 
             }
             
         });
-
+    });
     } else if ((existfamRelCertificate != null || existfamRelCertificate != undefined) && (existgraduationCertificate == null || existgraduationCertificate == undefined)
         && (existcopyOfBankbook != null || existcopyOfBankbook != undefined)) {
-        let empSql =
-            'INSERT INTO  ' +
-            '       TB_S10_EMP010 ( MEMBER_ID,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,' +
-            '                       NAME,REG_NUMBER1,REG_NUMBER2,EMP_TP, FINAL_SCHOOL_NAME,EMP_HP,EMP_EMAIL,ZIP_CODE,' +
-            '                       ADDRESS,DETAIL_ADDRESS,IMAGE_FAMRELCERTIFICATE,IMAGE_FAMRELCERTIFICATE_SERVER,' +
-            '                       IMAGE_FAMRELCERTIFICATE_PATH,IMAGE_GRADCERTIFICATE,IMAGE_GRADCERTIFICATE_SERVER,' +
-            '                       IMAGE_GRADCERTIFICATE_PATH,IMAGE_BANKBOOK,IMAGE_BANKBOOK_SERVER,IMAGE_BANKBOOK_PATH, ' +
-            '                       EMP_NUMBER,EMP_LEVEL,JOIN_DATE,DEPT_NM,PWD,WAGES,RETIRE_DATE,BIRTH_DATE,EMP_COMMENT,' +
-            '                       CEO_FLAG)' +
-            '    VALUES (?,SYSDATE(),"S010100100",SYSDATE(),"S010100100",' +
-            '?,?,?,?,?,?,?,?,' +
-            '?,?,?,?,' +
-            '?,null,null,' +
-            'null,?,?,?,' +
-            '?,?,?,?,?,?,?,?,?,"N")';
+           
+            bcrypt.hash(pwd, saltRounds, function(err, hash) {                 
+                // Store hash in your password DB.
+                console.log('hash',hash);
+                let empSql =
+                        empSqlquery +
+                    '    VALUES (?,SYSDATE(),"S010100100",SYSDATE(),"S010100100",' +
+                    '?,?,?,?,?,?,?,?,' +
+                    '?,?,?,?,' +
+                    '?,null,null,' +
+                    'null,?,?,?,' +
+                    '?,?,?,?,?,?,?,?,?,"N")';
 
         let empParams = [memberId, empName, fstResidentRegiNum, sndResidentRegiNum, empTp, finalSchoolName, empHp, empEmail,
             zipcode, empAddress, empDetailAddress, famRelCertificatename, famRelCertificateAddr, famRelCertificatePath,
             copyOfBankbookname, copyOfBankbookAddr, copyOfBankbookPath, empNum, empLevel, joinDate,
-            deptNm, encryptedPassword, wages, retireDate, fstResidentRegiNum, empComment];
+            deptNm, hash, wages, retireDate, fstResidentRegiNum, empComment];
 
         connection.query(empSql, empParams, (error, rows) => {
             if (error){
@@ -409,12 +363,14 @@ router.post('/insertEmp', upload.fields([{ name: 'famRelCertificate', maxCount: 
             }
             
         });
+              });
+        
 
     }
 })
 
 
-router.post('/modifyEmp', upload.fields([{ name: 'famRelCertificate', maxCount: 3 }, { name: 'graduationCertificate', maxCount: 5 }, { name: 'copyOfBankbook', maxCount: 5 }]), (req, res) => {
+router.post('/modifyEmp', upload.fields([{ name: 'famRelCertificate', maxCount: 3 }, { name: 'graduationCertificate', maxCount: 5 }, { name: 'copyOfBankbook', maxCount: 5 }]), (req, res,next) => {
 
     let empId = req.body.empId;
     let memberNm = req.body.memberNm;
@@ -500,7 +456,7 @@ router.post('/modifyEmp', upload.fields([{ name: 'famRelCertificate', maxCount: 
         copyOfBankbookname = req.files['copyOfBankbook'][0].originalname;
         copyOfBankbookPath = req.files['copyOfBankbook'][0].path;
     }
-
+    bcrypt.hash(pwd, saltRounds, function(err, hash) {
     let empModifySql =
         'UPDATE TB_S10_EMP010 ' +
         'SET CREATED_DATE = sysdate(),' +
@@ -521,7 +477,7 @@ router.post('/modifyEmp', upload.fields([{ name: 'famRelCertificate', maxCount: 
         'EMP_LEVEL="' + empLevel + '",' +
         'JOIN_DATE="' + joinDate + '",' +
         'DEPT_NM="' + deptNm + '",' +
-        'PWD="' + pwd + '",' +
+        'PWD="' + hash + '",' +
         'WAGES="' + wages + '",' +
         'RETIRE_DATE="' + retireDate + '",' +
         'BIRTH_DATE="' + fstResidentRegiNum + '",' +
@@ -610,10 +566,11 @@ router.post('/modifyEmp', upload.fields([{ name: 'famRelCertificate', maxCount: 
             res.send({ success: true, rows });
         }
     });
+});
 })
 // 주민번호 중복확인 
 
-router.post('/regNoCheck', (req, res) => {
+router.post('/regNoCheck', (req, res,next) => {
 
     let fstResidentRegiNum = req.body.fstResidentRegiNum;
     let sndResidentRegiNum = req.body.sndResidentRegiNum;
