@@ -4,7 +4,7 @@ const router = express.Router();
 const dbconfig = require('../config/database.js')();
 const connection = dbconfig.init();
 
-router.post('/contractTp',(req,res)=>{
+router.post('/contractTp',(req,res,next)=>{
     let sql = 'SELECT CD_V,CD_V_MEANING FROM TB_S10_CODE WHERE CD_TP = "CONTRACT_TP"';
 
     connection.query(sql, (error, rows) => {//쿼리문
@@ -19,7 +19,7 @@ router.post('/contractTp',(req,res)=>{
     });
 })
 
-router.post('/contractSt',(req,res)=>{
+router.post('/contractSt',(req,res,next)=>{
     let sql = 'SELECT CD_V,CD_V_MEANING FROM TB_S10_CODE WHERE CD_TP = "CONTRACT_ST"';
 
     connection.query(sql, (error, rows) => {//쿼리문
@@ -34,7 +34,7 @@ router.post('/contractSt',(req,res)=>{
     });
 })
 
-router.post('/search',(req,res)=>{
+router.post('/search',(req,res,next)=>{
     let startDate = req.body.startDate;
     let endDate = req.body.endDate;
     let contractTp = req.body.contractTp;
@@ -81,6 +81,8 @@ router.post('/search',(req,res)=>{
                 sql += ' AND MEM.MEMBER_ST = "' + contractSt + '" AND CON.END_FLAG = "N"'
                 if (contractSt == "Y") 
                 sql += ' AND CON.END_FLAG ="Y"'
+
+                sql +=' ORDER BY CON.CONTRACT_ID DESC';
 
     connection.query(sql, (error, rows) => {//쿼리문
         if (error){

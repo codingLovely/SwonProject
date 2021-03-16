@@ -1,41 +1,28 @@
+import React from 'react';
 import axios from 'axios';
-import React, { Fragment } from 'react';
 import { useState } from 'react';
-import { useCookies } from 'react-cookie';
 import clsx from 'clsx';
 import { makeStyles } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Drawer from '@material-ui/core/Drawer';
-import Box from '@material-ui/core/Box';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import List from '@material-ui/core/List';
 import Typography from '@material-ui/core/Typography';
 import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
-import Badge from '@material-ui/core/Badge';
 import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
 import MenuIcon from '@material-ui/icons/Menu';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import NotificationsIcon from '@material-ui/icons/Notifications';
-import { mainListItems, secondaryListItems } from './listItems';
-import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Checkbox from '@material-ui/core/Checkbox';
 import Link from '@material-ui/core/Link';
-import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
-import Form from 'react-bootstrap/Form';
 import logos from './css/logos.png';
-import S010100151 from './S010100151';
-
 
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import ListSubheader from '@material-ui/core/ListSubheader';
 import DashboardIcon from '@material-ui/icons/Dashboard';
 import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
 import PeopleIcon from '@material-ui/icons/People';
@@ -49,7 +36,7 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
   },
   toolbar: {
-    paddingRight: 24, // keep right padding when drawer closed
+    paddingRight: 24,
   },
   toolbarIcon: {
     display: 'flex',
@@ -147,28 +134,26 @@ function S010100150(props) {
 
   const classes = useStyles();
 
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = React.useState(true);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleDrawerOpen = () => {
     setOpen(true);
   };
+
   const handleDrawerClose = () => {
     setOpen(false);
   };
 
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-
-
   const onEmailHandler = (event) => {
     setEmail(event.currentTarget.value)
-  }
+  };
 
   const onPasswordHandler = (event) => {
     setPassword(event.currentTarget.value)
-  }
+  };
 
-  
   const useConfirm = (message = null, onConfirm, onCancel) => {
     if (!onConfirm || typeof onConfirm !== "function") {
         return;
@@ -186,33 +171,33 @@ function S010100150(props) {
     };
 
     return confirmAction;
-};
+  };
 
-const approvalConfirm = () => {
+  const approvalConfirm = () => {
 
-  axios.post('/api/s010100150/userLogout')
-  .then(response => {
-    if (response.data.logoutResult == true) {
-      alert('로그아웃 하였습니다.');
-      sessionStorage.removeItem('member');
-      sessionStorage.clear();
-      props.history.push('/');
-      console.log(sessionStorage.getItem('member'));
-    }else if(response.data.loginResult == false){
-      alert(response.data.message);
-      alert('아이디 또는 비밀번호를 확인하세요.');
-    }
-  })
+    axios.post('/api/s010100150/userLogout')
+    .then(response => {
+      if (response.data.logoutResult == true) {
+        alert('로그아웃 하였습니다.');
+        sessionStorage.removeItem('member');
+        sessionStorage.clear();
+        props.history.push('/');
+        // console.log(sessionStorage.getItem('member'));
+      }else if(response.data.loginResult == false){
+        alert(response.data.message);
+        alert('아이디 또는 비밀번호를 확인하세요.');
+      }
+    })
 
-}
+  };
 
-const cancelConfirm = () => alert('취소하였습니다.');
+  const cancelConfirm = () => alert('취소하였습니다.');
 
-const onLogoutHandler = useConfirm(
-    "로그아웃 하시겠습니까?",
-    approvalConfirm,
-    cancelConfirm
-);
+  const onLogoutHandler = useConfirm(
+      "로그아웃 하시겠습니까?",
+      approvalConfirm,
+      cancelConfirm
+  );
 
 
   const onSubmitHandler = (event) => {
@@ -229,8 +214,7 @@ const onLogoutHandler = useConfirm(
           let arr = [response.data.cf,response.data.mI];
           
           sessionStorage.setItem('member',JSON.stringify(arr));
-          props.history.push('/member');
-               
+          props.history.push('/member');       
         }else if(response.data.pwdResult == false){
           alert('비밀번호를 확인하세요');
         }else if(response.data.loginResult == false){
@@ -239,7 +223,8 @@ const onLogoutHandler = useConfirm(
         }
       })
   }
-
+// // console.log(sessionStorage.getItem('member') === null);
+// // console.log(sessionStorage.getItem('member'));
   return (
 
     <div className={classes.root}>
@@ -277,55 +262,58 @@ const onLogoutHandler = useConfirm(
           </IconButton>
         </div>
         <Divider />
-        <List><div>
-    <div hidden ={sessionStorage.getItem('member') == null}>
-    <ListItem button>
-      <ListItemIcon>
-      <PeopleIcon />
-      </ListItemIcon>
-      <Link to="/member"><ListItemText primary="회원현황" /></Link>
-    </ListItem>
-    <ListItem button>
-      <ListItemIcon>
-        <ShoppingCartIcon />
-      </ListItemIcon>
-      <Link to ="/paymentStatus"><ListItemText primary="납부현황" /></Link>
-    </ListItem>
-    <ListItem button>
-      <ListItemIcon>
-      <DashboardIcon />
-      </ListItemIcon>
-      <Link to ="/consultationStatus"><ListItemText primary="상담현황" /></Link>
-    </ListItem>
-    <ListItem button>
-      <ListItemIcon>
-        <BarChartIcon />
-      </ListItemIcon>
-      <Link to ="/staff"><ListItemText primary="직원현황" /></Link>
-    </ListItem>
-    <ListItem button>
-      <ListItemIcon>
-      <DashboardIcon />
-      </ListItemIcon>
-      <Link to ="/contractStatus"><ListItemText primary="계약현황" /></Link>
-    </ListItem>
-    <ListItem button>
-        <ListItemIcon>
-          <LayersIcon />
-        </ListItemIcon>
-        <Link to ="/"><ListItemText primary="로그아웃" /></Link>
-      </ListItem>
-    </div>
-   <div hidden ={sessionStorage.getItem('member') != null}>
-      <ListItem button>
-        <ListItemIcon>
-          <LayersIcon />
-        </ListItemIcon>
-        <Link to ="/"><ListItemText primary="로그인" /></Link>
-      </ListItem>
-    </div>
-  </div></List>
-      
+        <List>
+          <div>
+            <div id = "hey" hidden ={sessionStorage.getItem('member') === null}>
+            <ListItem button>
+              <ListItemIcon>
+              <PeopleIcon />
+              </ListItemIcon>
+              <Link to="/member"><ListItemText primary="회원현황" /></Link>
+            </ListItem>
+            <ListItem button>
+              <ListItemIcon>
+                <ShoppingCartIcon />
+              </ListItemIcon>
+              <Link to ="/paymentStatus"><ListItemText primary="납부현황" /></Link>
+            </ListItem>
+            <ListItem button>
+              <ListItemIcon>
+              <DashboardIcon />
+              </ListItemIcon>
+              <Link to ="/consultationStatus"><ListItemText primary="상담현황" /></Link>
+            </ListItem>
+            <ListItem button>
+              <ListItemIcon>
+                <BarChartIcon />
+              </ListItemIcon>
+              <Link to ="/staff"><ListItemText primary="직원현황" /></Link>
+            </ListItem>
+            <ListItem button>
+              <ListItemIcon>
+              <DashboardIcon />
+              </ListItemIcon>
+              <Link to ="/contractStatus"><ListItemText primary="계약현황" /></Link>
+            </ListItem>
+            <ListItem button>
+                <ListItemIcon>
+                  <LayersIcon />
+                </ListItemIcon>
+                <span onClick={onLogoutHandler}><ListItemText primary="로그아웃" /></span>
+              </ListItem>
+            </div>
+
+            <div hidden = {sessionStorage.getItem('member') != null}>
+              <ListItem button>
+                <ListItemIcon>
+                  <LayersIcon />
+                </ListItemIcon>
+                <Link to ="/"><ListItemText primary="로그인" /></Link>
+              </ListItem>
+            </div>
+
+          </div>
+        </List>
       </Drawer>
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
@@ -395,7 +383,9 @@ const onLogoutHandler = useConfirm(
                   <Grid container>
                     <Grid item>
                       <Link href="/findemailPwd" variant="body2">
-                        아이디 / 비밀번호찾기
+                      <span hidden ={sessionStorage.getItem('member') != null}>
+                        비밀번호초기화
+                      </span>
                       </Link>
                     </Grid>
                   </Grid>

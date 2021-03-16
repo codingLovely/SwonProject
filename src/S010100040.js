@@ -14,14 +14,11 @@ import List from '@material-ui/core/List';
 import Typography from '@material-ui/core/Typography';
 import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
-import Badge from '@material-ui/core/Badge';
 import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import MenuIcon from '@material-ui/icons/Menu';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import NotificationsIcon from '@material-ui/icons/Notifications';
-import { mainListItems, secondaryListItems } from './listItems';
 import Button from '@material-ui/core/Button';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -34,7 +31,6 @@ import Dialog from '@material-ui/core/Dialog';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import ListSubheader from '@material-ui/core/ListSubheader';
 import DashboardIcon from '@material-ui/icons/Dashboard';
 import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
 import PeopleIcon from '@material-ui/icons/People';
@@ -137,7 +133,7 @@ const useStyles = makeStyles((theme) => ({
 
 let memberId = '';
 
-function S010100040() {
+function S010100040(props) {
 
     const classes = useStyles();
 
@@ -241,14 +237,14 @@ function S010100040() {
             memberSt
         }
 
-        console.log('starDate',startDate);
+        console.log('startDate',startDate);
         console.log('endDate',endDate);
 
         axios.post('/api/s010100040/searchMember', body)
             .then(response => {
                 if (response.data.success) {
                     setTbMember(response.data.rows);
-                    // console.log('response.data.success',response.data.rows);
+                    // // console.log('response.data.success',response.data.rows);
                 } else {
                     alert(response.data.message);
                     alert("데이터 목록을 가져오는 것을 실패하였습니다.")
@@ -299,7 +295,7 @@ function S010100040() {
 
     const onHandleDetailClickOpen = (event) => {
         memberId = event.target.id;
-        console.log('memberId',memberId);
+        // console.log('memberId',memberId);
         setMemberIdModal(memberId);
         setModalOpen(true);
     }
@@ -353,6 +349,50 @@ function S010100040() {
         )
     });
 
+    const useConfirm = (message = null, onConfirm, onCancel) => {
+        if (!onConfirm || typeof onConfirm !== "function") {
+            return;
+        }
+        if (onCancel && typeof onCancel !== "function") {
+            return;
+        }
+    
+        const confirmAction = () => {
+            if (window.confirm(message)) {
+                onConfirm();
+            } else {
+                onCancel();
+            }
+        };
+    
+        return confirmAction;
+      };
+    
+      const approvalConfirm = () => {
+    
+        axios.post('/api/s010100150/userLogout')
+        .then(response => {
+          if (response.data.logoutResult == true) {
+            alert('로그아웃 하였습니다.');
+            sessionStorage.removeItem('member');
+            sessionStorage.clear();
+            props.history.push('/');
+            // console.log (sessionStorage.getItem('member'));
+          }else if(response.data.loginResult == false){
+            alert(response.data.message);
+            alert('아이디 또는 비밀번호를 확인하세요.');
+          }
+        })
+    
+      };
+    
+      const cancelConfirm = () => alert('취소하였습니다.');
+    
+      const onLogoutHandler = useConfirm(
+          "로그아웃 하시겠습니까?",
+          approvalConfirm,
+          cancelConfirm
+      );
 
     return (
 
@@ -393,56 +433,56 @@ function S010100040() {
                         </IconButton>
                     </div>
                     <Divider />
-                    <List><div>
-    <div hidden ={sessionStorage.getItem('member') == null}>
-    <ListItem button>
-      <ListItemIcon>
-      <PeopleIcon />
-      </ListItemIcon>
-      <Link to="/member"><ListItemText primary="회원현황" /></Link>
-    </ListItem>
-    <ListItem button>
-      <ListItemIcon>
-        <ShoppingCartIcon />
-      </ListItemIcon>
-      <Link to ="/paymentStatus"><ListItemText primary="납부현황" /></Link>
-    </ListItem>
-    <ListItem button>
-      <ListItemIcon>
-      <DashboardIcon />
-      </ListItemIcon>
-      <Link to ="/consultationStatus"><ListItemText primary="상담현황" /></Link>
-    </ListItem>
-    <ListItem button>
-      <ListItemIcon>
-        <BarChartIcon />
-      </ListItemIcon>
-      <Link to ="/staff"><ListItemText primary="직원현황" /></Link>
-    </ListItem>
-    <ListItem button>
-      <ListItemIcon>
-      <DashboardIcon />
-      </ListItemIcon>
-      <Link to ="/contractStatus"><ListItemText primary="계약현황" /></Link>
-    </ListItem>
-    <ListItem button>
-        <ListItemIcon>
-          <LayersIcon />
-        </ListItemIcon>
-        <Link to ="/"><ListItemText primary="로그아웃" /></Link>
-      </ListItem>
-    </div>
-   <div hidden ={sessionStorage.getItem('member') != null}>
-      <ListItem button>
-        <ListItemIcon>
-          <LayersIcon />
-        </ListItemIcon>
-        <Link to ="/"><ListItemText primary="로그인" /></Link>
-      </ListItem>
-    </div>
-  </div></List>
-                    
-                  
+                        <List>
+                            <div>
+                                <div hidden ={sessionStorage.getItem('member') === null}>
+                                    <ListItem button>
+                                    <ListItemIcon>
+                                    <PeopleIcon />
+                                    </ListItemIcon>
+                                    <Link to="/member"><ListItemText primary="회원현황" /></Link>
+                                    </ListItem>
+                                    <ListItem button>
+                                    <ListItemIcon>
+                                        <ShoppingCartIcon />
+                                    </ListItemIcon>
+                                    <Link to ="/paymentStatus"><ListItemText primary="납부현황" /></Link>
+                                    </ListItem>
+                                    <ListItem button>
+                                    <ListItemIcon>
+                                    <DashboardIcon />
+                                    </ListItemIcon>
+                                    <Link to ="/consultationStatus"><ListItemText primary="상담현황" /></Link>
+                                    </ListItem>
+                                    <ListItem button>
+                                    <ListItemIcon>
+                                        <BarChartIcon />
+                                    </ListItemIcon>
+                                    <Link to ="/staff"><ListItemText primary="직원현황" /></Link>
+                                    </ListItem>
+                                    <ListItem button>
+                                    <ListItemIcon>
+                                    <DashboardIcon />
+                                    </ListItemIcon>
+                                    <Link to ="/contractStatus"><ListItemText primary="계약현황" /></Link>
+                                    </ListItem>
+                                    <ListItem button>
+                                        <ListItemIcon>
+                                        <LayersIcon />
+                                        </ListItemIcon>
+                                        <span onClick={onLogoutHandler}><ListItemText primary="로그아웃" /></span>
+                                    </ListItem>
+                                </div>
+                                <div hidden ={sessionStorage.getItem('member') != null}>
+                                    <ListItem button>
+                                        <ListItemIcon>
+                                        <LayersIcon />
+                                        </ListItemIcon>
+                                        <Link to ="/"><ListItemText primary="로그인" /></Link>
+                                    </ListItem>
+                                </div>
+                        </div>
+                    </List>
                 </Drawer>
                 <main className={classes.content}>
                     <div className={classes.appBarSpacer} />
@@ -510,7 +550,7 @@ function S010100040() {
                                             &nbsp;&nbsp;&nbsp;&nbsp;
                                             </div>
                                         <div className = "searchMenu">
-                                            종료 &nbsp;
+                                            {/* 종료 &nbsp;
                     <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm" as="select"
                                                 multiple={false} onChange={contractStatusHandler} value={contractStatus}>
                                                 {endStatus.map(item => (
@@ -519,7 +559,7 @@ function S010100040() {
 
                                             </Form.Control>
 
-                                            &nbsp;&nbsp;&nbsp;&nbsp;
+                                            &nbsp;&nbsp;&nbsp;&nbsp; */}
 
                     상태 &nbsp;
                     <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm" as="select"

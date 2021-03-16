@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useState, useCallback } from 'react';
+import React, {useState} from 'react';
 import './css/S010100130.css';
 import axios from 'axios';
 
@@ -15,44 +15,20 @@ import List from '@material-ui/core/List';
 import Typography from '@material-ui/core/Typography';
 import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
-import Badge from '@material-ui/core/Badge';
 import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
-import Paper from '@material-ui/core/Paper';
 import MenuIcon from '@material-ui/icons/Menu';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import NotificationsIcon from '@material-ui/icons/Notifications';
-import { mainListItems, secondaryListItems } from './listItems';
 import Button from '@material-ui/core/Button';
-import TextField from '@material-ui/core/TextField';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
-import Title from './Title';
-import Dialog from '@material-ui/core/Dialog';
+
 
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import ListSubheader from '@material-ui/core/ListSubheader';
-import DashboardIcon from '@material-ui/icons/Dashboard';
-import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
-import PeopleIcon from '@material-ui/icons/People';
-import BarChartIcon from '@material-ui/icons/BarChart';
 import LayersIcon from '@material-ui/icons/Layers';
 import { Link } from 'react-router-dom';
-
-import { DatePicker } from "antd";
 import "antd/dist/antd.css";
-import moment from 'moment';
-
 import Form from 'react-bootstrap/Form';
-
-import ReactPaginate from 'react-paginate';
-
-import xlsx from 'xlsx';
 
 const drawerWidth = 240;
 
@@ -148,7 +124,7 @@ const useStyles = makeStyles((theme) => ({
 
 
 
-function S010100151() {
+function S010100151(props) {
 
     const classes = useStyles();
 
@@ -194,12 +170,13 @@ function S010100151() {
                 fstResidentRegiNum: fstResidentRegiNum,
                 sndResidentRegiNum: sndResidentRegiNum
             }
-            console.log(body);
+           // console.log(body);
     
             axios.post('/api/s010100151/findPwd', body)
                 .then(response => {
                     if (response.data.success == true) {
                         alert('비밀번호가 초기화 되었습니다.');
+                        props.history.push('/');
                     } else if (response.data.success == false) {
                         alert(response.data.message);
                         alert('이메일 또는 주민번호를 확인하세요..');
@@ -209,10 +186,6 @@ function S010100151() {
      
         
         
-    }
-
-    const onFindHandler = (event) => {
-
     }
 
     const onEmpRegNoHandler = (event) => {
@@ -261,45 +234,6 @@ function S010100151() {
                 <Divider />
                 <List>
                     <div>
-                        <div hidden ={sessionStorage.getItem('member') == null}>
-                        <ListItem button>
-                        <ListItemIcon>
-                        <PeopleIcon />
-                        </ListItemIcon>
-                        <Link to="/member"><ListItemText primary="회원현황" /></Link>
-                        </ListItem>
-                        <ListItem button>
-                        <ListItemIcon>
-                            <ShoppingCartIcon />
-                        </ListItemIcon>
-                        <Link to ="/paymentStatus"><ListItemText primary="납부현황" /></Link>
-                        </ListItem>
-                        <ListItem button>
-                        <ListItemIcon>
-                        <DashboardIcon />
-                        </ListItemIcon>
-                        <Link to ="/consultationStatus"><ListItemText primary="상담현황" /></Link>
-                        </ListItem>
-                        <ListItem button>
-                        <ListItemIcon>
-                            <BarChartIcon />
-                        </ListItemIcon>
-                        <Link to ="/staff"><ListItemText primary="직원현황" /></Link>
-                        </ListItem>
-                        <ListItem button>
-                        <ListItemIcon>
-                        <DashboardIcon />
-                        </ListItemIcon>
-                        <Link to ="/contractStatus"><ListItemText primary="계약현황" /></Link>
-                        </ListItem>
-                        <ListItem button>
-                            <ListItemIcon>
-                            <LayersIcon />
-                            </ListItemIcon>
-                            <Link to ="/"><ListItemText primary="로그아웃" /></Link>
-                        </ListItem>
-                        
-                        </div>
                         <div>
                         <ListItem button>
                             <ListItemIcon>
@@ -308,9 +242,6 @@ function S010100151() {
                             <span hidden ={sessionStorage.getItem('member') != null}>
                             <Link to ="/"><ListItemText primary="로그인" /></Link>
                             </span>
-                         
-                            <Link to ="/"><ListItemText primary="로그아웃" /></Link>
-                            
                         </ListItem>
                         </div>
                         </div>
@@ -326,7 +257,7 @@ function S010100151() {
                             <div className={classes.paper}>
 
                                 <Typography component="h1" variant="h5">
-                                    비밀번호 찾기
+                                    비밀번호 초기화
                                 </Typography>
 
                                 <Form onSubmit={onSubmitHandler} >
@@ -367,7 +298,7 @@ function S010100151() {
                                             variant="contained"
                                             color="primary"
                                             className={classes.submit}
-                                        > 찾기 </Button>
+                                        > 초기화 </Button>
                                 </Form>
                             </div>
 

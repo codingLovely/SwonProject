@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { post } from 'axios';
 
-
+import Base64Downloader from 'react-base64-downloader';
 import DaumPostcode from 'react-daum-postcode';
 
 import { makeStyles } from '@material-ui/core/styles';
@@ -53,12 +53,16 @@ function S010100100(props) {
     // 첨부파일업로드
     const [famRelCertificate, setFamRelCertificate] = useState(null);
     const [famRelCertificateName, setFamRelCertificateName] = useState('');
+    const [realFamRelCertificateName, setRealFamRelCertificateName] = useState('');
+    
 
     const [graduationCertificate, setGraduationCertificate] = useState(null);
     const [graduationCertificateName, setGraduationCertificateName] = useState('');
+    const [realGraduationCertificateName, setRealGraduationCertificateName] = useState('');
 
     const [copyOfBankbook, setCopyOfBankbook] = useState(null);
     const [copyOfBankbookName, setCopyOfBankbookName] = useState('');
+    const [realCopyOfBankbookName, setRealCopyOfBankbookName] = useState('');
 
     const [detailFamRelCert,setDetailFamRelCert] = useState('');
     const [detailGraduationCert,setDetailGraduationCert] = useState('');
@@ -140,19 +144,134 @@ function S010100100(props) {
             })
     }, [])
 
+    // 파일확장자 체크 
+    // const fileExtensionChk = (event) => {
+    //     let imageType = event.currentTarget.files[0].type;
+        
+    //     if((imageType != 'image/png')&&(imageType != 'image/jpg')&&(imageType != 'image/jpeg')){
+    //         alert('.jpg, .jpeg, .png 확장자만 업로드 가능합니다.');
+
+    //         // setState 파라미터
+    //         setFamRelCertificate('');
+    //         setFamRelCertificateName('');
+           
+    //     }
+    // }
+
+    const onFamRelCertifiacteChange = (event) => {
+        setFamRelCertificate(event.currentTarget.files[0]);
+        setFamRelCertificateName(event.currentTarget.value);
+        
+        let imageType = event.currentTarget.files[0].type;
+        
+        if((imageType != 'image/png')&&(imageType != 'image/jpg')&&(imageType != 'image/jpeg')){
+            alert('.jpg, .jpeg, .png 확장자만 업로드 가능합니다.');
+
+            setFamRelCertificate('');
+            setFamRelCertificateName('');
+           
+        }
+    }
+
+    const onGraduationCertificateChange = (event) => {
+        setGraduationCertificate(event.currentTarget.files[0]);
+        setGraduationCertificateName(event.currentTarget.value);
+        
+        let imageType = event.currentTarget.files[0].type;
+        
+        if((imageType != 'image/png')&&(imageType != 'image/jpg')&&(imageType != 'image/jpeg')){
+            alert('.jpg, .jpeg, .png 확장자만 업로드 가능합니다.');
+           
+            setGraduationCertificate('');
+            setGraduationCertificateName('');
+           
+        }
+    }
+
+    const onCopyOfBankbookChange = (event) => {
+        setCopyOfBankbook(event.currentTarget.files[0]);
+        setCopyOfBankbookName(event.currentTarget.value);
+
+        let imageType = event.currentTarget.files[0].type;
+        
+        if((imageType != 'image/png')&&(imageType != 'image/jpg')&&(imageType != 'image/jpeg')){
+            alert('.jpg, .jpeg, .png 확장자만 업로드 가능합니다.');
+           
+            setCopyOfBankbook('');
+            setCopyOfBankbookName('');
+           
+        }
+    }
+
+    const [famRelFile,setFamRelFile] = useState('');
+    const [graduationFile,setGraduationFile] = useState('');
+    const [bankbookFile,setBankbookFile] = useState('');
+
+
+    const encodeFamRelFileBase64 = (idCardfile) => {
+        let reader = new FileReader();
+        if(idCardfile){
+            reader.readAsDataURL(idCardfile);
+            reader.onload = () => {
+                let Base64 = reader.result;
+                // console.log(Base64);
+                setFamRelFile(Base64);
+               
+            };
+            
+            reader.onerror = function (error){
+                console.log('error : ',error);
+            }
+        }
+    };
+    
+    const encodeGraduationFileBase64 = (idCardfile) => {
+        let reader = new FileReader();
+        if(idCardfile){
+            reader.readAsDataURL(idCardfile);
+            reader.onload = () => {
+                let Base64 = reader.result;
+                // console.log(Base64);
+                setGraduationFile(Base64);
+               
+            };
+            
+            reader.onerror = function (error){
+                console.log('error : ',error);
+            }
+        }
+    };
+
+    const encodeBankbookFileBase64 = (idCardfile) => {
+        let reader = new FileReader();
+        if(idCardfile){
+            reader.readAsDataURL(idCardfile);
+            reader.onload = () => {
+                let Base64 = reader.result;
+                // console.log(Base64);
+                setBankbookFile(Base64);
+               
+            };
+            
+            reader.onerror = function (error){
+                console.log('error : ',error);
+            }
+        }
+    };
+
+    encodeFamRelFileBase64(famRelCertificate);
+    encodeGraduationFileBase64(graduationCertificate);
+    encodeBankbookFileBase64(copyOfBankbook);
    
 
     // 저장 함수
     const addEmp = () => {
-        const url = '/api/s010100100/insertEmp';
-        const formData = new FormData();
+     
         let memId = props.memId;
 
         let retire;
         let join;
-        console.log('joinDate',joinDate);
-        console.log('retireDate',retireDate);
-        console.log(retireDate == '' || retireDate == undefined || retireDate == null);
+    
         if(retireDate){
            
             retire = retireDate.getFullYear()+'-'+ (retireDate.getMonth()+1)+'-'+retireDate.getDate();
@@ -161,57 +280,81 @@ function S010100100(props) {
           
             join = joinDate.getFullYear()+'-'+ (joinDate.getMonth()+1)+'-'+joinDate.getDate();
         }
-        if(retireDate == '' || retireDate == undefined || retireDate == null ){
+        // if(retireDate == '' || retireDate == undefined || retireDate == null ){
          
-            retire='0000-00-00';
-        }
-        if(joinDate == '' || joinDate == undefined || joinDate == null){
+        //     retire='0000-00-00';
+        // }
+        // if(joinDate == '' || joinDate == undefined || joinDate == null){
            
-            join='0000-00-00';
-        }
+        //     join='0000-00-00';
+        // }
 
-        console.log('retire',retire);
+
+        let realFamRelCertFileName;
+        let realGraduationFileName;
+        let realCopyOfBankFileName;
+
+        if(famRelCertificateName){
+            realFamRelCertFileName = famRelCertificateName.split('\\')[2].split('.')[0];    
+        }
         
-        formData.append('memId', memId);
-        formData.append('memberNm', memberNm);
-        formData.append('empName', empName);
-        formData.append('fstResidentRegiNum', fstResidentRegiNum);
-        formData.append('sndResidentRegiNum', sndResidentRegiNum);
-        formData.append('empTp', empTp);
-        formData.append('finalSchoolName', finalSchoolName);
-        formData.append('firstEmpHp', firstEmpHp);
-        formData.append('secondEmpHp', secondEmpHp);
-        formData.append('thirdEmpHp', thirdEmpHp);
-        formData.append('empEmailId', empEmailId);
-        formData.append('domainAddress', domainAddress);
-
-        formData.append('zipcode', zipcode);
-        formData.append('empAddress', empAddress);
-        formData.append('empDetailAddress', empDetailAddress);
-
-        formData.append('famRelCertificate', famRelCertificate);
-        formData.append('famRelCertificateName', famRelCertificateName);
-        formData.append('graduationCertificate', graduationCertificate);
-        formData.append('graduationCertificateName', graduationCertificateName);
-        formData.append('copyOfBankbook', copyOfBankbook);
-        formData.append('copyOfBankbookName', copyOfBankbookName);
-
-        formData.append('empNum', empNum);
-        formData.append('empLevel', empLevel);
-        formData.append('joinDate', join);
-        formData.append('deptNm', deptNm);
-        formData.append('pwd', pwd);
-        formData.append('wages', wages);
-        formData.append('retireDate', retire);
-        formData.append('empComment', empComment);
-         // formData.append('birthDate',birthDate);
-
-        const config = {
-            headers: {
-                'content-type': 'multipart/form-data'
-            }
+        if(graduationCertificateName){
+            realGraduationFileName = graduationCertificateName.split('\\')[2].split('.')[0];
         }
-        return post(url, formData, config);
+
+        if(copyOfBankbookName){
+            realCopyOfBankFileName = copyOfBankbookName.split('\\')[2].split('.')[0];
+        }
+
+     
+        let body = {
+            memId: memId,
+            memberNm: memberNm,
+            empName: empName,
+            fstResidentRegiNum: fstResidentRegiNum,
+            sndResidentRegiNum: sndResidentRegiNum,
+            empTp: empTp,
+            finalSchoolName: finalSchoolName,
+            firstEmpHp: firstEmpHp,
+            secondEmpHp: secondEmpHp,
+            thirdEmpHp: thirdEmpHp,
+            empEmailId: empEmailId,
+            domainAddress: domainAddress,
+            zipcode: zipcode,
+            empAddress: empAddress,
+            empDetailAddress: empDetailAddress,
+        
+            famRelFile:famRelFile,
+            graduationFile:graduationFile,
+            bankbookFile:bankbookFile,
+
+            realFamRelCertFileName:realFamRelCertFileName,
+            realGraduationFileName:realGraduationFileName,
+            realCopyOfBankFileName:realCopyOfBankFileName,
+    
+            empNum: empNum,
+            empLevel: empLevel,
+            joinDate: join,
+            deptNm: deptNm,
+            pwd: pwd,
+            wages: wages,
+            retireDate: retire,
+            empComment: empComment
+        }
+
+         axios.post('/api/s010100100/insertEmp',body)
+         .then(response => {
+                if(response.data.success){
+                    alert('정상적으로 등록 되었습니다.');
+                    props.setEmpChecked('');
+                    props.setStoreOpen(false);
+                    props.empList();
+                }else{
+                    alert(response.data.message);
+                    props.setEmpChecked('');
+                    alert('등록에 실패하였습니다.');
+                }
+         })
     }
 
 
@@ -249,7 +392,6 @@ function S010100100(props) {
             return alert("Password를 입력하세요.");
         }
 
-        // // 중복확인
         if (regNumCheckBtn == '') {
             return alert('주민번호번호 중복확인 하세요.');
         } 
@@ -260,27 +402,16 @@ function S010100100(props) {
         if((firstEmpHp.length != 3)||(secondEmpHp.length != 4)||(thirdEmpHp.length != 4)){
             return alert('연락처 형식을 확인하세요');
         }
-                addEmp().then((response) => {
-                    if(response.data.success){
-                        alert('정상적으로 등록 되었습니다.');
-                        props.setStoreOpen(false);
-                        props.empList();
-                    }else{
-                        alert(response.data.message);
-                        alert('등록에 실패하였습니다.');
-                    }
-                })
+        
+        addEmp();
     }
 
 
     // 수정
     const modifyEmp = (event) => {
 
-        const url = '/api/s010100100/modifyEmp';
-        const formData = new FormData();
-
         let empId = props.empIdM;
-        // console.log('memId', memId);
+   
         let retire;
         let join;
         let wages;
@@ -305,50 +436,83 @@ function S010100100(props) {
             wages = 0;
         }
 
+        let realFamRelCertFileName;
+        let realGraduationFileName;
+        let realCopyOfBankFileName;
 
-        
-        formData.append('empId', empId);
-        formData.append('memberNm', memberNm);
-        formData.append('empName', empName);
-        formData.append('fstResidentRegiNum', fstResidentRegiNum);
-        formData.append('sndResidentRegiNum', sndResidentRegiNum);
-        formData.append('empTp', empTp);
-        formData.append('finalSchoolName', finalSchoolName);
-        formData.append('firstEmpHp', firstEmpHp);
-        formData.append('secondEmpHp', secondEmpHp);
-        formData.append('thirdEmpHp', thirdEmpHp);
-        formData.append('empEmailId', empEmailId);
-        formData.append('domainAddress', domainAddress);
-
-        formData.append('zipcode', zipcode);
-        formData.append('empAddress', empAddress);
-        formData.append('empDetailAddress', empDetailAddress);
-
-        formData.append('famRelCertificate', famRelCertificate);
-        formData.append('famRelCertificateName', famRelCertificateName);
-        formData.append('graduationCertificate', graduationCertificate);
-        formData.append('graduationCertificateName', graduationCertificateName);
-        formData.append('copyOfBankbook', copyOfBankbook);
-        formData.append('copyOfBankbookName', copyOfBankbookName);
-
-        formData.append('empNum', empNum);
-        formData.append('empLevel', empLevel);
-        formData.append('joinDate', join);
-        formData.append('deptNm', deptNm);
-        formData.append('pwd', pwd);
-        formData.append('wages', wages);
-        formData.append('retireDate', retire);
-        formData.append('empComment', empComment);
-        // formData.append('birthDate',birthDate);
-        console.log('wages',wages);
-
-        const config = {
-            headers: {
-                'content-type': 'multipart/form-data'
-            }
+        if(famRelCertificateName){
+            realFamRelCertFileName = famRelCertificateName.split('\\')[2].split('.')[0];    
         }
-        return post(url, formData, config);
+        
+        if(graduationCertificateName){
+            realGraduationFileName = graduationCertificateName.split('\\')[2].split('.')[0];
+        }
 
+        if(copyOfBankbookName){
+            realCopyOfBankFileName = copyOfBankbookName.split('\\')[2].split('.')[0];
+        }
+
+        console.log()
+        let body = {
+
+            empId:empId,
+            memberNm: memberNm,
+            empName: empName,
+            fstResidentRegiNum: fstResidentRegiNum,
+            sndResidentRegiNum: sndResidentRegiNum,
+            empTp: empTp,
+            finalSchoolName: finalSchoolName,
+            firstEmpHp: firstEmpHp,
+            secondEmpHp: secondEmpHp,
+            thirdEmpHp: thirdEmpHp,
+            empEmailId: empEmailId,
+            domainAddress: domainAddress,
+            zipcode: zipcode,
+            empAddress: empAddress,
+            empDetailAddress: empDetailAddress,
+
+            famRelFile,
+            graduationFile,
+            bankbookFile,
+
+            realFamRelCertFileName,
+            realGraduationFileName,
+            realCopyOfBankFileName,
+
+            empNum: empNum,
+            empLevel: empLevel,
+            joinDate: join,
+            deptNm: deptNm,
+            pwd: pwd,
+            wages: wages,
+            retireDate: retire,
+            empComment: empComment,
+         
+            famRelFile:famRelFile,
+            graduationFile:graduationFile,
+            bankbookFile:bankbookFile,
+
+            realFamRelCertFileName:realFamRelCertFileName,
+            realGraduationFileName:realGraduationFileName,
+            realCopyOfBankFileName:realCopyOfBankFileName,
+    
+     
+        }
+
+         axios.post('/api/s010100100/modifyEmp',body)
+         .then(response => {
+            if(response.data.success){
+                alert('정상적으로 수정 되었습니다.');
+                props.setEmpChecked('');
+                props.setStoreOpen(false);
+                props.empList();
+            }else{
+                alert(response.data.message);
+                props.setEmpChecked('');
+                alert('수정에 실패하였습니다.');
+            }
+         })
+   
     }
 
 
@@ -376,16 +540,7 @@ function S010100100(props) {
         if((firstEmpHp.length != 3)||(secondEmpHp.length != 4)||(thirdEmpHp.length != 4)){
             alert('연락처 형식을 확인하세요');
         }else{
-            modifyEmp().then((response) => {
-                if(response.data.success){
-                    alert('정상적으로 수정 되었습니다.');
-                    props.setStoreOpen(false);
-                    props.empList();
-                }else{
-                    alert(response.data.message);
-                    alert('수정에 실패하였습니다.');
-                }
-            })
+            modifyEmp();
         }
     }
 
@@ -432,9 +587,7 @@ function S010100100(props) {
             let body = {
                 empId
             }
-          
-            console.log('empIdMd',props.empIdM);
-
+        
             axios.post('/api/s010100100/empDetail', body)
                 .then(response => {
                     if (response.data.success) {
@@ -450,6 +603,7 @@ function S010100100(props) {
                         setEmpTp(response.data.rows[0].EMP_TP);
                      
                         setFinalSchoolName(response.data.rows[0].FINAL_SCHOOL_NAME);
+                        console.log();
                         setFirstEmpHp(((response.data.rows[0].EMP_HP).split("-"))[0]);
                         setSecondEmpHp(((response.data.rows[0].EMP_HP).split("-"))[1]);
                         setThirdEmpHp(((response.data.rows[0].EMP_HP).split("-"))[2]);
@@ -466,10 +620,10 @@ function S010100100(props) {
                         const modalJoinDate = response.data.rows[0].JOIN_DATE;
                         
                         if(modalJoinDate === '0000-00-00'){
-                            console.log('조인날짜 00000');
+                            // console.log('조인날짜 00000');
                             setJoinDate('')
                         }else{
-                            console.log('조인날짜 있음');
+                            // console.log('조인날짜 있음');
                             setJoinDate(new Date(modalJoinDate));
                         }
                         
@@ -487,12 +641,18 @@ function S010100100(props) {
 
                         setBirthDate(response.data.rows[0].BIRTH_DATE);
                         setEmpComment(response.data.rows[0].EMP_COMMENT);
+                        
+                        const famRelImg = new Buffer.from(response.data.rows[0].FAM_REL_CERT_IMAGE).toString();
+                        const gradCertImg = new Buffer.from(response.data.rows[0].GRADUATION_CERT_IMAGE).toString(); 
+                        const copyBankBookImg = new Buffer.from(response.data.rows[0].BANKBOOK_COPY_IMAGE).toString(); 
+    
+                        setDetailFamRelCert(famRelImg);
+                        setDetailGraduationCert(gradCertImg);
+                        setDetailCopyBankbook(copyBankBookImg);
 
-                        setDetailFamRelCert(response.data.rows[0].IMAGE_FAMRELCERTIFICATE);
-                        setDetailGraduationCert(response.data.rows[0].IMAGE_GRADCERTIFICATE);
-                        setDetailCopyBankbook(response.data.rows[0].IMAGE_BANKBOOK);
-
-                      
+                        setRealFamRelCertificateName(response.data.rows[0].FAM_REL_CERT_IMAGE_NAME);
+                        setRealGraduationCertificateName(response.data.rows[0].GRADUATION_CERT_IMAGE_NAME);
+                        setRealCopyOfBankbookName(response.data.rows[0].BANKBOOK_COPY_IMAGE_NAME);
                     } else {
                         alert(response.data.message);
                         alert("직원 상세 데이터를 불러오는데 실패하였습니다.");
@@ -572,39 +732,7 @@ function S010100100(props) {
         setEmpDetailAddress(event.currentTarget.value);
     }
 
-    const onFamRelCertifiacteChange = (event) => {
-        // file: event.currentTarget.idCardFiles[0];
-        setFamRelCertificate(event.currentTarget.files[0]);
-        setFamRelCertificateName(event.currentTarget.value);
-    }
-
-    const onGraduationCertificateChange = (event) => {
-        // file: event.currentTarget.idCardFiles[0];
-        setGraduationCertificate(event.currentTarget.files[0]);
-        setGraduationCertificateName(event.currentTarget.value);
-    }
-
-    const onCopyOfBankbookChange = (event) => {
-        // file: event.currentTarget.idCardFiles[0];
-        setCopyOfBankbook(event.currentTarget.files[0]);
-        setCopyOfBankbookName(event.currentTarget.value);
-    }
-    
-    const onIdDownloadHandler = (event) => {
-        event.preventDefault();
-        //  console.log('dataMemId', dataMemId);
-
-        // axios.get(`/api/s01010050/download/tb_s10_member010_by_id?id=${dataMemId}&type=single`)
-        //     .then(response => {
-        //         if (response) {
-        //             alert('res');
-        //             console.log(response);
-
-        //         } else {
-        //             alert("다운로드에 실패하였습니다.");
-        //         }
-        //     })
-    }
+   
 
     const onEmpNumHandler = (event) => {
         setEmpNum(event.currentTarget.value);
@@ -839,15 +967,13 @@ function S010100100(props) {
                                         className={classes.modal}
                                         open={isPostOpen}
                                         onClose={handleClose}
-                                        closeAfterTransition
+                                        closeAfterTransition={true}
                                         BackdropComponent={Backdrop}
-                                        BackdropProps={{
-                                            timeout: 500,
-                                        }}
+                                       
                                     >
                                         <Fade in={isPostOpen}>
                                             <div className={classes.paper}>
-                                                <DaumPostcode autoClose style={postCodeStyle} onComplete={handleComplete} />
+                                                <DaumPostcode style={postCodeStyle} onComplete={handleComplete} />
                                             </div>
                                         </Fade>
                                     </Modal>
@@ -875,33 +1001,69 @@ function S010100100(props) {
                             <tr>
                                 <th className="memberInfo" >첨부파일</th>
                                 <td colSpan="4" >
-                                <a href='#' onClick={onIdDownloadHandler} >{detailFamRelCert}</a>&nbsp;
+                                <label htmlFor="file">가족관계증명서:</label>&nbsp;
+                                    <Base64Downloader
+                                        base64={detailFamRelCert}
+                                        downloadName={realFamRelCertificateName}
+                                        Tag="a"
+                                        extraAttributes={{ href: '#' }}
+                                        className="my-class-name"
+                                        style={{ color: 'orange' }}
+                                    >
+                                       {realFamRelCertificateName}
+                                    </Base64Downloader>&nbsp;
+
                                     <input type='file'
                                         file={famRelCertificate}
                                         name='famRelCertificate'
                                         value={famRelCertificateName}
                                         onChange={onFamRelCertifiacteChange}
                                     />
+                                    <div className = 'fileStar'> * jpg,jpeg,png 파일만 가능합니다.</div>
                                 </td>
                                 <td colSpan="5" >
-                                <a href='#' onClick={onIdDownloadHandler} >{detailGraduationCert}</a>&nbsp;
+                                <label htmlFor="file">졸업증명서:</label>&nbsp;
+                                    <Base64Downloader
+                                        base64={detailGraduationCert}
+                                        downloadName={realGraduationCertificateName}
+                                        Tag="a"
+                                        extraAttributes={{ href: '#' }}
+                                        className="my-class-name"
+                                        style={{ color: 'orange' }}
+                                    >
+                                       {realGraduationCertificateName}
+                                    </Base64Downloader>        
                                     <input type='file'
                                         file={graduationCertificate}
                                         name='graduationCertificate'
                                         value={graduationCertificateName}
                                         onChange={onGraduationCertificateChange}
                                     />
+                                    <div className = 'fileStar'> * jpg,jpeg,png 파일만 가능합니다.</div>
                                 </td>
 
                                 <td colSpan="5" >
-                                <a href='#' onClick={onIdDownloadHandler} >{detailCopyBankbook}</a>&nbsp;
+                                <label htmlFor="file">통장사본:</label>&nbsp;
+                                <Base64Downloader
+                                        base64={detailCopyBankbook}
+                                        downloadName={realCopyOfBankbookName}
+                                        Tag="a"
+                                        extraAttributes={{ href: '#' }}
+                                        className="my-class-name"
+                                        style={{ color: 'orange' }}
+                                    >
+                                       {realCopyOfBankbookName}
+                                    </Base64Downloader>
+
                                     <input type='file'
                                         file={copyOfBankbook}
                                         name='copyOfBankbook'
                                         value={copyOfBankbookName}
                                         onChange={onCopyOfBankbookChange}
                                     />
+                                    <div className = 'fileStar'> * jpg,jpeg,png 파일만 가능합니다.</div>
                                 </td>
+                                
                             </tr>
 
                             <tr>
@@ -939,7 +1101,7 @@ function S010100100(props) {
                                 <th className="memberInfo">부서</th>
                                 <td>
 
-                                    <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm"
+                                    <Form.Control style={{ width: 8 + 'em', display: 'inline' }} size="sm"
                                         type="text"
                                         onChange={onDeptNmHandler} value={deptNm|| ''} id="deptNm" name="deptNm" />
 
@@ -960,7 +1122,7 @@ function S010100100(props) {
                                 <th >급여</th>
                                 <td>
 
-                                <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm"
+                                <Form.Control style={{ width: 8 + 'em', display: 'inline' }} size="sm"
                                         type="text"
                                         onChange={onWagesHandler} value={wages || ''} id="wages" name="wages"  />
 
@@ -982,9 +1144,9 @@ function S010100100(props) {
                                 <th className="memberInfo">생년월일</th>
                                 <td>
                              
-                                     <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm"
+                                     <Form.Control style={{ width: 8 + 'em', display: 'inline' }} size="sm"
                                         type="text"
-                                        onChange={onBirthDateHandler} value={birthDate|| ''} id="birthDate" name="birthDate" /> 
+                                        onChange={onBirthDateHandler} value={birthDate|| ''} id="birthDate" name="birthDate" readOnly/> 
 
 
                             </td>

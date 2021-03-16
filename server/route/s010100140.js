@@ -58,8 +58,8 @@ router.post('/insert', (req, res, next) => {
 
     let sql =
         'INSERT INTO ' +
-        'TB_S10_ASK010 ( ASK_TP, ASK_DATE, ASK_METHOD, ASK_PATH, ASK_NAME, ASK_INFO, ASK_CONTENT,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID ) ' +
-        'VALUES ( ?, ?, ?, ?, ?, ?, ?, sysdate(),"s010100140")';
+        'TB_S10_ASK010 ( ASK_TP, ASK_DATE, ASK_METHOD, ASK_PATH, ASK_NAME, ASK_INFO, ASK_CONTENT,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID ) ' +
+        'VALUES ( ?, ?, ?, ?, ?, ?, ?, sysdate(),"s010100140",sysdate(),"s010100140")';
 
     let ask_tp = req.body.modalAskTp;
     let ask_date = req.body.modalAskDate.toString().substring(0, 10);

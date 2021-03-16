@@ -3,9 +3,10 @@ const app = express();
 const router = express.Router();
 const dbconfig = require('../config/database.js')();
 const connection = dbconfig.init();
-const bcrypt = require('bcrypt');                                                    
-const saltRounds = 7;   
+const bcrypt = require('bcrypt');
+const saltRounds = 7;
 const multer = require('multer');
+const { isConstructorDeclaration } = require('typescript');
 let upload = multer({ dest: './src/uploads' });
 app.use('/image', express.static('./src/uploads'));
 
@@ -112,7 +113,7 @@ router.post('/roomLockerHier', (req, res, next) => {
 router.post('/monthlyMoney', (req, res, next) => {
 
     let cdTpRoom = req.body.contractTpBody;
-    console.log(cdTpRoom);
+    // console.log(cdTpRoom);
     let sql = 'SELECT ATTRIBUTE3 FROM TB_S10_CODE WHERE CD_TP = "' + cdTpRoom + '"';
 
     connection.query(sql, (error, rows) => {//쿼리문
@@ -127,9 +128,6 @@ router.post('/monthlyMoney', (req, res, next) => {
     });
 
 })
-
-
-
 
 
 // 신규계약
@@ -151,24 +149,43 @@ router.post('/detailNewContract_by_id', (req, res, next) => {
 
     connection.beginTransaction(function (error) {
 
+        let memberStSql = 'UPDATE TB_S10_MEMBER010 '+
+                            ' SET MEMBER_ST = "C",' +
+                            ' LAST_UPDATE_DATE = SYSDATE(),'+
+                            ' LAST_UPDATE_PROGRAM_ID = "s010100010",'+
+                            ' RETIRE_DATE = "0000-00-00"'+
+                           'WHERE CEO_ID = '+
+                           '(SELECT EMP_ID FROM TB_S10_EMP010 WHERE MEMBER_ID = '+memberIdForNew+')';
+
+        // console.log('memberStSql',memberStSql);
         let sql =
             'INSERT INTO ' +
-            'TB_S10_CONTRACT010(CONTRACT_TP,CONTRACT_ROOM,CONTRACT_LOCKER,MONTHLY_FEE,CONTRACT_TERM,START_DATE,END_DATE,' +
-            'PAY_DATE,PAY_METHOD,CONTRACT_PATH,CREATED_DATE,CONTRACT_DATE,COMMENT,MEMBER_ID,LAST_UPDATE_DATE) ' +
-            'VALUES (?,?,?,?,?,?,?,?,?,?,SYSDATE(),?,?,?,SYSDATE())';
+            'TB_S10_CONTRACT010(CONTRACT_TP,CONTRACT_ST,CONTRACT_ROOM,CONTRACT_LOCKER,MONTHLY_FEE,CONTRACT_TERM,START_DATE,END_DATE,' +
+            'PAY_DATE,PAY_METHOD,CONTRACT_PATH,CREATED_DATE,CONTRACT_DATE,COMMENT,MEMBER_ID,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID) ' +
+            'VALUES (?,"C",?,?,?,?,?,?,?,?,?,SYSDATE(),?,?,?,"s010100010",SYSDATE(),"s010100010")';
 
         let contractParams = [contractTp, contractTpVal, roomLockerTp, contractMoney, contractTerm, startDate, endDate, payDate, payMethod, contractPath, startDate, comment, memberIdForNew];
 
-        // let newContractsql = 'UPDATE TB_S10_MEMBER010 ' +
-        //     'SET MEMBER_ST ="' + memberSt + '"' +
-        //     'WHERE MEMBER_ID =' + memberIdForNew;
+        connection.query(memberStSql, contractParams, (error, row) => {//쿼리문
+
+            if (error) {
+                connection.rollback(function () {
+                    console.log('memberStSql.error');
+                    setImmediate(() => {
+                        next(new Error(error))
+                    })
+                });
+            }
+
 
         //방금생성한 CONTRACT_ID 가져오기
         connection.query(sql, contractParams, (error, row) => {//쿼리문
             if (error) {
                 connection.rollback(function () {
                     console.log('payContractSql.error');
-                    throw error;
+                    setImmediate(()=>{
+                        next(new Error(error))
+                    })
                 });
             }
 
@@ -179,7 +196,9 @@ router.post('/detailNewContract_by_id', (req, res, next) => {
                 if (error) {
                     connection.rollback(function () {
                         console.log('recentContractId.error');
-                        throw error;
+                        setImmediate(()=>{
+                            next(new Error(error))
+                        })
                     });
                 }
 
@@ -189,11 +208,10 @@ router.post('/detailNewContract_by_id', (req, res, next) => {
                 let wasteContracMonthDay = dateToString.substring(5, 6);
                 let wasteContractYearDay = dateToString.substring(0, 4);
 
-
-                console.log('dateToString', dateToString);
-                console.log('wasteDateDay', wasteDateDay);
-                console.log('wasteContracMonthDay', wasteContracMonthDay);
-                console.log('wasteContractYearDay', wasteContractYearDay);
+                // console.log('dateToString', dateToString);
+                // console.log('wasteDateDay', wasteDateDay);
+                // console.log('wasteContracMonthDay', wasteContracMonthDay);
+                // console.log('wasteContractYearDay', wasteContractYearDay);
 
                 let contractDateDay = parseInt(wasteDateDay);
                 let wasteMonth = parseInt(wasteContracMonthDay);
@@ -245,9 +263,9 @@ router.post('/detailNewContract_by_id', (req, res, next) => {
 
                         }
 
-                        console.log("--------------------------------");
-                        console.log('payContractParams', payContractParams);
-                        console.log("--------------------------------");
+                        // console.log("--------------------------------");
+                        // console.log('payContractParams', payContractParams);
+                        // console.log("--------------------------------");
 
                         // contractMonthDay++;
 
@@ -258,7 +276,9 @@ router.post('/detailNewContract_by_id', (req, res, next) => {
                                 connection.rollback(function () {
                                     console.log('payContractSql.error');
                                     // res.send({ success: false, message: "TB_S10_CONTRACT020 최초 등록 오류 : " + error });
-                                    throw error;
+                                    setImmediate(()=>{
+                                        next(new Error(error))
+                                    })
                                 });
                             }
                             if ((payMethod === 'MO' && selectedOption === 'Y')) {
@@ -270,14 +290,18 @@ router.post('/detailNewContract_by_id', (req, res, next) => {
                                         connection.rollback(function () {
                                             console.log('payContractSql.error');
                                             // res.send({ success: false, message: "TB_S10_CONTRACT020 최초 등록 오류 : " + error });
-                                            throw error;
+                                            setImmediate(()=>{
+                                                next(new Error(error))
+                                            })
                                         });
                                     }
                                     connection.commit(function (err) {
                                         if (err) {
                                             connection.rollback(function () {
                                                 // res.send({ success: false, message: "COMMIT 오류 : " + error });
-                                                throw err;
+                                                setImmediate(()=>{
+                                                    next(new Error(error))
+                                                })
                                             });
                                         }
                                     });//commit
@@ -287,7 +311,9 @@ router.post('/detailNewContract_by_id', (req, res, next) => {
                                     if (err) {
                                         connection.rollback(function () {
                                             // res.send({ success: false, message: "COMMIT 오류 : " + error });
-                                            throw err;
+                                            setImmediate(()=>{
+                                                next(new Error(error))
+                                            })
                                         });
                                     }
                                 });//commit
@@ -334,9 +360,9 @@ router.post('/detailNewContract_by_id', (req, res, next) => {
 
                         }
 
-                        console.log("--------------------------------");
-                        console.log('payContractParams', payContractParams);
-                        console.log("--------------------------------");
+                        // console.log("--------------------------------");
+                        // console.log('payContractParams', payContractParams);
+                        // console.log("--------------------------------");
 
                         // contractMonthDay++;
 
@@ -347,7 +373,9 @@ router.post('/detailNewContract_by_id', (req, res, next) => {
                                 connection.rollback(function () {
                                     console.log('payContractSql.error');
                                     // res.send({ success: false, message: "TB_S10_CONTRACT020 최초 등록 오류 : " + error });
-                                    throw error;
+                                    setImmediate(()=>{
+                                        next(new Error(error))
+                                    })
                                 });
                             }
 
@@ -356,7 +384,9 @@ router.post('/detailNewContract_by_id', (req, res, next) => {
                                 if (err) {
                                     connection.rollback(function () {
                                         // res.send({ success: false, message: "COMMIT 오류 : " + error });
-                                        throw err;
+                                        setImmediate(()=>{
+                                            next(new Error(error))
+                                        })
                                     });
                                 }
                             });//commit
@@ -370,22 +400,28 @@ router.post('/detailNewContract_by_id', (req, res, next) => {
             });//contract
         });//contract
     })//memberId
+    })//memberId
 })
 
 //가계약 -> 확정
 router.post('/modifymemberSt', (req, res, next) => {
     let rNum = req.body.rNum;
-    console.log('rNum', rNum);
+    // console.log('rNum', rNum);
     let sql =
         'UPDATE TB_S10_MEMBER010 MEM ' +
         ' INNER JOIN TB_S10_CONTRACT010 CON ON MEM.MEMBER_ID = CON.MEMBER_ID ' +
         '   SET MEM.MEMBER_ST = "C" ' +
         ' WHERE CON.CONTRACT_ID =' + rNum
 
-    console.log('sql', sql);
+    // console.log('sql', sql);
     connection.query(sql, (error, rows) => {
-        if (error) throw error;
-        res.send({ success: true, rows })
+        if (error){
+            setImmediate(()=>{
+                next(new Error(error))
+            })
+        }else{
+            res.send({ success: true, rows })
+        }
     })
 
 
@@ -407,7 +443,6 @@ router.get('/tb_s10_contract010_by_id', (req, res, next) => {
         let sql =
             'SELECT EMP.NAME, EMP.EMP_HP, EMP.EMP_EMAIL, EMP.ADDRESS,EMP.ZIP_CODE,EMP.DETAIL_ADDRESS,' +
             '   MEM.MEMBER_NM, MEM.REG_NO, CODE1.CD_V AS "MEMBER_TP", CODE1.CD_V_MEANING AS "MEMBER_TP_M", CODE2.CD_V AS "MEMBER_ST",' +
-            '   MEM.CEO_IMAGE_ID, MEM.CEO_IMAGE_REGISTER,' +
             '       CODE2.CD_V_MEANING AS "MEMBER_ST_M", CON.CONTRACT_ID,  DATE_FORMAT(CON.CONTRACT_DATE,"%y-%m-%d")AS CONTRACT_DATE, CON.MONTHLY_FEE, CODE3.CD_V AS "CONTRACT_TP" , ' +
             '       CODE3.CD_V_MEANING AS "CONTRACT_TP_M" , CON.START_DATE, DATE_FORMAT(CON.END_DATE,"%y-%m-%d")AS END_DATE, ' +
             '       CON.END_FLAG ,' +
@@ -418,6 +453,7 @@ router.get('/tb_s10_contract010_by_id', (req, res, next) => {
             '       CON.CONTRACT_TERM,' +
             '       PCON.PAYED_PLAN_MONEY,' +
             '       PCON.PAYED_FLAG,' +
+            '       CON.CONTRACT_ST,'+
             '       CON.PAY_METHOD,' +
             '       CODE4.CD_V AS "PAY_METHOD",CODE4.CD_V_MEANING AS "PAY_METHOD_M",' +
             '       CODE5.CD_V AS "CONTRACT_PATH",' +
@@ -450,13 +486,17 @@ router.get('/tb_s10_contract010_by_id', (req, res, next) => {
             'AND CODE7.CD_TP = "L" ' +
             'WHERE CON.CONTRACT_ID =' + contractId;
 
+        // console.log('contractId', contractId);
+
 
         connection.query(sql, (error, rows) => {//쿼리문
-            //console.log(rows);
-            if (error) throw error;
-            // console.log(rows);
-            res.send({ success: true, rows });
-
+            if (error) {
+                setImmediate(() => {
+                    next(new Error(error));
+                })
+            } else {
+                res.send({ success: true, rows });
+            }
         });
     }
 })
@@ -472,7 +512,7 @@ router.get('/insert/tb_s10_contract010_by_id', (req, res, next) => {
     let sql =
         'SELECT ' +
         '   EMP.NAME, EMP.EMP_HP, EMP.EMP_EMAIL, EMP.ADDRESS,EMP.ZIP_CODE,EMP.DETAIL_ADDRESS, ' +
-        '   MEM.MEMBER_NM, MEM.REG_NO, CODE1.CD_V AS "MEMBER_TP", MEM.CEO_IMAGE_ID ,MEM.CEO_IMAGE_REGISTER ' +
+        '   MEM.MEMBER_NM, MEM.REG_NO, CODE1.CD_V AS "MEMBER_TP", MEM.ID_CARD_IMAGE_NAME ,MEM.BUSI_LICS_IMAGE_NAME ' +
         'FROM TB_S10_EMP010 EMP ' +
         ' INNER JOIN TB_S10_MEMBER010 MEM ' +
         ' ON EMP.EMP_ID = MEM.CEO_ID ' +
@@ -483,10 +523,15 @@ router.get('/insert/tb_s10_contract010_by_id', (req, res, next) => {
 
     connection.query(sql, (error, rows) => {//쿼리문
         //console.log(rows);
-        if (error) throw error;
-        //console.log(rows);
-        res.send({ success: true, rows });
+        if (error) {
+            setImmediate(() => {
+                next(new Error(error));
+            })
 
+        } else {
+            //console.log(rows);
+            res.send({ success: true, rows });
+        }
     });
 
 })
@@ -514,19 +559,7 @@ router.post('/detailModifyContracId', (req, res, next) => {
         let contractMoney = req.body.contractMoney;
         let selectedOption = req.body.selectedOption;
 
-        //     let modifyDataNum = req.body.modifyDataNum;
-        //     let contractTp = req.body.contractTp;
-        //     let contractTpVal = req.body.contractTpVal;
-        //     let roomLockerTp = req.body.roomLockerTp;
-        //     let contractMoney = req.body.contractMoney;
-        //     let contractTerm = req.body.contractTerm;
-        //     let startAsk_date = req.body.startDate;
-        //     let endDate = req.body.dateEnd;
-        //     let payDate = req.body.payDate;
-        //     let payMethod = req.body.payMethod;
-        //     let contractPath = req.body.contractPath;
-        //     let comment = req.body.comment;
-
+         console.log('contractPath', contractPath);
 
         let modifySql = 'UPDATE TB_S10_CONTRACT010 CON ' +
             '   INNER JOIN TB_S10_CONTRACT020 CON2 ON CON.CONTRACT_ID = CON2.CONTRACT_ID ' +
@@ -543,6 +576,7 @@ router.post('/detailModifyContracId', (req, res, next) => {
             '    CON.PAY_METHOD = "' + payMethod + '",' +
             '    CON.CONTRACT_PATH = "' + contractPath + '",' +
             '    CON.CONTRACT_DATE = "' + startDate + '",' +
+            '    CON.MONTHLY_FEE = "' + contractMoney + '",' +
             '    CON2.PAYED_PLAN_MONEY = "' + contractMoney + '",' +
             '    CON2.PAYED_FLAG = "' + selectedOption + '",' +
             '    CON.LAST_UPDATE_DATE = SYSDATE(),' +
@@ -551,16 +585,21 @@ router.post('/detailModifyContracId', (req, res, next) => {
             '    CON2.LAST_UPDATE_PROGRAM_ID = "S010100010"' +
             'WHERE CON.CONTRACT_ID = ' + modifyDataNum
 
+        // console.log('modifySql', modifySql);
 
-        let bringDateSql = ' SELECT DATE_FORMAT(PAY_PLAN_DATE,"%y-%m-%d") AS "PAY_PLAN_DATE" FROM TB_S10_CONTRACT020 ' +
-            ' WHERE CONTRACT_ID =' + modifyDataNum;
+        let bringDateSql = 'SELECT DATE_FORMAT(PCON.PAY_PLAN_DATE,"%y-%m-%d") AS "PAY_PLAN_DATE", CON.CONTRACT_TERM AS "CONTRACT_TERM" ' +
+            ' FROM TB_S10_CONTRACT010 CON INNER JOIN TB_S10_CONTRACT020 PCON ' +
+            ' ON CON.CONTRACT_ID = PCON.CONTRACT_ID ' +
+            ' WHERE CON.CONTRACT_ID =' + modifyDataNum;
 
         connection.query(bringDateSql, function (error, rows) {
             // console.log('memberSql: ' + rows);
             if (error) {
                 connection.rollback(function () {
                     console.log('bringDateSql.error');
-                    throw error;
+                    setImmediate(() => {
+                        next(new Error(error));
+                    })
                 });
 
             }
@@ -572,7 +611,9 @@ router.post('/detailModifyContracId', (req, res, next) => {
                 if (error) {
                     connection.rollback(function () {
                         console.log('termCountSql.error');
-                        throw error;
+                        setImmediate(() => {
+                            next(new Error(error));
+                        })
                     });
                 }
                 //console.log('contract_term',termCountRow);
@@ -582,7 +623,9 @@ router.post('/detailModifyContracId', (req, res, next) => {
                     if (error) {
                         connection.rollback(function () {
                             console.log('modifySql.error');
-                            throw error;
+                            setImmediate(() => {
+                                next(new Error(error));
+                            })
                         });
                     }
 
@@ -604,9 +647,9 @@ router.post('/detailModifyContracId', (req, res, next) => {
                         let wasteMonth = parseInt(wasteContracMonthDay);
                         let contractYearDay = parseInt(wasteContractYearDay);
 
-                        console.log(contractDateDay);
-                        console.log(wasteMonth);
-                        console.log(contractYearDay);
+                        // console.log(contractDateDay);
+                        // console.log(wasteMonth);
+                        // console.log(contractYearDay);
 
 
                         let finalDate = '';
@@ -637,7 +680,7 @@ router.post('/detailModifyContracId', (req, res, next) => {
                                         ' WHERE CONTRACT_ID = ' + modifyDataNum + ' AND PAY_PLAN_DATE ="' + rows[i].PAY_PLAN_DATE + '"';
 
                                     initPayedDate = 'UPDATE TB_S10_CONTRACT020' +
-                                        ' SET PAYED_DATE = "", PAYED_FLAG ="N" ' +
+                                        ' SET PAYED_DATE = "0000-00-00", PAYED_FLAG ="N" ' +
                                         ' WHERE CONTRACT_ID = ' + modifyDataNum + ' AND PAY_PLAN_DATE ="' + rows[i].PAY_PLAN_DATE + '"';
 
 
@@ -645,19 +688,17 @@ router.post('/detailModifyContracId', (req, res, next) => {
                                         '   SET PAYED_FLAG="' + selectedOption + '",PAYED_DATE="' + originDate + '"' +
                                         ' WHERE CONTRACT_ID = ' + modifyDataNum + ' AND PAY_PLAN_DATE="' + originDate + '"';
 
-                                    console.log('updatePayedDate', updatePayedDate);
+                                    // console.log('updatePayedDate', updatePayedDate);
                                     // 납부여부-아니오
                                 } else if (selectedOption === 'N') {
 
-
                                     payPlanDateModifySql = 'UPDATE TB_S10_CONTRACT020' +
                                         ' SET PAY_PLAN_DATE = "' + finalDate + '", ' +
-                                        ' PAYED_DATE = "", ' +
+                                        ' PAYED_DATE = "0000-00-00", ' +
                                         ' PAYED_FLAG = "N" ' +
                                         ' WHERE CONTRACT_ID = ' + modifyDataNum + ' AND PAY_PLAN_DATE ="' + rows[i].PAY_PLAN_DATE + '"';
 
                                 }
-                                // contractMonthDay++;
 
                                 connection.query(payPlanDateModifySql, function (error, result) {  //쿼리문
                                     console.log('payPlanDateModifySql:' + result);
@@ -666,7 +707,9 @@ router.post('/detailModifyContracId', (req, res, next) => {
                                         connection.rollback(function () {
                                             console.log('payPlanDateModifySql.error');
                                             // res.send({ success: false, message: "TB_S10_CONTRACT020 최초 등록 오류 : " + error });
-                                            throw error;
+                                            setImmediate(() => {
+                                                next(new Error(error));
+                                            })
                                         });
                                     }
                                     if ((payMethod === 'MO' && selectedOption === 'Y')) {
@@ -677,7 +720,9 @@ router.post('/detailModifyContracId', (req, res, next) => {
                                                 connection.rollback(function () {
                                                     console.log('payPlanDateModifySql.error');
                                                     // res.send({ success: false, message: "TB_S10_CONTRACT020 최초 등록 오류 : " + error });
-                                                    throw error;
+                                                    setImmediate(() => {
+                                                        next(new Error(error));
+                                                    })
                                                 });
                                             }
 
@@ -688,25 +733,31 @@ router.post('/detailModifyContracId', (req, res, next) => {
                                                     connection.rollback(function () {
                                                         console.log('payContractSql.error');
                                                         // res.send({ success: false, message: "TB_S10_CONTRACT020 최초 등록 오류 : " + error });
-                                                        throw error;
+                                                        setImmediate(() => {
+                                                            next(new Error(error));
+                                                        })
                                                     });
                                                 }
-                                                connection.commit(function (err) {
-                                                    if (err) {
+                                                connection.commit(function (error) {
+                                                    if (error) {
                                                         connection.rollback(function () {
                                                             // res.send({ success: false, message: "COMMIT 오류 : " + error });
-                                                            throw err;
+                                                            setImmediate(() => {
+                                                                next(new Error(error));
+                                                            })
                                                         });
                                                     }
                                                 });//commit
                                             });
                                         });
                                     } else {
-                                        connection.commit(function (err) {
-                                            if (err) {
+                                        connection.commit(function (error) {
+                                            if (error) {
                                                 connection.rollback(function () {
                                                     // res.send({ success: false, message: "COMMIT 오류 : " + error });
-                                                    throw err;
+                                                    setImmediate(() => {
+                                                        next(new Error(error));
+                                                    })
                                                 });
                                             }
                                         });//commit
@@ -740,7 +791,7 @@ router.post('/detailModifyContracId', (req, res, next) => {
 
                                     payPlanDateModifySql = 'UPDATE TB_S10_CONTRACT020' +
                                         ' SET PAY_PLAN_DATE = "' + finalDate + '", ' +
-                                        ' PAYED_DATE = "", ' +
+                                        ' PAYED_DATE = "0000-00-00", ' +
                                         ' PAYED_FLAG = "N" ' +
                                         ' WHERE CONTRACT_ID = ' + modifyDataNum + ' AND PAY_PLAN_DATE ="' + rows[i].PAY_PLAN_DATE + '"';
 
@@ -754,17 +805,21 @@ router.post('/detailModifyContracId', (req, res, next) => {
                                     if (error) {
                                         connection.rollback(function () {
                                             console.log(' payPlanDateModifySql.error');
-                                            // res.send({ success: false, message: "TB_S10_CONTRACT020 최초 등록 오류 : " + error });
-                                            throw error;
+                                          
+                                            setImmediate(() => {
+                                                next(new Error(error));
+                                            })
                                         });
                                     }
 
 
-                                    connection.commit(function (err) {
-                                        if (err) {
+                                    connection.commit(function (error) {
+                                        if (error) {
                                             connection.rollback(function () {
-                                                // res.send({ success: false, message: "COMMIT 오류 : " + error });
-                                                throw err;
+                                               
+                                                setImmediate(() => {
+                                                    next(new Error(error));
+                                                })
                                             });
                                         }
                                     });//commit
@@ -787,15 +842,15 @@ router.post('/detailModifyContracId', (req, res, next) => {
                         let wasteContracMonthDay = dateToString.substring(3, 5);
                         let wasteContractYearDay = dateToString.substring(0, 2);
 
-                        console.log(startDate.toString().substring(0, 10));
+                        // console.log(startDate.toString().substring(0, 10));
                         // //날 01
                         let contractDateDay = parseInt(wasteDateDay);
                         let wasteMonth = parseInt(wasteContracMonthDay);
                         let contractYearDay = parseInt(wasteContractYearDay);
 
-                        console.log(contractDateDay);
-                        console.log(wasteMonth);
-                        console.log(contractYearDay);
+                        // console.log(contractDateDay);
+                        // console.log(wasteMonth);
+                        // console.log(contractYearDay);
 
 
                         let finalDate = '';
@@ -804,6 +859,8 @@ router.post('/detailModifyContracId', (req, res, next) => {
                         let insertPlanDateSql = '';
                         let planDateParams = '';
 
+                        // 가계약-> 확정-> 없는 이용기간 데이터 입력
+
                         let delPayPlanDateSql = 'DELETE FROM TB_S10_CONTRACT020 WHERE CONTRACT_ID=' + modifyDataNum;
 
                         connection.query(delPayPlanDateSql, function (error, result) {  //쿼리문
@@ -811,38 +868,47 @@ router.post('/detailModifyContracId', (req, res, next) => {
                             if (error) {
                                 connection.rollback(function () {
                                     console.log('delPayPlanDateSql.error');
-                                    throw error;
+                                    setImmediate(() => {
+                                        next(new Error(error));
+                                    })
                                 });
                             }
 
+                            // 월납
                             if (payMethod === 'MO') {
-
+                                let updateDate = '';
                                 for (let i = 0; i < contractTerm; i++) {
 
                                     finalDate = contractYearDay + '-' + (wasteMonth + i) + '-' + contractDateDay;
                                     originDate = contractYearDay + '-' + (wasteMonth) + '-' + contractDateDay;
-                                    // console.log('finalDate',finalDate);
-                                    let updateDate = '';
+
                                     // 납부여부-네
                                     if (selectedOption === 'Y') {
 
-
-                                        insertPlanDateSql = 'INSERT INTO TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_FLAG) VALUES (?,?,SYSDATE(),SYSDATE(),"S010100010","N")';
+                                        insertPlanDateSql = 'INSERT INTO TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_FLAG) VALUES (?,?,SYSDATE(),"s010100010",SYSDATE(),"S010100010","N")';
                                         planDateParams = [modifyDataNum, finalDate];
 
-                                        updateDate = 'UPDATE TB_S10_CONTRACT020' +
-                                            ' SET PAYED_DATE = "' + originDate + '", PAYED_FLAG ="Y"' +
-                                            ' WHERE CONTRACT_ID = ' + modifyDataNum + ' AND PAY_PLAN_DATE ="' + rows[i].PAY_PLAN_DATE + '"';
+                                        if (rows[0].CONTRACT_TERM != 0) {
 
+                                            updateDate = 'UPDATE TB_S10_CONTRACT020' +
+                                                ' SET PAYED_DATE = "' + originDate + '", PAYED_FLAG ="Y"' +
+                                                ' WHERE CONTRACT_ID = ' + modifyDataNum + ' AND PAY_PLAN_DATE ="' + rows[i].PAY_PLAN_DATE + '"';
+
+
+                                        } else if (rows[0].CONTRACT_TERM === 0) {
+
+                                            'UPDATE TB_S10_CONTRACT020 ' +
+                                                '   SET PAYED_FLAG="' + selectedOption + '",PAYED_DATE="' + originDate + '"' +
+                                                ' WHERE CONTRACT_ID = ' + modifyDataNum + ' AND PAY_PLAN_DATE="' + originDate + '"';
+                                        }
                                         // 납부여부-아니오
                                     } else if (selectedOption === 'N') {
 
-                                        insertPlanDateSql = 'INSERT INTO TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_FLAG) VALUES (?,?,SYSDATE(),SYSDATE(),"S010100010","N")';
+                                        insertPlanDateSql = 'INSERT INTO TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_FLAG) VALUES (?,?,SYSDATE(),"s010100010",SYSDATE(),"S010100010","N")';
                                         planDateParams = [modifyDataNum, finalDate];
 
                                     }
 
-                                    // contractMonthDay++;
 
                                     connection.query(insertPlanDateSql, planDateParams, function (error, result) {  //쿼리문
                                         console.log('insertPlanDateSql :' + result);
@@ -850,37 +916,43 @@ router.post('/detailModifyContracId', (req, res, next) => {
                                         if (error) {
                                             connection.rollback(function () {
                                                 console.log('payPlanDateModifySql.error');
-                                                // res.send({ success: false, message: "TB_S10_CONTRACT020 최초 등록 오류 : " + error });
-                                                throw error;
+                                                setImmediate(() => {
+                                                    next(new Error(error));
+                                                })
                                             });
                                         }
                                         if ((payMethod === 'MO' && selectedOption === 'Y')) {
+                                            if (rows[0].CONTRACT_TERM != 0) {
+                                                connection.query(updateDate, function (error, result) {  //쿼리문
+                                                    console.log('updateDate:' + result);
 
-                                            connection.query(updateDate, function (error, result) {  //쿼리문
-                                                console.log('updateDate:' + result);
-
-                                                if (error) {
-                                                    connection.rollback(function () {
-                                                        console.log('updateDate.error');
-                                                        // res.send({ success: false, message: "TB_S10_CONTRACT020 최초 등록 오류 : " + error });
-                                                        throw error;
-                                                    });
-                                                }
-                                                connection.commit(function (err) {
-                                                    if (err) {
+                                                    if (error) {
                                                         connection.rollback(function () {
-                                                            // res.send({ success: false, message: "COMMIT 오류 : " + error });
-                                                            throw err;
+                                                            console.log('updateDate.error');
+                                                            setImmediate(() => {
+                                                                next(new Error(error));
+                                                            })
                                                         });
                                                     }
-                                                });//commit
-                                            });
+                                                    connection.commit(function (error) {
+                                                        if (error) {
+                                                            connection.rollback(function () {
+                                                                setImmediate(() => {
+                                                                    next(new Error(error));
+                                                                })
+                                                            });
+                                                        }
+                                                    });//commit
+                                                });
+                                            }
                                         } else {
-                                            connection.commit(function (err) {
-                                                if (err) {
+                                            connection.commit(function (error) {
+                                                if (error) {
                                                     connection.rollback(function () {
-                                                        // res.send({ success: false, message: "COMMIT 오류 : " + error });
-                                                        throw err;
+                                                        
+                                                        setImmediate(() => {
+                                                            next(new Error(error));
+                                                        })
                                                     });
                                                 }
                                             });//commit
@@ -890,10 +962,41 @@ router.post('/detailModifyContracId', (req, res, next) => {
 
 
                                 }
-                                console.log('success!');
-                                res.send({ success: true });
 
+                                if (rows[0].CONTRACT_TERM === 0) {
 
+                                    updateDate = 'UPDATE TB_S10_CONTRACT020 ' +
+                                        '   SET PAYED_FLAG="' + selectedOption + '",PAYED_DATE="' + originDate + '"' +
+                                        ' WHERE CONTRACT_ID = ' + modifyDataNum + ' AND PAY_PLAN_DATE="' + originDate + '"';
+                                    connection.query(updateDate, function (error, result) {  //쿼리문
+                                        console.log('updateDate:' + result);
+
+                                        if (error) {
+                                            connection.rollback(function (error) {
+                                                console.log('updateDate.error');
+                                                setImmediate(() => {
+                                                    next(new Error(error))
+                                                    console.log('error', error);
+                                                })
+                                            });
+                                        }
+                                        connection.commit(function (error) {
+                                            if (error) {
+                                                connection.rollback(function () {
+                                                    setImmediate(() => {
+                                                        next(new Error(error))
+                                                        console.log('error', error);
+                                                    })
+                                                });
+                                            }
+
+                                        });//commit
+                                    });
+
+                                    console.log('success!');
+                                    res.send({ success: true });
+
+                                }
                                 // 일시불    
                             } else if (payMethod === 'SI') {
 
@@ -907,7 +1010,7 @@ router.post('/detailModifyContracId', (req, res, next) => {
                                     if (selectedOption === 'Y') {
 
 
-                                        insertPlanDateSql = 'INSERT INTO TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_FLAG,PAYED_DATE) VALUES (?,?,SYSDATE(),SYSDATE(),"S010100010","Y",?)';
+                                        insertPlanDateSql = 'INSERT INTO TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_FLAG,PAYED_DATE) VALUES (?,?,SYSDATE(),"s010100010",SYSDATE(),"S010100010","Y",?)';
                                         planDateParams = [modifyDataNum, finalDate, originDate];
 
 
@@ -915,7 +1018,7 @@ router.post('/detailModifyContracId', (req, res, next) => {
                                         // 납부여부-아니오
                                     } else if (selectedOption === 'N') {
 
-                                        insertPlanDateSql = 'INSERT INTO TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_FLAG) VALUES (?,?,SYSDATE(),SYSDATE(),"S010100010","N")';
+                                        insertPlanDateSql = 'INSERT INTO TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_FLAG) VALUES (?,?,SYSDATE(),"s010100010",SYSDATE(),"S010100010","N")';
                                         planDateParams = [modifyDataNum, finalDate];
 
                                     }
@@ -925,19 +1028,25 @@ router.post('/detailModifyContracId', (req, res, next) => {
                                         console.log('payPlanDateModifySql :' + result);
 
                                         if (error) {
-                                            connection.rollback(function () {
+                                            connection.rollback(function (error) {
                                                 console.log('payPlanDateModifySql.error');
                                                 // res.send({ success: false, message: "TB_S10_CONTRACT020 최초 등록 오류 : " + error });
-                                                throw error;
+                                                setImmediate(() => {
+                                                    next(new Error(error))
+                                                    console.log('error', error);
+                                                })
                                             });
                                         }
 
 
-                                        connection.commit(function (err) {
-                                            if (err) {
-                                                connection.rollback(function () {
+                                        connection.commit(function (error) {
+                                            if (error) {
+                                                connection.rollback(function (error) {
                                                     // res.send({ success: false, message: "COMMIT 오류 : " + error });
-                                                    throw err;
+                                                    setImmediate(() => {
+                                                        next(new Error(error))
+                                                        console.log('error', error);
+                                                    })
                                                 });
                                             }
                                         });//commit
@@ -958,40 +1067,62 @@ router.post('/detailModifyContracId', (req, res, next) => {
 
 // 종료처리
 router.post('/endFlag', (req, res, next) => {
+    // connection.beginTransaction(function (error) {
 
-    let contractId = req.body.rNum;
-    let memberId = req.body.memberId;
+        let contractId = req.body.rNum;
+        // let memberId = req.body.memberId;
 
-    let conEndFlagsql = 'UPDATE TB_S10_CONTRACT010 ' +
-        'SET END_FLAG ="Y"' +
-        'WHERE CONTRACT_ID = ' + contractId;
+        let conEndFlagsql = 'UPDATE TB_S10_CONTRACT010 ' +
+            'SET END_FLAG ="Y",' +
+            'CONTRACT_ST = "F",' +
+            'LAST_UPDATE_DATE = SYSDATE(),' +
+            'LAST_UPDATE_PROGRAM_ID="s010100010"' +
+            'WHERE CONTRACT_ID = ' + contractId;       
 
-    connection.query(conEndFlagsql, (error, rows) => {//쿼리문
-        if (error) throw error;
-        //console.log(rows)
-        res.send({ success: true })
-    })
+        connection.query(conEndFlagsql, (error, rows) => {
 
-    let memberConRowChcksql = 'SELECT COUNT(*) AS CONTRACTNUM ' +
-        'FROM TB_S10_CONTRACT010 ' +
-        'WHERE MEMBER_ID = (SELECT MEMBER_ID FROM TB_S10_CONTRACT010 WHERE CONTRACT_ID = ' + contractId + ') ' +
-        'AND END_FLAG = "N"';
+            if (error) {
+                setImmediate(() => {
+                    next(new Error(error))
+                    console.log('error', error);
+                })
+            }else{
+                res.send({success : true});
+            }
+        });
+                let memberConRowChcksql = 'SELECT COUNT(*)AS CONTRACTNUM ' +
+                    'FROM TB_S10_CONTRACT010 ' +
+                    'WHERE MEMBER_ID = (SELECT MEMBER_ID FROM TB_S10_CONTRACT010 WHERE CONTRACT_ID = ' + contractId + ')' +
+                    'AND END_FLAG = "N"';
 
-    connection.query(memberConRowChcksql, (error, rows) => {//쿼리문
-        if (error) throw error;
-        console.log(rows[0].CONTRACTNUM);
+                connection.query(memberConRowChcksql, (error, rows) => {//쿼리문
 
-        if (rows[0].CONTRACTNUM == 0) {
-            let memberStEndsql = 'UPDATE TB_S10_MEMBER010 ' +
-                'SET MEMBER_ST = "F"' +
-                'WHERE MEMBER_ID = (SELECT MEMBER_ID FROM TB_S10_CONTRACT010 WHERE CONTRACT_ID = ' + contractId + ')';
+                  
+                        if (error) {
+                            setImmediate(() => {
+                                next(new Error(error))
+                                console.log('error', error);
+                            })
+                        }else {
+                            if (rows[0].CONTRACTNUM === 0) {
 
-            connection.query(memberStEndsql, (error, rows) => {//쿼리문
-                if (error) throw error;
-                //console.log(rows)
-            });
-        }
-    })
+                                let memberStEndsql = 'UPDATE TB_S10_MEMBER010 ' +
+                                    'SET MEMBER_ST = "F",' +
+                                    'LAST_UPDATE_DATE = SYSDATE(),' +
+                                    'LAST_UPDATE_PROGRAM_ID="s010100010"' +
+                                    'WHERE MEMBER_ID = (SELECT MEMBER_ID FROM TB_S10_CONTRACT010 WHERE CONTRACT_ID = ' + contractId + ')';
+
+                                connection.query(memberStEndsql, (error, rows) => {
+                                    if (error) {
+                                        setImmediate(() => {
+                                            next(new Error(error))
+                                            console.log('error', error);
+                                        })
+                                    }
+                                });
+                        }
+                    }
+                })    
 })
 
 // 삭제
@@ -1000,6 +1131,8 @@ router.post('/memberDelete_by_id', (req, res, next) => {
 
     let sql = ' UPDATE TB_S10_MEMBER010 ' +
         ' SET MEMBER_ST = "D" ' +
+        'LAST_UPDATE_DATE = SYSDATE(),' +
+        'LAST_UPDATE_PROGRAM_ID="s010100010"' +
         ' WHERE MEMBER_ID = (SELECT MEMBER_ID FROM TB_S10_CONTRACT010 WHERE CONTRACT_ID = ' + contractId + ')';
     connection.query(sql, (error, rows) => {
         if (error) throw error;
@@ -1114,6 +1247,7 @@ router.post('/dateCheck', (req, res, next) => {
 
 router.post('/insertMember010', upload.fields([{ name: 'idCardFile', maxCount: 3 }, { name: 'registCardFile', maxCount: 5 }]), (req, res, next) => {
 
+
     connection.beginTransaction(function (error) {
 
         /** TB_S10_EMP010  */
@@ -1138,7 +1272,7 @@ router.post('/insertMember010', upload.fields([{ name: 'idCardFile', maxCount: 3
         let empAddress = req.body.empAddress;
         let empDetailAddress = req.body.empDetailAddress;
 
-       
+
         /** TB_S10_MEMBER010  */
 
         // 회원명
@@ -1157,94 +1291,13 @@ router.post('/insertMember010', upload.fields([{ name: 'idCardFile', maxCount: 3
         // 확정 - 가계약 
         let forMemberStatus = req.body.forMemberStatus;
 
-        let idCardimageAddr;
-        let idCardFilename;
-        let idCardFilePath;
 
-        let registCardimageAddr;
-        let registCardFilename;
-        let registCardFilePath;
+        let idCardImg = req.body.idCardImg;
+        let busiLicfImg = req.body.busiLicfImg;
 
-
-        // 첨부파일 존재 유무
-        let existingIdCard = req.files['idCardFile'];
-        let existingRegistCard = req.files['registCardFile'];
-
-        // 첨부파일
-        if (existingIdCard != null || existingIdCard != undefined) {
-            idCardimageAddr = '/image/' + req.files['idCardFile'][0].filename;
-            idCardFilename = req.files['idCardFile'][0].originalname;
-            idCardFilePath = req.files['idCardFile'][0].path;
-        }
-
-        if (existingRegistCard != null || existingRegistCard != undefined) {
-            registCardimageAddr = '/image/' + req.files['registCardFile'][0].filename;
-            registCardFilename = req.files['registCardFile'][0].originalname;
-            registCardFilePath = req.files['registCardFile'][0].path;
-        }
-
-        let memberSql;
-        let memberParams;
-
-        //기존에 회원정보가 있는 경우에는 MEMBER_ID가 없는 곳에 새로운 정보 INSERT하기
-        if (existingIdCard && existingRegistCard) {
-            memberSql =
-                'INSERT INTO TB_S10_MEMBER010 ' +
-                '(MEMBER_NM, REG_NO, MEMBER_TP,CREATED_DATE,CREATED_PROGRAM_ID,MEMBER_ST,CEO_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,' +
-                'CEO_IMAGE_ID,CEO_IMAGE_ID_SERVER,CEO_IMAGE_REGISTER,CEO_IMAGE_REGISTER_SERVER,CEO_IMAGE_ID_PATH,CEO_IMAGE_REGIST_PATH )  ' +
-                'VALUES ' +
-                '   (?, ?, ?, SYSDATE(), "s010100010", ?, ' +
-                '   (SELECT EMP_ID FROM TB_S10_EMP010 WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '" AND MEMBER_ID IS NULL), ' +
-                '   SYSDATE(), "s010100010", ?, ?, ?, ?, ?, ?)'
-
-            memberParams = [memberNm, regNo, memberTp, forMemberStatus, idCardFilename, idCardimageAddr, registCardFilename, registCardimageAddr, idCardFilePath, registCardFilePath];
-
-
-            // 대표자신분증이 없을 경우 
-        } else if ((existingIdCard != null || existingIdCard != undefined) && (existingRegistCard == null || existingRegistCard === undefined)) {
-
-            memberSql =
-                'INSERT INTO TB_S10_MEMBER010 ' +
-                '(MEMBER_NM, REG_NO, MEMBER_TP,CREATED_DATE,CREATED_PROGRAM_ID,MEMBER_ST,CEO_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,' +
-                'CEO_IMAGE_ID,CEO_IMAGE_ID_SERVER,CEO_IMAGE_REGISTER,CEO_IMAGE_REGISTER_SERVER,CEO_IMAGE_ID_PATH,CEO_IMAGE_REGIST_PATH )  ' +
-                'VALUES ' +
-                '   (?, ?, ?, SYSDATE(), "s010100010", ?, ' +
-                '   (SELECT EMP_ID FROM TB_S10_EMP010 WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '" AND MEMBER_ID IS NULL), ' +
-                '   SYSDATE(), "s010100010", null, null, ?, ?, null, ?)'
-
-            memberParams = [memberNm, regNo, memberTp, forMemberStatus, registCardFilename, registCardimageAddr, registCardFilePath];
-
-            // 사업자등록증이 없을 경우
-        } else if ((existingIdCard == null || existingIdCard == undefined) && (existingRegistCard != null || existingRegistCard != undefined)) {
-
-            memberSql =
-                'INSERT INTO TB_S10_MEMBER010 ' +
-                '(MEMBER_NM, REG_NO, MEMBER_TP,CREATED_DATE,CREATED_PROGRAM_ID,MEMBER_ST,CEO_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,' +
-                'CEO_IMAGE_ID,CEO_IMAGE_ID_SERVER,CEO_IMAGE_REGISTER,CEO_IMAGE_REGISTER_SERVER,CEO_IMAGE_ID_PATH,CEO_IMAGE_REGIST_PATH )  ' +
-                'VALUES ' +
-                '   (?, ?, ?, SYSDATE(), "s010100010", ?, ' +
-                '   (SELECT EMP_ID FROM TB_S10_EMP010 WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '" AND MEMBER_ID IS NULL), ' +
-                '   SYSDATE(), "s010100010", ?, ?, null, null, ?, null)'
-
-            memberParams = [memberNm, regNo, memberTp, forMemberStatus, idCardFilename, idCardimageAddr, idCardFilePath];
-
-
-            // 대표자신분증-사업자등록증이 없을 경우
-        } else if ((existingIdCard == null || existingIdCard == undefined) && (existingRegistCard == null || existingRegistCard == undefined)) {
-
-            memberSql =
-                'INSERT INTO TB_S10_MEMBER010 ' +
-                '(MEMBER_NM, REG_NO, MEMBER_TP,CREATED_DATE,CREATED_PROGRAM_ID,MEMBER_ST,CEO_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,' +
-                'CEO_IMAGE_ID,CEO_IMAGE_ID_SERVER,CEO_IMAGE_REGISTER,CEO_IMAGE_REGISTER_SERVER,CEO_IMAGE_ID_PATH,CEO_IMAGE_REGIST_PATH )  ' +
-                'VALUES ' +
-                '   (?, ?, ?, SYSDATE(), "s010100010", ?, ' +
-                '   (SELECT EMP_ID FROM TB_S10_EMP010 WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '" AND MEMBER_ID IS NULL), ' +
-                '   SYSDATE(), "s010100010", null, null, null, null, null, null)'
-
-            memberParams = [memberNm, regNo, memberTp, forMemberStatus];
-
-        }
-     
+        let realIdCardFileName = req.body.realIdCardFileName;
+        let realBusiCardFileName = req.body.realBusiCardFileName;
+        
 
         /** TB_S10_CONTRACT010  */
 
@@ -1276,32 +1329,47 @@ router.post('/insertMember010', upload.fields([{ name: 'idCardFile', maxCount: 3
 
         let ceoPwd = '1234';
 
-        bcrypt.hash(ceoPwd, saltRounds, function(err, hash) {
+        bcrypt.hash(ceoPwd, saltRounds, function (err, hash) {
             //insert .. from tb_s10_emp010;
             let empSql = 'INSERT INTO TB_S10_EMP010 ' +
                 '(CREATED_DATE,CREATED_PROGRAM_ID, NAME, EMP_HP, EMP_EMAIL,' +
                 'ZIP_CODE,ADDRESS,DETAIL_ADDRESS,CEO_FLAG,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,EMP_LEVEL,EMP_TP,APPROVAL_FLAG,PWD) ' +
-                'VALUES (SYSDATE(), "s010100010", ?, ?, ?, ?, ?, ?, "Y", SYSDATE(), "s010100010","CEO","R","Y",?)';
-    
+                'VALUES (sysdate(), "s010100010", ?, ?, ?, ?, ?, ?, "Y", sysdate(), "s010100010","CEO","R","Y",?)';
+
             let empParams = [empIdName, empHp, empEmail, zipcode, empAddress, empDetailAddress, hash];
-            
 
-        connection.query(empSql, empParams, function (error, result) {
-            console.log('empSql :' + result);
 
-            if (error) {
-                connection.rollback(function () {
-                    console.log('empSql.error');
-                    if (error) {
-                        setImmediate(() => {
-                            next(new Error(error))
-                            console.log('error', error);
-                        })
-                        //next(error);
-                    }
-                });
-            }
-        });
+            connection.query(empSql, empParams, function (error, result) {
+                console.log('empSql :' + result);
+
+                if (error) {
+                    connection.rollback(function () {
+                        console.log('empSql.error');
+                        if (error) {
+                            setImmediate(() => {
+                                next(new Error(error))
+                                console.log('error', error);
+                            })
+                            //next(error);
+                        }
+                    });
+                }
+            });
+
+            let memberSql;
+            let memberParams;
+             
+                memberSql =
+                    'INSERT INTO TB_S10_MEMBER010 ' +
+                        '(MEMBER_NM, REG_NO, MEMBER_TP,CREATED_DATE,CREATED_PROGRAM_ID,MEMBER_ST,CEO_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,' +
+                        'ID_CARD_IMAGE,ID_CARD_IMAGE_NAME,BUSI_LICS_IMAGE,BUSI_LICS_IMAGE_NAME)  ' +
+                    'VALUES ' +
+                    '   (?, ?, ?, SYSDATE(), "s010100010", ?, ' +
+                    '   (SELECT EMP_ID FROM TB_S10_EMP010 WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '" AND MEMBER_ID IS NULL), ' +
+                    '   SYSDATE(), "s010100010",? ,?, ?, ?)'
+
+                memberParams = [memberNm, regNo, memberTp, forMemberStatus, idCardImg, realIdCardFileName, busiLicfImg, realBusiCardFileName];
+
             connection.query(memberSql, memberParams, function (error, result) {
                 console.log('memberSql: ' + result);
                 if (error) {
@@ -1320,8 +1388,8 @@ router.post('/insertMember010', upload.fields([{ name: 'idCardFile', maxCount: 3
                 let empIdSql = 'SELECT EMP_ID FROM TB_S10_EMP010 WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '" AND MEMBER_ID IS NULL';
 
                 connection.query(empIdSql, function (error, empId) {
-                    console.log('empIdSql', empId);
-                    console.log('empIdSql: ' + empId[0].EMP_ID);
+                    // console.log('empIdSql', empId);
+                    // console.log('empIdSql: ' + empId[0].EMP_ID);
                     if (error) {
                         connection.rollback(function () {
                             console.log('empIdSql.error');
@@ -1334,32 +1402,33 @@ router.post('/insertMember010', upload.fields([{ name: 'idCardFile', maxCount: 3
                             }
                         });
                     }
-                           
+
                     let contractSql;
                     let contractParams;
-                    
+
+                    // 가계약 인 경우
                     if (forMemberStatus === "T") {
                         contractSql =
                             'INSERT INTO TB_S10_CONTRACT010 ' +
-                            '(CONTRACT_TP,CONTRACT_ROOM,CONTRACT_LOCKER,CONTRACT_TERM,START_DATE,END_DATE,' +
+                            '(CONTRACT_TP,CONTRACT_ST,CONTRACT_ROOM,CONTRACT_LOCKER,CONTRACT_TERM,START_DATE,END_DATE,' +
                             'PAY_DATE,PAY_METHOD,CONTRACT_PATH,CREATED_DATE,CREATED_PROGRAM_ID,CONTRACT_DATE,COMMENT,MEMBER_ID, ' +
                             'MONTHLY_FEE,DEPOSIT,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID) ' +
-                            'VALUES (?,?,?,?,?,?,?,?,?,sysdate(),"s010100010",sysdate(),?,' +
+                            'VALUES (?,"T",?,?,?,?,?,?,?,?,sysdate(),"s010100010",sysdate(),?,' +
                             '(SELECT MEMBER_ID ' +
                             '   FROM TB_S10_MEMBER010' +
                             '  WHERE MEMBER_NM ="' + memberNm + '" AND REG_NO="' + regNo + '" AND CEO_ID = (SELECT EMP_ID FROM TB_S10_EMP010 WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '"AND MEMBER_ID IS NULL)),' +
                             '?,?,SYSDATE(),"s010100010")';
 
                         contractParams = [contractTp, contractTpVal, roomLockerTp, contractTerm, startDate, endDate, payDate, payMethod, contractPath, comments, contractMoney, contractMoney];
-
+                        // 확정 인  경우
                     } else if (forMemberStatus === "C") {
 
                         contractSql =
                             'INSERT INTO TB_S10_CONTRACT010 ' +
-                            '(CONTRACT_TP,CONTRACT_ROOM,CONTRACT_LOCKER,CONTRACT_TERM,START_DATE,END_DATE,' +
+                            '(CONTRACT_TP,CONTRACT_ST,CONTRACT_ROOM,CONTRACT_LOCKER,CONTRACT_TERM,START_DATE,END_DATE,' +
                             'PAY_DATE,PAY_METHOD,CONTRACT_PATH,CREATED_DATE,CREATED_PROGRAM_ID,CONTRACT_DATE,COMMENT,MEMBER_ID, ' +
                             'MONTHLY_FEE,DEPOSIT,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID) ' +
-                            'VALUES (?,?,?,?,?,?,?,?,?,sysdate(),"s010100010",sysdate(),?,' +
+                            'VALUES (?,"C",?,?,?,?,?,?,?,?,sysdate(),"s010100010",sysdate(),?,' +
                             '(SELECT MEMBER_ID ' +
                             '   FROM TB_S10_MEMBER010' +
                             '  WHERE MEMBER_NM ="' + memberNm + '" AND REG_NO="' + regNo + '" AND CEO_ID = (SELECT EMP_ID FROM TB_S10_EMP010 WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '"AND MEMBER_ID IS NULL)),' +
@@ -1385,63 +1454,168 @@ router.post('/insertMember010', upload.fields([{ name: 'idCardFile', maxCount: 3
                             });
                         }
 
+                        // emp테이블에 member_id update
                         let empMemberIdSql =
-                                'UPDATE TB_S10_EMP010 ' +
-                                '   SET MEMBER_ID = (SELECT MEMBER_ID FROM TB_S10_MEMBER010 WHERE MEMBER_NM = "' + memberNm + '"AND REG_NO = "' + regNo + '" AND CEO_ID ="' + empId[0].EMP_ID + '")' +
-                                ' WHERE EMP_ID = (SELECT EMP_ID ' +
-                                ' FROM ' +
-                                ' (SELECT EMP_ID ' +
-                                ' FROM TB_S10_EMP010 ' +
-                                ' WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '"' +
-                                ' AND MEMBER_ID IS NULL)EMPID)';
+                            'UPDATE TB_S10_EMP010 ' +
+                            '   SET MEMBER_ID = (SELECT MEMBER_ID FROM TB_S10_MEMBER010 WHERE MEMBER_NM = "' + memberNm + '"AND REG_NO = "' + regNo + '" AND CEO_ID ="' + empId[0].EMP_ID + '")' +
+                            ' WHERE EMP_ID = (SELECT EMP_ID ' +
+                            ' FROM ' +
+                            ' (SELECT EMP_ID ' +
+                            ' FROM TB_S10_EMP010 ' +
+                            ' WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '"' +
+                            ' AND MEMBER_ID IS NULL)EMPID)';
 
+                        /** tb_s10_contract020 */
+                        let dateToString = startDate.toString().substring(0, 10);
+                        let wasteDateDay = dateToString.substring(7, 10);
+                        let wasteContracMonthDay = dateToString.substring(5, 7);
+                        let wasteContractYearDay = dateToString.substring(0, 4);
 
-                            let dateToString = startDate.toString().substring(0, 10);
-                            let wasteDateDay = dateToString.substring(7, 10);
-                            let wasteContracMonthDay = dateToString.substring(5, 7);
-                            let wasteContractYearDay = dateToString.substring(0, 4);
+                        let contractDateDay = parseInt(wasteDateDay);
+                        let wasteMonth = parseInt(wasteContracMonthDay);
+                        let contractYearDay = parseInt(wasteContractYearDay);
 
-                            let contractDateDay = parseInt(wasteDateDay);
-                            let wasteMonth = parseInt(wasteContracMonthDay);
-                            let contractYearDay = parseInt(wasteContractYearDay);
+                        let finalDate = '';
+                        let originDate = '';
 
-                            let finalDate = '';
-                            let originDate = '';
+                        let payContractSql;
+                        let payContractParams = [];
+                        let updatePayedDate = '';
 
-                            let payContractSql;
-                            let payContractParams = [];
-                            let updatePayedDate = '';
+                        // 월납
+                        if (payMethod === 'MO') {
+                            console.log('월납,selectedOption', selectedOption);
 
-                            // 월납
-                            if (payMethod === 'MO') {
-                                console.log('월납,selectedOption', selectedOption);
+                            // 이용기간 없는 경우
+                            if (contractTerm == 0) {
+                                let payContractSql = '';
+                                finalDate = contractYearDay + '-' + (wasteMonth) + '-' + contractDateDay;
+                                originDate = contractYearDay + '-' + (wasteMonth) + '-' + contractDateDay;
 
+                                // 납부여부-네
+                                if (selectedOption === 'Y') {
+                                    console.log('납부방법 x 네');
+                                    payContractSql =
+                                        'INSERT INTO TB_S10_CONTRACT020 ' +
+                                        '(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,PAYED_PLAN_MONEY,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_FLAG) ' +
+                                        'VALUES(' +
+                                        '(SELECT CONTRACT_ID ' +
+                                        ' FROM TB_S10_CONTRACT010 ' +
+                                        ' WHERE MEMBER_ID = (SELECT MEMBER_ID ' +
+                                        ' FROM TB_S10_MEMBER010 ' +
+                                        ' WHERE CEO_ID = (SELECT EMP_ID ' +
+                                        ' FROM TB_S10_EMP010 ' +
+                                        ' WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '" AND MEMBER_ID IS NULL)' +
+                                        ' AND MEMBER_NM ="' + memberNm + '" AND REG_NO ="' + regNo + '")),?,SYSDATE(),"s010100010",?,SYSDATE(),"s010100010","Y")';
 
-                                if (contractTerm == 0) {
-                                    let payContractSql = '';
-                                    finalDate = contractYearDay + '-' + (wasteMonth) + '-' + contractDateDay;
+                                    payContractParams = [finalDate, contractMoney, selectedOption, originDate];
+                                    // 납부여부-아니오
+                                } else if (selectedOption === 'N') {
+                                    console.log('납부방법 x  아니오');
+                                    payContractSql =
+                                        'INSERT INTO TB_S10_CONTRACT020 ' +
+                                        '(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,PAYED_PLAN_MONEY,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID) ' +
+                                        'VALUES(' +
+                                        '(SELECT CONTRACT_ID ' +
+                                        ' FROM TB_S10_CONTRACT010 ' +
+                                        ' WHERE MEMBER_ID = (SELECT MEMBER_ID ' +
+                                        ' FROM TB_S10_MEMBER010 ' +
+                                        ' WHERE CEO_ID = (SELECT EMP_ID ' +
+                                        ' FROM TB_S10_EMP010 ' +
+                                        ' WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '" AND MEMBER_ID IS NULL)' +
+                                        ' AND MEMBER_NM ="' + memberNm + '" AND REG_NO ="' + regNo + '")),?,SYSDATE(),"s010100010",?,SYSDATE(),"s010100010")';
+
+                                    payContractParams = [finalDate, contractMoney];
+                                    // 납부여부 없는 경우
+                                } else if (selectedOption === null || selectedOption === undefined || selectedOption === '') {
+                                    console.log('납부방법x 납부여부 x');
+                                    payContractSql =
+                                        'INSERT INTO TB_S10_CONTRACT020 ' +
+                                        '(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,PAYED_PLAN_MONEY,PAYED_FLAG,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID) ' +
+                                        'VALUES(' +
+                                        '(SELECT CONTRACT_ID ' +
+                                        ' FROM TB_S10_CONTRACT010 ' +
+                                        ' WHERE MEMBER_ID = (SELECT MEMBER_ID ' +
+                                        ' FROM TB_S10_MEMBER010 ' +
+                                        ' WHERE CEO_ID = (SELECT EMP_ID ' +
+                                        ' FROM TB_S10_EMP010 ' +
+                                        ' WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '" AND MEMBER_ID IS NULL)' +
+                                        ' AND MEMBER_NM ="' + memberNm + '" AND REG_NO ="' + regNo + '")),?,SYSDATE(),"s010100010",?,null,SYSDATE(),"s010100010")';
+                                    payContractParams = [finalDate, contractMoney];
+
+                                }
+
+                                // console.log("--------------------------------");
+                                // console.log('payContractParams', payContractParams);
+                                // console.log("--------------------------------");
+                                // console.log('payContractSql', payContractSql);
+
+                                connection.query(payContractSql, payContractParams, function (error, result) {  //쿼리문
+                                    console.log('payContractSql :' + result);
+
+                                    if (error) {
+                                        connection.rollback(function () {
+                                            console.log('payContractSql.error');
+
+                                            if (error) {
+
+                                                setImmediate(() => {
+                                                    next(new Error(error))
+                                                    console.log('error');
+                                                })
+
+                                                // next(error);
+                                            }
+                                        });
+                                    }
+
+                                    connection.query(empMemberIdSql, function (error, result) {
+                                        console.log('empMemberIdSql: ' + result);
+                                        if (error) {
+                                            connection.rollback(function () {
+                                                console.log('empMemberIdSql.error');
+                                                if (error) {
+                                                    setImmediate(() => {
+                                                        next(new Error(error))
+                                                        console.log('error', error);
+                                                    })
+                                                    //next(error);
+                                                }
+                                            });
+                                        }
+                                        // commit
+                                        connection.commit(function (error) {
+                                            if (error) {
+                                                connection.rollback(function () {
+
+                                                    if (error) {
+
+                                                        setImmediate(() => {
+                                                            // next(new Error(error))
+                                                            console.log('error');
+                                                        })
+                                                        //next(error);
+
+                                                    }
+                                                });
+                                            } else {
+                                                console.log('success!');
+                                                res.send({ success: true });
+                                            }
+                                        });// commit
+                                    });//empMemberIdSql
+                                });//payContract
+                                // 이용기간 있는 경우
+                            } else {
+
+                                for (let i = 0; i < contractTerm; i++) {
+
+                                    finalDate = contractYearDay + '-' + (wasteMonth + i) + '-' + contractDateDay;
                                     originDate = contractYearDay + '-' + (wasteMonth) + '-' + contractDateDay;
 
                                     // 납부여부-네
                                     if (selectedOption === 'Y') {
-                                        console.log('납부방법 x 네');
-                                        payContractSql =
-                                            'INSERT INTO TB_S10_CONTRACT020 ' +
-                                            '(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,PAYED_PLAN_MONEY,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_FLAG) ' +
-                                            'VALUES(' +
-                                            '(SELECT CONTRACT_ID ' +
-                                            ' FROM TB_S10_CONTRACT010 ' +
-                                            ' WHERE MEMBER_ID = (SELECT MEMBER_ID ' +
-                                            ' FROM TB_S10_MEMBER010 ' +
-                                            ' WHERE CEO_ID = (SELECT EMP_ID ' +
-                                            ' FROM TB_S10_EMP010 ' +
-                                            ' WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '" AND MEMBER_ID IS NULL)' +
-                                            ' AND MEMBER_NM ="' + memberNm + '" AND REG_NO ="' + regNo + '")),?,SYSDATE(),"s010100010",?,SYSDATE(),"s010100010","Y")';
 
-                                        payContractParams = [finalDate, contractMoney, selectedOption, originDate];
-                                        // 납부여부-아니오
-                                    } else if (selectedOption === 'N') {
-                                        console.log('납부방법 x  아니오');
                                         payContractSql =
                                             'INSERT INTO TB_S10_CONTRACT020 ' +
                                             '(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,PAYED_PLAN_MONEY,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID) ' +
@@ -1456,8 +1630,38 @@ router.post('/insertMember010', upload.fields([{ name: 'idCardFile', maxCount: 3
                                             ' AND MEMBER_NM ="' + memberNm + '" AND REG_NO ="' + regNo + '")),?,SYSDATE(),"s010100010",?,SYSDATE(),"s010100010")';
 
                                         payContractParams = [finalDate, contractMoney];
+                                        console.log('selectedOption',selectedOption);
+                                        updatePayedDate = 'UPDATE TB_S10_CONTRACT020 ' +
+                                            '   SET PAYED_FLAG="' + selectedOption + '",PAYED_DATE="' + originDate + '"' +
+                                            ' WHERE CONTRACT_ID =' +
+                                            '(SELECT CONTRACT_ID ' +
+                                            ' FROM TB_S10_CONTRACT010 ' +
+                                            ' WHERE MEMBER_ID = (SELECT MEMBER_ID ' +
+                                            ' FROM TB_S10_MEMBER010 ' +
+                                            ' WHERE CEO_ID = (SELECT EMP_ID ' +
+                                            ' FROM TB_S10_EMP010 ' +
+                                            ' WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '"  AND MEMBER_ID IS NULL)' +
+                                            ' AND MEMBER_NM ="' + memberNm + '" AND REG_NO ="' + regNo + '")) AND PAY_PLAN_DATE="' + originDate + '"'
 
-                                    } else if (selectedOption === null || selectedOption === undefined || selectedOption === '') {
+                                        //     // 납부여부-아니오
+                                    } else if (selectedOption === 'N') {
+                                        console.log('월납 아니오');
+                                        payContractSql =
+                                            'INSERT INTO TB_S10_CONTRACT020 ' +
+                                            '(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,PAYED_PLAN_MONEY,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID) ' +
+                                            'VALUES(' +
+                                            '(SELECT CONTRACT_ID ' +
+                                            ' FROM TB_S10_CONTRACT010 ' +
+                                            ' WHERE MEMBER_ID = (SELECT MEMBER_ID ' +
+                                            ' FROM TB_S10_MEMBER010 ' +
+                                            ' WHERE CEO_ID = (SELECT EMP_ID ' +
+                                            ' FROM TB_S10_EMP010 ' +
+                                            ' WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '"  AND MEMBER_ID IS NULL)' +
+                                            ' AND MEMBER_NM ="' + memberNm + '" AND REG_NO ="' + regNo + '")),?,SYSDATE(),"s010100010",?,SYSDATE(),"s010100010")';
+
+                                        payContractParams = [finalDate, contractMoney];
+
+                                    } else {
                                         console.log('납부방법x 납부여부 x');
                                         payContractSql =
                                             'INSERT INTO TB_S10_CONTRACT020 ' +
@@ -1469,33 +1673,33 @@ router.post('/insertMember010', upload.fields([{ name: 'idCardFile', maxCount: 3
                                             ' FROM TB_S10_MEMBER010 ' +
                                             ' WHERE CEO_ID = (SELECT EMP_ID ' +
                                             ' FROM TB_S10_EMP010 ' +
-                                            ' WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '" AND MEMBER_ID IS NULL)' +
+                                            ' WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '"  AND MEMBER_ID IS NULL)' +
                                             ' AND MEMBER_NM ="' + memberNm + '" AND REG_NO ="' + regNo + '")),?,SYSDATE(),"s010100010",?,null,SYSDATE(),"s010100010")';
                                         payContractParams = [finalDate, contractMoney];
-                                        console.log('payContractSql', payContractSql);
+
                                     }
 
-                                    console.log("--------------------------------");
-                                    console.log('payContractParams', payContractParams);
-                                    console.log("--------------------------------");
+                                    // console.log("--------------------------------");
+                                    // console.log('payContractParams', payContractParams);
+                                    // console.log("--------------------------------");
 
-                                    console.log('payContractSql', payContractSql);
+
 
                                     connection.query(payContractSql, payContractParams, function (error, result) {  //쿼리문
+                                        console.log('payContractSql', payContractSql);
                                         console.log('payContractSql :' + result);
 
                                         if (error) {
                                             connection.rollback(function () {
                                                 console.log('payContractSql.error');
-
                                                 if (error) {
-
-                                                    setImmediate(() => {
-                                                        next(new Error(error))
-                                                        console.log('error');
-                                                    })
-
-                                                    // next(error);
+                                                    if (i === contractTerm - 1) {
+                                                        setImmediate(() => {
+                                                            next(new Error(error))
+                                                            console.log('error', error);
+                                                        })
+                                                        //next(error);
+                                                    }
                                                 }
                                             });
                                         }
@@ -1513,147 +1717,6 @@ router.post('/insertMember010', upload.fields([{ name: 'idCardFile', maxCount: 3
                                                     }
                                                 });
                                             }
-
-
-                                        connection.commit(function (error) {
-                                            if (error) {
-                                                connection.rollback(function () {
-
-                                                    if (error) {
-
-                                                        setImmediate(() => {
-                                                            // next(new Error(error))
-                                                            console.log('error');
-                                                        })
-                                                        //next(error);
-
-                                                    }
-
-
-                                                });
-                                            } else {
-
-
-                                                console.log('success!');
-                                                res.send({ success: true });
-
-                                            }
-                                        });//commit
-
-                                    });//empMemberIdSql
-                                });//payContract
-                                } else {
-
-                                    for (let i = 0; i < contractTerm; i++) {
-
-                                        finalDate = contractYearDay + '-' + (wasteMonth + i) + '-' + contractDateDay;
-                                        originDate = contractYearDay + '-' + (wasteMonth) + '-' + contractDateDay;
-
-
-                                        // 납부여부-네
-                                        if (selectedOption === 'Y') {
-
-                                            payContractSql =
-                                                'INSERT INTO TB_S10_CONTRACT020 ' +
-                                                '(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,PAYED_PLAN_MONEY,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID) ' +
-                                                'VALUES(' +
-                                                '(SELECT CONTRACT_ID ' +
-                                                ' FROM TB_S10_CONTRACT010 ' +
-                                                ' WHERE MEMBER_ID = (SELECT MEMBER_ID ' +
-                                                ' FROM TB_S10_MEMBER010 ' +
-                                                ' WHERE CEO_ID = (SELECT EMP_ID ' +
-                                                ' FROM TB_S10_EMP010 ' +
-                                                ' WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '" AND MEMBER_ID IS NULL)' +
-                                                ' AND MEMBER_NM ="' + memberNm + '" AND REG_NO ="' + regNo + '")),?,SYSDATE(),"s010100010",?,SYSDATE(),"s010100010")';
-
-                                            payContractParams = [finalDate, contractMoney];
-
-                                            updatePayedDate = 'UPDATE TB_S10_CONTRACT020 ' +
-                                                '   SET PAYED_FLAG="' + selectedOption + '",PAYED_DATE="' + originDate + '"' +
-                                                ' WHERE CONTRACT_ID =' +
-                                                '(SELECT CONTRACT_ID ' +
-                                                ' FROM TB_S10_CONTRACT010 ' +
-                                                ' WHERE MEMBER_ID = (SELECT MEMBER_ID ' +
-                                                ' FROM TB_S10_MEMBER010 ' +
-                                                ' WHERE CEO_ID = (SELECT EMP_ID ' +
-                                                ' FROM TB_S10_EMP010 ' +
-                                                ' WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '"  AND MEMBER_ID IS NULL)' +
-                                                ' AND MEMBER_NM ="' + memberNm + '" AND REG_NO ="' + regNo + '")) AND PAY_PLAN_DATE="' + originDate + '"'
-
-                                            //     // 납부여부-아니오
-                                        } else if (selectedOption === 'N') {
-                                            console.log('월납 아니오');
-                                            payContractSql =
-                                                'INSERT INTO TB_S10_CONTRACT020 ' +
-                                                '(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,PAYED_PLAN_MONEY,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID) ' +
-                                                'VALUES(' +
-                                                '(SELECT CONTRACT_ID ' +
-                                                ' FROM TB_S10_CONTRACT010 ' +
-                                                ' WHERE MEMBER_ID = (SELECT MEMBER_ID ' +
-                                                ' FROM TB_S10_MEMBER010 ' +
-                                                ' WHERE CEO_ID = (SELECT EMP_ID ' +
-                                                ' FROM TB_S10_EMP010 ' +
-                                                ' WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '"  AND MEMBER_ID IS NULL)' +
-                                                ' AND MEMBER_NM ="' + memberNm + '" AND REG_NO ="' + regNo + '")),?,SYSDATE(),"s010100010",?,SYSDATE(),"s010100010")';
-
-                                            payContractParams = [finalDate, contractMoney];
-
-                                        } else {
-                                            console.log('납부방법x 납부여부 x');
-                                            payContractSql =
-                                                'INSERT INTO TB_S10_CONTRACT020 ' +
-                                                '(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,PAYED_PLAN_MONEY,PAYED_FLAG,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID) ' +
-                                                'VALUES(' +
-                                                '(SELECT CONTRACT_ID ' +
-                                                ' FROM TB_S10_CONTRACT010 ' +
-                                                ' WHERE MEMBER_ID = (SELECT MEMBER_ID ' +
-                                                ' FROM TB_S10_MEMBER010 ' +
-                                                ' WHERE CEO_ID = (SELECT EMP_ID ' +
-                                                ' FROM TB_S10_EMP010 ' +
-                                                ' WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '"  AND MEMBER_ID IS NULL)' +
-                                                ' AND MEMBER_NM ="' + memberNm + '" AND REG_NO ="' + regNo + '")),?,SYSDATE(),"s010100010",?,null,SYSDATE(),"s010100010")';
-                                            payContractParams = [finalDate, contractMoney];
-                                            console.log('payContractSql', payContractSql);
-                                        }
-
-                                        // console.log("--------------------------------");
-                                        // console.log('payContractParams', payContractParams);
-                                        // console.log("--------------------------------");
-
-
-
-                                        connection.query(payContractSql, payContractParams, function (error, result) {  //쿼리문
-                                            console.log('payContractSql', payContractSql);
-                                            console.log('payContractSql :' + result);
-
-                                            if (error) {
-                                                connection.rollback(function () {
-                                                    console.log('payContractSql.error');
-                                                    if (error) {
-                                                        if (i === contractTerm - 1) {
-                                                            setImmediate(() => {
-                                                                next(new Error(error))
-                                                                console.log('error', error);
-                                                            })
-                                                            //next(error);
-                                                        }
-                                                    }
-                                                });
-                                            }
-                                            connection.query(empMemberIdSql, function (error, result) {
-                                                console.log('empMemberIdSql: ' + result);
-                                                if (error) {
-                                                    connection.rollback(function () {
-                                                        console.log('empMemberIdSql.error');
-                                                        if (error) {
-                                                            setImmediate(() => {
-                                                                next(new Error(error))
-                                                                console.log('error', error);
-                                                            })
-                                                            //next(error);
-                                                        }
-                                                    });
-                                                }
 
                                             if ((payMethod === 'MO' && selectedOption === 'Y')) {
 
@@ -1698,9 +1761,8 @@ router.post('/insertMember010', upload.fields([{ name: 'idCardFile', maxCount: 3
                                                             }
                                                         }
                                                     });//commit
-                                                    
                                                 });// updatePayedDate
-                                                
+
                                             } else {
                                                 connection.commit(function (error) {
                                                     if (error) {
@@ -1727,21 +1789,138 @@ router.post('/insertMember010', upload.fields([{ name: 'idCardFile', maxCount: 3
                                             }//else
                                         });///empMemberIdSql
                                     });// payContract
-                                    }// for
-                                }//else ---- if(contractTerm===0)
-                            } else if (payMethod === 'SI') {
-                                console.log('일시불');
-                                if (contractTerm == 0) {
-                                    let payContractSql = '';
-                                    finalDate = contractYearDay + '-' + (wasteMonth) + '-' + contractDateDay;
+                                }// for
+                            }//else ---- if(contractTerm===0)
+                        } else if (payMethod === 'SI') {
+                            console.log('일시불');
+                            if (contractTerm == 0) {
+                                let payContractSql = '';
+                                finalDate = contractYearDay + '-' + (wasteMonth) + '-' + contractDateDay;
+                                originDate = contractYearDay + '-' + (wasteMonth) + '-' + contractDateDay;
+
+                                // 납부여부-네
+                                if (selectedOption === 'Y') {
+                                    console.log('납부방법 x 네');
+                                    payContractSql =
+                                        'INSERT INTO TB_S10_CONTRACT020 ' +
+                                        '(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,PAYED_PLAN_MONEY,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_FLAG) ' +
+                                        'VALUES(' +
+                                        '(SELECT CONTRACT_ID ' +
+                                        ' FROM TB_S10_CONTRACT010 ' +
+                                        ' WHERE MEMBER_ID = (SELECT MEMBER_ID ' +
+                                        ' FROM TB_S10_MEMBER010 ' +
+                                        ' WHERE CEO_ID = (SELECT EMP_ID ' +
+                                        ' FROM TB_S10_EMP010 ' +
+                                        ' WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '"  AND MEMBER_ID IS NULL)' +
+                                        ' AND MEMBER_NM ="' + memberNm + '" AND REG_NO ="' + regNo + '")),?,SYSDATE(),"s010100010",?,SYSDATE(),"s010100010","Y")';
+
+                                    payContractParams = [finalDate, contractMoney, selectedOption, originDate];
+                                    // 납부여부-아니오
+                                } else if (selectedOption === 'N') {
+                                    console.log('납부방법 x  아니오');
+                                    payContractSql =
+                                        'INSERT INTO TB_S10_CONTRACT020 ' +
+                                        '(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,PAYED_PLAN_MONEY,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID) ' +
+                                        'VALUES(' +
+                                        '(SELECT CONTRACT_ID ' +
+                                        ' FROM TB_S10_CONTRACT010 ' +
+                                        ' WHERE MEMBER_ID = (SELECT MEMBER_ID ' +
+                                        ' FROM TB_S10_MEMBER010 ' +
+                                        ' WHERE CEO_ID = (SELECT EMP_ID ' +
+                                        ' FROM TB_S10_EMP010 ' +
+                                        ' WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '"  AND MEMBER_ID IS NULL)' +
+                                        ' AND MEMBER_NM ="' + memberNm + '" AND REG_NO ="' + regNo + '")),?,SYSDATE(),"s010100010",?,SYSDATE(),"s010100010")';
+
+                                    payContractParams = [finalDate, contractMoney];
+
+                                } else if (selectedOption === null || selectedOption === undefined || selectedOption === '') {
+                                    console.log('납부방법x 납부여부 x');
+                                    payContractSql =
+                                        'INSERT INTO TB_S10_CONTRACT020 ' +
+                                        '(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,PAYED_PLAN_MONEY,PAYED_FLAG,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID) ' +
+                                        'VALUES(' +
+                                        '(SELECT CONTRACT_ID ' +
+                                        ' FROM TB_S10_CONTRACT010 ' +
+                                        ' WHERE MEMBER_ID = (SELECT MEMBER_ID ' +
+                                        ' FROM TB_S10_MEMBER010 ' +
+                                        ' WHERE CEO_ID = (SELECT EMP_ID ' +
+                                        ' FROM TB_S10_EMP010 ' +
+                                        ' WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '"  AND MEMBER_ID IS NULL)' +
+                                        ' AND MEMBER_NM ="' + memberNm + '" AND REG_NO ="' + regNo + '")),?,SYSDATE(),"s010100010",?,null,SYSDATE(),"s010100010")';
+                                    payContractParams = [finalDate, contractMoney];
+                                    // console.log('payContractSql', payContractSql);
+                                }
+
+                                // console.log("--------------------------------");
+                                // console.log('payContractParams', payContractParams);
+                                // console.log("--------------------------------");
+
+                                // console.log('payContractSql', payContractSql);
+
+                                connection.query(payContractSql, payContractParams, function (error, result) {  //쿼리문
+                                    console.log('payContractSql :' + result);
+
+                                    if (error) {
+                                        connection.rollback(function () {
+                                            console.log('payContractSql.error');
+
+                                            if (error) {
+
+                                                setImmediate(() => {
+                                                    next(new Error(error))
+                                                    console.log('error');
+                                                })
+
+                                                // next(error);
+                                            }
+                                        });
+                                    }
+                                    connection.query(empMemberIdSql, function (error, result) {
+                                        console.log('empMemberIdSql: ' + result);
+                                        if (error) {
+                                            connection.rollback(function () {
+                                                console.log('empMemberIdSql.error');
+                                                if (error) {
+                                                    setImmediate(() => {
+                                                        next(new Error(error))
+                                                        console.log('error', error);
+                                                    })
+                                                    //next(error);
+                                                }
+                                            });
+                                        }
+
+
+                                        connection.commit(function (error) {
+                                            if (error) {
+                                                connection.rollback(function () {
+                                                    if (error) {
+                                                        setImmediate(() => {
+                                                            // next(new Error(error))
+                                                            console.log('error');
+                                                        })
+                                                        //next(error);
+                                                    }
+                                                });
+                                            } else {
+                                                console.log('success!');
+                                                res.send({ success: true });
+                                            }
+                                        });//commit
+                                    });//empMemberIdSql
+                                });//payContract
+                            } else {
+                                for (let i = 0; i < contractTerm; i++) {
+
+                                    finalDate = contractYearDay + '-' + (wasteMonth + i) + '-' + contractDateDay;
                                     originDate = contractYearDay + '-' + (wasteMonth) + '-' + contractDateDay;
 
                                     // 납부여부-네
                                     if (selectedOption === 'Y') {
-                                        console.log('납부방법 x 네');
+                                        console.log('일시불 네');
                                         payContractSql =
                                             'INSERT INTO TB_S10_CONTRACT020 ' +
-                                            '(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,PAYED_PLAN_MONEY,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_FLAG) ' +
+                                            '(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,PAYED_PLAN_MONEY,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_FLAG,PAYED_DATE) ' +
                                             'VALUES(' +
                                             '(SELECT CONTRACT_ID ' +
                                             ' FROM TB_S10_CONTRACT010 ' +
@@ -1750,12 +1929,12 @@ router.post('/insertMember010', upload.fields([{ name: 'idCardFile', maxCount: 3
                                             ' WHERE CEO_ID = (SELECT EMP_ID ' +
                                             ' FROM TB_S10_EMP010 ' +
                                             ' WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '"  AND MEMBER_ID IS NULL)' +
-                                            ' AND MEMBER_NM ="' + memberNm + '" AND REG_NO ="' + regNo + '")),?,SYSDATE(),"s010100010",?,SYSDATE(),"s010100010","Y")';
+                                            ' AND MEMBER_NM ="' + memberNm + '" AND REG_NO ="' + regNo + '")),?,SYSDATE(),"s010100010",?,SYSDATE(),"s010100010",?,?)';
 
                                         payContractParams = [finalDate, contractMoney, selectedOption, originDate];
                                         // 납부여부-아니오
                                     } else if (selectedOption === 'N') {
-                                        console.log('납부방법 x  아니오');
+                                        console.log('일시불 아니오');
                                         payContractSql =
                                             'INSERT INTO TB_S10_CONTRACT020 ' +
                                             '(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,PAYED_PLAN_MONEY,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID) ' +
@@ -1766,7 +1945,7 @@ router.post('/insertMember010', upload.fields([{ name: 'idCardFile', maxCount: 3
                                             ' FROM TB_S10_MEMBER010 ' +
                                             ' WHERE CEO_ID = (SELECT EMP_ID ' +
                                             ' FROM TB_S10_EMP010 ' +
-                                            ' WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '"  AND MEMBER_ID IS NULL)' +
+                                            ' WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '" AND MEMBER_ID IS NULL)' +
                                             ' AND MEMBER_NM ="' + memberNm + '" AND REG_NO ="' + regNo + '")),?,SYSDATE(),"s010100010",?,SYSDATE(),"s010100010")';
 
                                         payContractParams = [finalDate, contractMoney];
@@ -1783,17 +1962,17 @@ router.post('/insertMember010', upload.fields([{ name: 'idCardFile', maxCount: 3
                                             ' FROM TB_S10_MEMBER010 ' +
                                             ' WHERE CEO_ID = (SELECT EMP_ID ' +
                                             ' FROM TB_S10_EMP010 ' +
-                                            ' WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '"  AND MEMBER_ID IS NULL)' +
+                                            ' WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '" AND MEMBER_ID IS NULL)' +
                                             ' AND MEMBER_NM ="' + memberNm + '" AND REG_NO ="' + regNo + '")),?,SYSDATE(),"s010100010",?,null,SYSDATE(),"s010100010")';
                                         payContractParams = [finalDate, contractMoney];
                                         console.log('payContractSql', payContractSql);
                                     }
 
-                                    console.log("--------------------------------");
-                                    console.log('payContractParams', payContractParams);
-                                    console.log("--------------------------------");
+                                    // console.log("--------------------------------");
+                                    // console.log('payContractParams', payContractParams);
+                                    // console.log("--------------------------------");
 
-                                    console.log('payContractSql', payContractSql);
+
 
                                     connection.query(payContractSql, payContractParams, function (error, result) {  //쿼리문
                                         console.log('payContractSql :' + result);
@@ -1803,13 +1982,13 @@ router.post('/insertMember010', upload.fields([{ name: 'idCardFile', maxCount: 3
                                                 console.log('payContractSql.error');
 
                                                 if (error) {
-
-                                                    setImmediate(() => {
-                                                        next(new Error(error))
-                                                        console.log('error');
-                                                    })
-
-                                                    // next(error);
+                                                    if (i === contractTerm - 1) {
+                                                        setImmediate(() => {
+                                                            next(new Error(error))
+                                                            console.log('error');
+                                                        })
+                                                    }
+                                                    //next(error);
                                                 }
                                             });
                                         }
@@ -1827,123 +2006,6 @@ router.post('/insertMember010', upload.fields([{ name: 'idCardFile', maxCount: 3
                                                     }
                                                 });
                                             }
-
-
-                                        connection.commit(function (error) {
-                                            if (error) {
-                                                connection.rollback(function () {
-                                                    if (error) {
-                                                        setImmediate(() => {
-                                                            // next(new Error(error))
-                                                            console.log('error');
-                                                        })
-                                                       //next(error);
-                                                    }
-                                                });
-                                            } else {
-                                                console.log('success!');
-                                                res.send({ success: true });
-                                            }
-                                        });//commit
-                                    });//empMemberIdSql
-                                });//payContract
-                              } else {
-                                    for (let i = 0; i < contractTerm; i++) {
-
-                                        finalDate = contractYearDay + '-' + (wasteMonth + i) + '-' + contractDateDay;
-                                        originDate = contractYearDay + '-' + (wasteMonth) + '-' + contractDateDay;
-
-                                        // 납부여부-네
-                                        if (selectedOption === 'Y') {
-                                            console.log('일시불 네');
-                                            payContractSql =
-                                                'INSERT INTO TB_S10_CONTRACT020 ' +
-                                                '(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,PAYED_PLAN_MONEY,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_FLAG,PAYED_DATE) ' +
-                                                'VALUES(' +
-                                                '(SELECT CONTRACT_ID ' +
-                                                ' FROM TB_S10_CONTRACT010 ' +
-                                                ' WHERE MEMBER_ID = (SELECT MEMBER_ID ' +
-                                                ' FROM TB_S10_MEMBER010 ' +
-                                                ' WHERE CEO_ID = (SELECT EMP_ID ' +
-                                                ' FROM TB_S10_EMP010 ' +
-                                                ' WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '"  AND MEMBER_ID IS NULL)' +
-                                                ' AND MEMBER_NM ="' + memberNm + '" AND REG_NO ="' + regNo + '")),?,SYSDATE(),"s010100010",?,SYSDATE(),"s010100010",?,?)';
-
-                                            payContractParams = [finalDate, contractMoney, selectedOption, originDate];
-                                            // 납부여부-아니오
-                                        } else if (selectedOption === 'N') {
-                                            console.log('일시불 아니오');
-                                            payContractSql =
-                                                'INSERT INTO TB_S10_CONTRACT020 ' +
-                                                '(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,PAYED_PLAN_MONEY,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID) ' +
-                                                'VALUES(' +
-                                                '(SELECT CONTRACT_ID ' +
-                                                ' FROM TB_S10_CONTRACT010 ' +
-                                                ' WHERE MEMBER_ID = (SELECT MEMBER_ID ' +
-                                                ' FROM TB_S10_MEMBER010 ' +
-                                                ' WHERE CEO_ID = (SELECT EMP_ID ' +
-                                                ' FROM TB_S10_EMP010 ' +
-                                                ' WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '" AND MEMBER_ID IS NULL)' +
-                                                ' AND MEMBER_NM ="' + memberNm + '" AND REG_NO ="' + regNo + '")),?,SYSDATE(),"s010100010",?,SYSDATE(),"s010100010")';
-
-                                            payContractParams = [finalDate, contractMoney];
-
-                                        } else if (selectedOption === null || selectedOption === undefined || selectedOption === '') {
-                                            console.log('납부방법x 납부여부 x');
-                                            payContractSql =
-                                                'INSERT INTO TB_S10_CONTRACT020 ' +
-                                                '(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,PAYED_PLAN_MONEY,PAYED_FLAG,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID) ' +
-                                                'VALUES(' +
-                                                '(SELECT CONTRACT_ID ' +
-                                                ' FROM TB_S10_CONTRACT010 ' +
-                                                ' WHERE MEMBER_ID = (SELECT MEMBER_ID ' +
-                                                ' FROM TB_S10_MEMBER010 ' +
-                                                ' WHERE CEO_ID = (SELECT EMP_ID ' +
-                                                ' FROM TB_S10_EMP010 ' +
-                                                ' WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '" AND MEMBER_ID IS NULL)' +
-                                                ' AND MEMBER_NM ="' + memberNm + '" AND REG_NO ="' + regNo + '")),?,SYSDATE(),"s010100010",?,null,SYSDATE(),"s010100010")';
-                                            payContractParams = [finalDate, contractMoney];
-                                            console.log('payContractSql', payContractSql);
-                                        }
-
-                                        // console.log("--------------------------------");
-                                        // console.log('payContractParams', payContractParams);
-                                        // console.log("--------------------------------");
-
-
-
-                                        connection.query(payContractSql, payContractParams, function (error, result) {  //쿼리문
-                                            console.log('payContractSql :' + result);
-
-                                            if (error) {
-                                                connection.rollback(function () {
-                                                    console.log('payContractSql.error');
-
-                                                    if (error) {
-                                                        if (i === contractTerm - 1) {
-                                                            setImmediate(() => {
-                                                                next(new Error(error))
-                                                                console.log('error');
-                                                            })
-                                                        }
-                                                        //next(error);
-                                                    }
-                                                });
-                                            }
-                                            connection.query(empMemberIdSql, function (error, result) {
-                                                console.log('empMemberIdSql: ' + result);
-                                                if (error) {
-                                                    connection.rollback(function () {
-                                                        console.log('empMemberIdSql.error');
-                                                        if (error) {
-                                                            setImmediate(() => {
-                                                                next(new Error(error))
-                                                                console.log('error', error);
-                                                            })
-                                                            //next(error);
-                                                        }
-                                                    });
-                                                }
 
                                             connection.commit(function (error) {
                                                 if (error) {
@@ -1971,16 +2033,138 @@ router.post('/insertMember010', upload.fields([{ name: 'idCardFile', maxCount: 3
                                             });//commit
                                         });// empMemberIdSql
                                     });//payContract
-                                    }// for
-                                }// else ---------- if(contractTerm===0)
-                                //납부여부 없는경우
-                            } else if (payMethod === null || payMethod === undefined || payMethod === '') {
+                                }// for
+                            }// else ---------- if(contractTerm===0)
+                            //납부여부 없는경우
+                        } else if (payMethod === null || payMethod === undefined || payMethod === '') {
 
-                                console.log('납부여부 없는경우');
-                                // contractTerm이 0일경우(선택하지 않은 경우)
-                                if (contractTerm == 0) {
+                            console.log('납부여부 없는경우');
+                            // contractTerm이 0일경우(선택하지 않은 경우)
+                            if (contractTerm == 0) {
+                                let payContractSql = '';
+                                finalDate = contractYearDay + '-' + (wasteMonth) + '-' + contractDateDay;
+                                originDate = contractYearDay + '-' + (wasteMonth) + '-' + contractDateDay;
+
+                                // 납부여부-네
+                                if (selectedOption === 'Y') {
+                                    console.log('납부방법 x 네');
+                                    payContractSql =
+                                        'INSERT INTO TB_S10_CONTRACT020 ' +
+                                        '(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,PAYED_PLAN_MONEY,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_FLAG) ' +
+                                        'VALUES(' +
+                                        '(SELECT CONTRACT_ID ' +
+                                        ' FROM TB_S10_CONTRACT010 ' +
+                                        ' WHERE MEMBER_ID = (SELECT MEMBER_ID ' +
+                                        ' FROM TB_S10_MEMBER010 ' +
+                                        ' WHERE CEO_ID = (SELECT EMP_ID ' +
+                                        ' FROM TB_S10_EMP010 ' +
+                                        ' WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '" AND MEMBER_ID IS NULL)' +
+                                        ' AND MEMBER_NM ="' + memberNm + '" AND REG_NO ="' + regNo + '")),?,SYSDATE(),"s010100010",?,SYSDATE(),"s010100010","Y")';
+
+                                    payContractParams = [finalDate, contractMoney, selectedOption, originDate];
+                                    // 납부여부-아니오
+                                } else if (selectedOption === 'N') {
+                                    console.log('납부방법 x  아니오');
+                                    payContractSql =
+                                        'INSERT INTO TB_S10_CONTRACT020 ' +
+                                        '(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,PAYED_PLAN_MONEY,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID) ' +
+                                        'VALUES(' +
+                                        '(SELECT CONTRACT_ID ' +
+                                        ' FROM TB_S10_CONTRACT010 ' +
+                                        ' WHERE MEMBER_ID = (SELECT MEMBER_ID ' +
+                                        ' FROM TB_S10_MEMBER010 ' +
+                                        ' WHERE CEO_ID = (SELECT EMP_ID ' +
+                                        ' FROM TB_S10_EMP010 ' +
+                                        ' WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '" AND MEMBER_ID IS NULL)' +
+                                        ' AND MEMBER_NM ="' + memberNm + '" AND REG_NO ="' + regNo + '")),?,SYSDATE(),"s010100010",?,SYSDATE(),"s010100010")';
+
+                                    payContractParams = [finalDate, contractMoney];
+
+                                } else if (selectedOption === null || selectedOption === undefined || selectedOption === '') {
+                                    console.log('납부방법x 납부여부 x');
+                                    payContractSql =
+                                        'INSERT INTO TB_S10_CONTRACT020 ' +
+                                        '(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,PAYED_PLAN_MONEY,PAYED_FLAG,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID) ' +
+                                        'VALUES(' +
+                                        '(SELECT CONTRACT_ID ' +
+                                        ' FROM TB_S10_CONTRACT010 ' +
+                                        ' WHERE MEMBER_ID = (SELECT MEMBER_ID ' +
+                                        ' FROM TB_S10_MEMBER010 ' +
+                                        ' WHERE CEO_ID = (SELECT EMP_ID ' +
+                                        ' FROM TB_S10_EMP010 ' +
+                                        ' WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '" AND MEMBER_ID IS NULL)' +
+                                        ' AND MEMBER_NM ="' + memberNm + '" AND REG_NO ="' + regNo + '")),?,SYSDATE(),"s010100010",?,null,SYSDATE(),"s010100010")';
+                                    payContractParams = [finalDate, contractMoney];
+                                    //console.log('payContractSql', payContractSql);
+                                }
+
+                                // console.log("--------------------------------");
+                                // console.log('payContractParams', payContractParams);
+                                // console.log("--------------------------------");
+
+                                // console.log('payContractSql', payContractSql);
+
+                                connection.query(payContractSql, payContractParams, function (error, result) {  //쿼리문
+                                    console.log('payContractSql :' + result);
+
+                                    if (error) {
+                                        connection.rollback(function () {
+                                            console.log('payContractSql.error');
+
+                                            if (error) {
+
+                                                setImmediate(() => {
+                                                    next(new Error(error))
+                                                    console.log('error');
+                                                })
+
+                                                // next(error);
+                                            }
+                                        });
+                                    }
+                                    connection.query(empMemberIdSql, function (error, result) {
+                                        console.log('empMemberIdSql: ' + result);
+                                        if (error) {
+                                            connection.rollback(function () {
+                                                console.log('empMemberIdSql.error');
+                                                if (error) {
+                                                    setImmediate(() => {
+                                                        next(new Error(error))
+                                                        console.log('error', error);
+                                                    })
+                                                    //next(error);
+                                                }
+                                            });
+                                        }
+
+                                        connection.commit(function (error) {
+                                            if (error) {
+                                                connection.rollback(function () {
+
+                                                    if (error) {
+
+                                                        setImmediate(() => {
+                                                            // next(new Error(error))
+                                                            console.log('error');
+                                                        })
+                                                        //next(error);
+
+                                                    }
+
+                                                });
+                                            } else {
+                                                console.log('success!');
+                                                res.send({ success: true });
+
+                                            }
+                                        });//commit
+                                    });//empMemberIdSql
+                                });//payContract
+
+                            } else {
+                                for (let i = 0; i < contractTerm; i++) {
                                     let payContractSql = '';
-                                    finalDate = contractYearDay + '-' + (wasteMonth) + '-' + contractDateDay;
+                                    finalDate = contractYearDay + '-' + (wasteMonth + i) + '-' + contractDateDay;
                                     originDate = contractYearDay + '-' + (wasteMonth) + '-' + contractDateDay;
 
                                     // 납부여부-네
@@ -2033,14 +2217,16 @@ router.post('/insertMember010', upload.fields([{ name: 'idCardFile', maxCount: 3
                                             ' WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '" AND MEMBER_ID IS NULL)' +
                                             ' AND MEMBER_NM ="' + memberNm + '" AND REG_NO ="' + regNo + '")),?,SYSDATE(),"s010100010",?,null,SYSDATE(),"s010100010")';
                                         payContractParams = [finalDate, contractMoney];
-                                        console.log('payContractSql', payContractSql);
+                                        // console.log('payContractSql', payContractSql);
                                     }
 
-                                    console.log("--------------------------------");
-                                    console.log('payContractParams', payContractParams);
-                                    console.log("--------------------------------");
 
-                                    console.log('payContractSql', payContractSql);
+
+                                    // console.log("--------------------------------");
+                                    // console.log('payContractParams', payContractParams);
+                                    // console.log("--------------------------------");
+
+                                    // console.log('payContractSql', payContractSql);
 
                                     connection.query(payContractSql, payContractParams, function (error, result) {  //쿼리문
                                         console.log('payContractSql :' + result);
@@ -2050,16 +2236,17 @@ router.post('/insertMember010', upload.fields([{ name: 'idCardFile', maxCount: 3
                                                 console.log('payContractSql.error');
 
                                                 if (error) {
-
-                                                    setImmediate(() => {
-                                                        next(new Error(error))
-                                                        console.log('error');
-                                                    })
-
+                                                    if (i === contractTerm - 1) {
+                                                        setImmediate(() => {
+                                                            next(new Error(error))
+                                                            console.log('error');
+                                                        })
+                                                    }
                                                     // next(error);
                                                 }
                                             });
                                         }
+
                                         connection.query(empMemberIdSql, function (error, result) {
                                             console.log('empMemberIdSql: ' + result);
                                             if (error) {
@@ -2074,131 +2261,6 @@ router.post('/insertMember010', upload.fields([{ name: 'idCardFile', maxCount: 3
                                                     }
                                                 });
                                             }
-
-                                        connection.commit(function (error) {
-                                            if (error) {
-                                                connection.rollback(function () {
-
-                                                    if (error) {
-
-                                                        setImmediate(() => {
-                                                            // next(new Error(error))
-                                                            console.log('error');
-                                                        })
-                                                        //next(error);
-
-                                                    }
-
-                                                });
-                                            } else {
-                                                console.log('success!');
-                                                res.send({ success: true });
-
-                                            }
-                                        });//commit
-                                    });//empMemberIdSql
-                                    });//payContract
-
-                                } else {
-                                    for (let i = 0; i < contractTerm; i++) {
-                                        let payContractSql = '';
-                                        finalDate = contractYearDay + '-' + (wasteMonth + i) + '-' + contractDateDay;
-                                        originDate = contractYearDay + '-' + (wasteMonth) + '-' + contractDateDay;
-
-                                        // 납부여부-네
-                                        if (selectedOption === 'Y') {
-                                            console.log('납부방법 x 네');
-                                            payContractSql =
-                                                'INSERT INTO TB_S10_CONTRACT020 ' +
-                                                '(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,PAYED_PLAN_MONEY,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_FLAG) ' +
-                                                'VALUES(' +
-                                                '(SELECT CONTRACT_ID ' +
-                                                ' FROM TB_S10_CONTRACT010 ' +
-                                                ' WHERE MEMBER_ID = (SELECT MEMBER_ID ' +
-                                                ' FROM TB_S10_MEMBER010 ' +
-                                                ' WHERE CEO_ID = (SELECT EMP_ID ' +
-                                                ' FROM TB_S10_EMP010 ' +
-                                                ' WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '" AND MEMBER_ID IS NULL)' +
-                                                ' AND MEMBER_NM ="' + memberNm + '" AND REG_NO ="' + regNo + '")),?,SYSDATE(),"s010100010",?,SYSDATE(),"s010100010","Y")';
-
-                                            payContractParams = [finalDate, contractMoney, selectedOption, originDate];
-                                            // 납부여부-아니오
-                                        } else if (selectedOption === 'N') {
-                                            console.log('납부방법 x  아니오');
-                                            payContractSql =
-                                                'INSERT INTO TB_S10_CONTRACT020 ' +
-                                                '(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,PAYED_PLAN_MONEY,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID) ' +
-                                                'VALUES(' +
-                                                '(SELECT CONTRACT_ID ' +
-                                                ' FROM TB_S10_CONTRACT010 ' +
-                                                ' WHERE MEMBER_ID = (SELECT MEMBER_ID ' +
-                                                ' FROM TB_S10_MEMBER010 ' +
-                                                ' WHERE CEO_ID = (SELECT EMP_ID ' +
-                                                ' FROM TB_S10_EMP010 ' +
-                                                ' WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '" AND MEMBER_ID IS NULL)' +
-                                                ' AND MEMBER_NM ="' + memberNm + '" AND REG_NO ="' + regNo + '")),?,SYSDATE(),"s010100010",?,SYSDATE(),"s010100010")';
-
-                                            payContractParams = [finalDate, contractMoney];
-
-                                        } else if (selectedOption === null || selectedOption === undefined || selectedOption === '') {
-                                            console.log('납부방법x 납부여부 x');
-                                            payContractSql =
-                                                'INSERT INTO TB_S10_CONTRACT020 ' +
-                                                '(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,PAYED_PLAN_MONEY,PAYED_FLAG,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID) ' +
-                                                'VALUES(' +
-                                                '(SELECT CONTRACT_ID ' +
-                                                ' FROM TB_S10_CONTRACT010 ' +
-                                                ' WHERE MEMBER_ID = (SELECT MEMBER_ID ' +
-                                                ' FROM TB_S10_MEMBER010 ' +
-                                                ' WHERE CEO_ID = (SELECT EMP_ID ' +
-                                                ' FROM TB_S10_EMP010 ' +
-                                                ' WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '" AND MEMBER_ID IS NULL)' +
-                                                ' AND MEMBER_NM ="' + memberNm + '" AND REG_NO ="' + regNo + '")),?,SYSDATE(),"s010100010",?,null,SYSDATE(),"s010100010")';
-                                            payContractParams = [finalDate, contractMoney];
-                                            console.log('payContractSql', payContractSql);
-                                        }
-
-
-
-                                        console.log("--------------------------------");
-                                        console.log('payContractParams', payContractParams);
-                                        console.log("--------------------------------");
-
-                                        console.log('payContractSql', payContractSql);
-
-                                        connection.query(payContractSql, payContractParams, function (error, result) {  //쿼리문
-                                            console.log('payContractSql :' + result);
-
-                                            if (error) {
-                                                connection.rollback(function () {
-                                                    console.log('payContractSql.error');
-
-                                                    if (error) {
-                                                        if (i === contractTerm - 1) {
-                                                            setImmediate(() => {
-                                                                next(new Error(error))
-                                                                console.log('error');
-                                                            })
-                                                        }
-                                                        // next(error);
-                                                    }
-                                                });
-                                            }
-
-                                            connection.query(empMemberIdSql, function (error, result) {
-                                                console.log('empMemberIdSql: ' + result);
-                                                if (error) {
-                                                    connection.rollback(function () {
-                                                        console.log('empMemberIdSql.error');
-                                                        if (error) {
-                                                            setImmediate(() => {
-                                                                next(new Error(error))
-                                                                console.log('error', error);
-                                                            })
-                                                            //next(error);
-                                                        }
-                                                    });
-                                                }
 
                                             connection.commit(function (error) {
                                                 if (error) {
@@ -2225,11 +2287,11 @@ router.post('/insertMember010', upload.fields([{ name: 'idCardFile', maxCount: 3
                                                 }
                                             });//commit
                                         });//empMemberIdSql
-                                        });//payContract
-                                    }// for
-                                }//else-------------if(contractTerm === 0)문  
-                            }// if(payMethod === 'SI')
-                       
+                                    });//payContract
+                                }// for
+                            }//else-------------if(contractTerm === 0)문  
+                        }// if(payMethod === 'SI')
+
                     });// empMemberIdSql
                 });// empMemberIdSql
             });

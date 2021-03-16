@@ -14,14 +14,11 @@ import List from '@material-ui/core/List';
 import Typography from '@material-ui/core/Typography';
 import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
-import Badge from '@material-ui/core/Badge';
 import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import MenuIcon from '@material-ui/icons/Menu';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import NotificationsIcon from '@material-ui/icons/Notifications';
-import { mainListItems, secondaryListItems } from './listItems';
 import Button from '@material-ui/core/Button';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -35,7 +32,6 @@ import Dialog from '@material-ui/core/Dialog';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import ListSubheader from '@material-ui/core/ListSubheader';
 import DashboardIcon from '@material-ui/icons/Dashboard';
 import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
 import PeopleIcon from '@material-ui/icons/People';
@@ -144,7 +140,7 @@ let chkSt = '';
 let memberId;
 let empIdM;
 
-function S010100090() {
+function S010100090(props) {
     const classes = useStyles();
 
     const [open, setOpen] = React.useState(true);
@@ -166,7 +162,7 @@ function S010100090() {
     const [startDate, setStartDate] = useState(new Date(moment().date('01')));
     const [endDate, setEndDate] = useState(new Date());
 
-    const [checked, setChecked] = useState([]);
+    const [empChecked, setEmpChecked] = useState([]);
 
     const [empName, setEmpName] = useState('');
     const [memId, setMemId] = useState(0);
@@ -271,8 +267,8 @@ function S010100090() {
         //전체 Checked된 State에서 현재 누를 Checkbox가 있는지 확인
       
         const newChecked = [...retireChecked];
-        console.log('newChecked',newChecked);
-        console.log(checked);
+        // // console.log('newChecked',newChecked);
+        // // console.log(retireChecked);
         if (currentIndex === -1) {
             newChecked.push(value)
         } else {
@@ -286,20 +282,20 @@ function S010100090() {
     const handleToggle = (value) => {
 
         // 승인empId 현재 index값
-        const currentIndex = checked.indexOf(value);
+        const currentIndex = empChecked.indexOf(value);
     
 
         //전체 Checked된 State에서 현재 누를 Checkbox가 있는지 확인
         
-        const newChecked = [...checked];
+        const newChecked = [...empChecked];
 
         if (currentIndex === -1) {
             newChecked.push(value)
         } else {
             newChecked.splice(currentIndex, 1)
         }
-        setChecked(newChecked);
-        console.log(checked);
+        setEmpChecked(newChecked);
+        // console.log(empChecked);
         newChecked.length > 0 ? chkSt = 'check' : chkSt = '';
 
     }
@@ -308,38 +304,36 @@ function S010100090() {
 
     // 등록
     const onRegistHandler = () => {
-        if (checked.length === 0) {
+        if (empChecked.length === 0) {
             alert('선택하세요');
-        } else if (checked.length > 1) {
+        } else if (empChecked.length > 1) {
             alert('하나만 체크하세요');
         } else {
-            const checkedList = checked[0].split(',');
-            console.log(checkedList[0]);
-             // empNm = event.target.className;
+            const checkedList = empChecked[0].split(',');
+            // console.log(checkedList[0]);
             memberId = checkedList[0];
             setEmpName(checkedList[2]);
             setMemId(checkedList[0]);
             setdataForm('I');
-            console.log('empNm',empNm);
+            // console.log('empNm',empNm);
             setStoreOpen(true);
-            //setChecked('');
         }
     }
     
     // 수정
     const onModifyHandler = (event) => {
-        if (checked.length === 0) {
+        if (empChecked.length === 0) {
             alert('선택하세요');
-        } else if (checked.length > 1) {
+        } else if (empChecked.length > 1) {
             alert('하나만 체크하세요');
         } else {
-            const checkedList = checked[0].split(',');
+            const checkedList = empChecked[0].split(',');
             empIdM = checkedList[1];
-            console.log('empIdM',empIdM);
+            // // console.log('empIdM',empIdM);
             setdataForm('U');
             setEmpId(empIdM);
             setStoreOpen(true);
-        //setChecked('');
+    
         }
     }
 
@@ -365,27 +359,27 @@ function S010100090() {
     const approvalConfirm = (event) => {
         let checkedMemberId;
 
-        console.log('checkedMemberId',checkedMemberId);
-        console.log('checked',checked);
+        // // console.log('checkedMemberId',checkedMemberId);
+        // // console.log('empChecked',empChecked);
 
-        for(let i = 0; checked.length > i; i++){
+        for(let i = 0; empChecked.length > i; i++){
             
-            console.log('checked[i].split',checked[i].split(','));
-            checkedMemberId = checked[i].split(',');    
+            // // console.log('empChecked[i].split',empChecked[i].split(','));
+            checkedMemberId = empChecked[i].split(',');    
     }
     
     if (checkedMemberId == undefined ||checkedMemberId == null) {
         alert('승인할 회원을 선택하세요');
-    }else if(JSON.parse(sessionStorage.getItem("member"))[1] != checkedMemberId[0]){
-        alert('자회사의 직원승인만 가능합니다.');
+    // }else if(JSON.parse(sessionStorage.getItem("member"))[1] != checkedMemberId[0]){
+    //     alert('자회사의 직원승인만 가능합니다.');
     }else{
             let arr = [];
 
-            for(let i = 0; checked.length > i; i++){
-                const checkedList = checked[i].split(',');
-                console.log('checkedList[1]',checkedList[1]);
-                console.log('checkedList[0]',checkedList[0]);
-                console.log('checkedList',checkedList);
+            for(let i = 0; empChecked.length > i; i++){
+                const checkedList = empChecked[i].split(',');
+                // console.log('checkedList[1]',checkedList[1]);
+                // console.log('checkedList[0]',checkedList[0]);
+                // console.log('checkedList',checkedList);
                
                 arr.push(checkedList[1]);
 
@@ -400,10 +394,11 @@ function S010100090() {
                     if (response.data.success) {
                         alert('승인처리 되었습니다.');
                         empList();
-                        setChecked('');
+                        setEmpChecked('');
                     } else {
                         alert(response.data.message);
                         alert('승인처리에 실패하였습니다.');
+                        setEmpChecked('');
                     }
                 })
         }
@@ -417,6 +412,33 @@ function S010100090() {
         approvalConfirm,
         cancelConfirm
     );
+
+
+    const logoutConfirm = () => {
+
+        axios.post('/api/s010100150/userLogout')
+        .then(response => {
+            if (response.data.logoutResult == true) {
+            alert('로그아웃 하였습니다.');
+            sessionStorage.removeItem('member');
+            sessionStorage.clear();
+            props.history.push('/');
+            // console.log(sessionStorage.getItem('member'));
+            }else if(response.data.loginResult == false){
+            alert(response.data.message);
+            alert('아이디 또는 비밀번호를 확인하세요.');
+            }
+        })
+    
+        };
+    
+        const logounCancelConfirm = () => alert('취소하였습니다.');
+    
+        const onLogoutHandler = useConfirm(
+            "로그아웃 하시겠습니까?",
+            logoutConfirm,
+            logounCancelConfirm
+        );
 
     const excelHandler = (event) => {
 
@@ -444,12 +466,14 @@ function S010100090() {
 
     }
 
+ 
+
 
     const displayEmpMembers = empInfo.slice(pagesVisited, pagesVisited + usersPerPage).map((empInfo, index) => {
         return (
             <TableRow key={index}>
                 <TableCell>
-                    <input type="checkbox" checked={checked.indexOf(empInfo.MEMBER_ID + ',' + empInfo.EMP_ID + ',' + empInfo.MEMBER_NM)===-1? false :true} onChange={()=> handleToggle(empInfo.MEMBER_ID + ',' + empInfo.EMP_ID + ',' + empInfo.MEMBER_NM)} id={empInfo.MEMBER_ID + ',' + empInfo.EMP_ID} className={empInfo.MEMBER_NM} />
+                    <input type="checkbox" checked={empChecked.indexOf(empInfo.MEMBER_ID + ',' + empInfo.EMP_ID + ',' + empInfo.MEMBER_NM)===-1? false :true} onChange={()=> handleToggle(empInfo.MEMBER_ID + ',' + empInfo.EMP_ID + ',' + empInfo.MEMBER_NM)} id={empInfo.MEMBER_ID + ',' + empInfo.EMP_ID} className={empInfo.MEMBER_NM} />
                 </TableCell>
                 <TableCell>{empInfo.MEMBER_NM}</TableCell>
                 <TableCell>{empInfo.EMP_NUMBER}</TableCell>
@@ -542,7 +566,7 @@ function S010100090() {
                                 <ListItemIcon>
                                 <LayersIcon />
                                 </ListItemIcon>
-                                <Link to ="/"><ListItemText primary="로그아웃" /></Link>
+                                <span onClick ={onLogoutHandler}><ListItemText primary="로그아웃" /></span>
                             </ListItem>
                             </div>
                             <div hidden ={sessionStorage.getItem('member') != null}>
@@ -698,9 +722,18 @@ function S010100090() {
                 </main>
             </div>
             <Dialog
-                maxWidth={"lg"}
-                open={storeOpen}>
-                <S010100100 name={empName} memId={memberId} empIdM={empIdM} dataForm={dataForm} empList={empList} onHandleClickClose={onHandleClickClose} setStoreOpen={setStoreOpen}/>
+                    maxWidth={"lg"}
+                    open={storeOpen}>
+                    <S010100100 
+                    name={empName} 
+                    memId={memberId}
+                    empIdM={empIdM} 
+                    dataForm={dataForm}
+                    empList={empList} 
+                    onHandleClickClose={onHandleClickClose} 
+                    setStoreOpen={setStoreOpen}
+                    setEmpChecked={setEmpChecked}
+                    />
             </Dialog>
         </Fragment>
     );

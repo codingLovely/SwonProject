@@ -3,7 +3,7 @@ import axios from 'axios';
 import { post } from 'axios';
 import './css/S010100050.css';
 import S010100010 from './S010100010';
-
+import Base64Downloader from 'react-base64-downloader';
 import DaumPostcode from 'react-daum-postcode';
 
 import { makeStyles } from '@material-ui/core/styles';
@@ -18,13 +18,11 @@ import Dialog from '@material-ui/core/Dialog';
 import Modal from '@material-ui/core/Modal';
 import Backdrop from '@material-ui/core/Backdrop';
 import Fade from '@material-ui/core/Fade';
-
 import Form from 'react-bootstrap/Form';
 
-import Pagination from "./utils/Pagination";
 
 import ReactPaginate from 'react-paginate';
-import fileDownload from 'file-saver';
+
 
 const drawerWidth = 240;
 
@@ -157,9 +155,6 @@ function S010100050(props) {
     //const [startAsk_date, setStartAsk_date] = useState(new Date());
     const [endDateTest, setEndDateTest] = useState('');
 
-    const [detailCeoIdCardImg, setDetailCeoIdCardImg] = useState('')
-    const [detailRegistCardImg, setDetailRegistCardImg] = useState('')
-
     const dataMemId = props.dataMemId;
 
 
@@ -177,28 +172,23 @@ function S010100050(props) {
         setPageNumber(selected);
     }
 
-
     const [currentPage, setCurrentPage] = useState(1);
     const [postsPerPage, setPostsPerPage] = useState(3);
     const indexOfLastPost = currentPage * postsPerPage;
 
     // 첨부파일업로드
-    const [idCardFile, setIdCardFile] = useState(null);
-    const [idCardFileName, setIdCardFileName] = useState('');
-    const [registCardFile, setRegistCardFile] = useState(null);
-    const [registCardFileName, setRegistCardFileName] = useState('');
+    const [detailIdCardFile, setDetailIdCardFile] = useState(null);
+    const [detailIdCardFileName, setDetailIdCardFileName] = useState('');
 
-    const idCardHandleFileChange = (event) => {
-        // file: event.currentTarget.idCardFiles[0];
-        setIdCardFile(event.currentTarget.files[0]);
-        setIdCardFileName(event.currentTarget.value);
-    }
 
-    const registCardHandleFileChange = (event) => {
-        // file: event.currentTarget.registCardFiles[0];
-        setRegistCardFile(event.currentTarget.files[0]);
-        setRegistCardFileName(event.currentTarget.value);
-    }
+    const [detailBusiCardFile, setDetailBusiCardFile] = useState(null);
+    const [detailBusiCardFileName, setDetailBusiCardFileName] = useState('');
+
+
+    const [idCardImg,setIdCardImg] = useState('');
+    const [busiLicfImg,setBusiLicfImg] = useState('');
+    const [realIdCardFileName,setRealIdCardFileName] = useState('');
+    const [realRegistCardFileName,setRealRegistCardFileName] = useState('');
 
 
     useEffect(() => {
@@ -220,20 +210,16 @@ function S010100050(props) {
                     alert(" 데이터를 불러오는데 실패하였습니다.");
                 }
             })
-
-
     }, [])
 
     const detailMemberList = () => {
         let body = {
             dataMemId: dataMemId
         }
-        // console.log('dataMemId',dataMemId);
 
         axios.post('/api/s010100050/detailMember_by_id', body)
             .then(response => {
                 if (response.data.success) {
-                    console.log('memberId', response.data.rows[0]);
 
                     const memberId = response.data.rows[0].MEMBER_ID;
                     const modalMemberNm = response.data.rows[0].MEMBER_NM;
@@ -247,19 +233,24 @@ function S010100050(props) {
                     const modalDetailAddr = response.data.rows[0].DETAIL_ADDRESS;
                     //const modalAddress = zip + ' ' + addr + ' ' + detailAddr;
                     const modalEndDate = response.data.rows[0].END_DATE;
-                    const modalIdImg = response.data.rows[0].CEO_IMAGE_ID;
-                    const modalRegistImg = response.data.rows[0].CEO_IMAGE_REGISTER;
                     const modalEndFlag = response.data.rows[0].END_FLAG;
+                    const modalRetireDate = response.data.rows[0].RETIRE_DATE;
 
                     const modalRegNos = modalRegNo.split('-');
                     const modalEmpHps = modalEmpHp.split('-');
                     const modalEmpEmails = modalEmpEmail.split('@');
 
-                    // console.log('response.data.rows[0].MEMBER_ST',response.data.rows[0].MEMBER_ST);
+                    
                     setDetailAllInfo(response.data.rows);
                     setDetailMemberId(memberId);
-
-                    setEndDateTest(modalEndDate);
+            
+                    if(modalRetireDate === '00-00-00'){
+                        setEndDateTest('');
+                    }else{
+                        setEndDateTest(response.data.rows[0].RETIRE_DATE);
+                    }
+                    
+                 
 
                     setDetailMemberNm(modalMemberNm);
 
@@ -282,8 +273,17 @@ function S010100050(props) {
                     setDetailZipcode(modalZip);
                     setDetailAddress(modalAddr);
                     setDetailDetailAddress(modalDetailAddr);
-                    setDetailCeoIdCardImg(modalIdImg);
-                    setDetailRegistCardImg(modalRegistImg);
+                  
+                    
+                    const idCardImg = new Buffer.from(response.data.rows[0].ID_CARD_IMAGE).toString();
+                    const busiLicfImg = new Buffer.from(response.data.rows[0].BUSI_LICS_IMAGE).toString(); 
+
+                    setIdCardImg(idCardImg);
+                    setRealIdCardFileName(response.data.rows[0].ID_CARD_IMAGE_NAME);
+                   
+                    setBusiLicfImg(busiLicfImg);
+                    setRealRegistCardFileName(response.data.rows[0].BUSI_LICS_IMAGE_NAME);
+
                 } else {
                     alert(response.data.message);
                     alert('상세정보 데이터를 불러오는데 실패하였습니다.');
@@ -295,62 +295,114 @@ function S010100050(props) {
         detailMemberList();
     }, [])
 
-    // 회원정보수정 함수
-    const tempAddMember = () => {
-        const url = '/api/s010100050/modifyMember';
-        const formData = new FormData();
-        // console.log('memberId',memberId);
-        const dataMemId = props.dataMemId;
-        // console.log('dataMemId', dataMemId);
-
-        // 회원이름 및 전화번호 memberId
-        // formData.append('dataName',dataName);
-        // formData.append('dataEmpHp',dataEmpHp);
-        formData.append('dataMemId', dataMemId);
-        // 첨부파일
-        formData.append('idCardFile', idCardFile);
-        formData.append('registCardFile', registCardFile);
-        formData.append('idCardFileName', idCardFileName);
-        formData.append('registCardFileName', registCardFileName);
-
-        // console.log('idCardFile',idCardFile);
-        // console.log('idCardFileName',typeof idCardFileName);
-        // 회원명
-        formData.append('detailMemberNm', detailMemberNm);
-        // 사업자번호
-        formData.append('detailFstRegNo', detailFstRegNo);
-        formData.append('detailSndRegNo', detailSndRegNo);
-        formData.append('detailThdRegNo', detailThdRegNo);
-        // 회원구분
-        formData.append('detailMemberTp', detailMemberTp);
-        // 성명
-        formData.append('detailName', detailName);
-        // 연락처
-        formData.append('detailFstEmpHp', detailFstEmpHp);
-        formData.append('detailSndEmpHp', detailSndEmpHp);
-        formData.append('detailThdEmpHp', detailThdEmpHp);
-        // email
-        formData.append('detailDomain', detailDomain);
-        formData.append('detailEmpEmail', detailEmpEmail);
-        // 주소
-        formData.append('detailZipcode', detailZipcode);
-        formData.append('detailAddress', detailAddress);
-        formData.append('detailDetailAddress', detailDetailAddress);
 
 
-        const config = {
-            headers: {
-                'content-type': 'multipart/form-data'
-            }
+    const detailIdCardHandleFileChange = (event) => {
+        setDetailIdCardFile(event.currentTarget.files[0]);
+        setDetailIdCardFileName(event.currentTarget.value);
+        
+        let imageType = event.currentTarget.files[0].type;
+        
+        if((imageType != 'image/png')&&(imageType != 'image/jpg')&&(imageType != 'image/jpeg')){
+            alert('.jpg, .jpeg, .png 확장자만 업로드 가능합니다.');
+            setDetailIdCardFile('');
+            setDetailIdCardFileName('');
         }
-        return post(url, formData, config);
+    }   
+
+    const detailBusiCardHandleFileChange = (event) => {
+        setDetailBusiCardFile(event.currentTarget.files[0]);
+        setDetailBusiCardFileName(event.currentTarget.value);
+
+        let imageType = event.currentTarget.files[0].type;
+        
+        if((imageType != 'image/png')&&(imageType != 'image/jpg')&&(imageType != 'image/jpeg')){
+            alert('.jpg, .jpeg, .png 확장자만 업로드 가능합니다.');
+            setDetailBusiCardFile('');
+            setDetailBusiCardFileName('');
+        }
     }
 
-    // 회원정보 수정
-    const onModifyHandler = (event) => {
-        event.preventDefault();
+    const [detailIdCardImg,setDetailIdCardImg] = useState('');
+    const [detailBusiLicfImg,setDetailBusiLicfImg] = useState('');
+    // setState을 파라미터로
+    const encodeIdFileBase64 = (idCardfile) => {
+        let reader = new FileReader();
+        if(idCardfile){
+            reader.readAsDataURL(idCardfile);
+            reader.onload = () => {
+                let Base64 = reader.result;
+                // console.log(Base64);
+                setDetailIdCardImg(Base64);
+               
+            };
+            
+            reader.onerror = function (error){
+                console.log('error : ',error);
+            }
+        }
+    };
 
-        tempAddMember().then((response) => {
+    const encodeBusiFileBase64 = (idCardfile) => {
+        let reader = new FileReader();
+        if(idCardfile){
+            reader.readAsDataURL(idCardfile);
+            reader.onload = () => {
+                let Base64 = reader.result;
+                // console.log(Base64);
+                setDetailBusiLicfImg(Base64);
+               
+            };
+            
+            reader.onerror = function (error){
+                console.log('error : ',error);
+            }
+        }
+    };
+
+    encodeIdFileBase64(detailIdCardFile);
+    encodeBusiFileBase64(detailBusiCardFile);
+
+    // 회원정보수정 함수
+    const tempAddMember = () => {
+        
+        let dataMemId = props.dataMemId;
+
+        let realDetailIdCardFileName;
+        let realDetailBusiCardFileName;
+
+        if(detailIdCardFileName){
+            realDetailIdCardFileName = detailIdCardFileName.split('\\')[2].split('.')[0];    
+        }
+        
+        if(detailBusiCardFileName){
+            realDetailBusiCardFileName = detailBusiCardFileName.split('\\')[2].split('.')[0];
+        }
+        
+        let body ={
+            dataMemId: dataMemId,
+            detailIdCardImg,
+            detailBusiLicfImg,
+            realDetailIdCardFileName,
+            realDetailBusiCardFileName,
+            detailMemberNm: detailMemberNm,
+            detailFstRegNo: detailFstRegNo,
+            detailSndRegNo: detailSndRegNo,
+            detailThdRegNo: detailThdRegNo,
+            detailMemberTp: detailMemberTp,
+            detailName: detailName,
+            detailFstEmpHp: detailFstEmpHp,
+            detailSndEmpHp: detailSndEmpHp,
+            detailThdEmpHp: detailThdEmpHp,
+            detailDomain: detailDomain,
+            detailEmpEmail: detailEmpEmail,
+            detailZipcode: detailZipcode,
+            detailAddress: detailAddress,
+            detailDetailAddress: detailDetailAddress
+        }
+
+        axios.post('/api/s010100050/modifyMember',body)
+        .then(response => {
             if (response.data.success) {
                 alert('정상적으로 수정 되었습니다.');
                 props.setModalOpen(false);
@@ -360,6 +412,13 @@ function S010100050(props) {
                 alert('수정에 실패하였습니다.');
             }
         })
+
+
+    }
+
+    // 회원정보 수정
+    const onModifyHandler = () => {
+        tempAddMember();
     }
 
     const onDetailMemberNmHandler = (event) => {
@@ -367,14 +426,17 @@ function S010100050(props) {
     }
 
     const onDetailFstRegNoHandler = (event) => {
-        setDetailFstRegNo(event.currentTarget.value);
+        const regexData = getRegexData(/[^0-9]/g, event.currentTarget.value);
+        setDetailFstRegNo(regexData);
     }
 
     const onDetailSndRegNoHandler = (event) => {
-        setDetailSndRegNo(event.currentTarget.value);
+        const regexData = getRegexData(/[^0-9]/g, event.currentTarget.value);
+        setDetailSndRegNo(regexData);
     }
     const onDetailThdRegNoHandler = (event) => {
-        setDetailThdRegNo(event.currentTarget.value);
+        const regexData = getRegexData(/[^0-9]/g, event.currentTarget.value);
+        setDetailThdRegNo(regexData);
     }
 
     const onDetailMemberTpHandler = (event) => {
@@ -386,23 +448,28 @@ function S010100050(props) {
     }
 
     const onDetailFstEmpHpHandler = (event) => {
-        setDetailFstEmpHp(event.currentTarget.value);
+        const regexData = getRegexData(/[^0-9]/g, event.currentTarget.value);
+        setDetailFstEmpHp(regexData);
     }
 
     const onDetailSndEmpHpHandler = (event) => {
-        setDetailSndEmpHp(event.currentTarget.value);
+        const regexData = getRegexData(/[^0-9]/g, event.currentTarget.value);
+        setDetailSndEmpHp(regexData);
     }
 
     const onDetailThdEmpHpHandler = (event) => {
-        setDetailThdEmpHp(event.currentTarget.value);
+        const regexData = getRegexData(/[^0-9]/g, event.currentTarget.value);
+        setDetailThdEmpHp(regexData);
     }
 
     const onDetailEmpEmailHandler = (event) => {
-        setDetailEmpEmail(event.currentTarget.value);
+        const regexData = getRegexData(/[^-A-Za-z0-9_]/g, event.currentTarget.value);
+        setDetailEmpEmail(regexData);
     }
 
     const onDetailDomainHandler = (event) => {
-        setDetailDomain(event.currentTarget.value);
+        const regexData = getRegexData(/[^-A-Za-z0-9_]/g, event.currentTarget.value);
+        setDetailDomain(regexData);
     }
 
     const onDetailZipcodeHandler = (event) => {
@@ -421,13 +488,31 @@ function S010100050(props) {
 
     }
 
+    const onAllContractEndHandler = (event) => {
+        let body = {
+            dataMemId: dataMemId
+        }
+        
+        axios.post('/api/s010100050/allContractEnd', body)
+        .then(response => {
+            if (response.data.success) {
+                
+                alert('종료처리 되었습니다.');
+                detailMemberList();
+                
+            } else {
+                alert(response.data.message);
+                alert('종료처리를 실패 하였습니다.');
+            }
+        })
+    }
+
     const onDetailClickOpen = (event) => {
         num = event.target.innerHTML;
         rNum = parseInt(num);
         setNameForDetailCModal(rNum);
         setConOpen(true);
     }
-
 
     const onConContractHandler = useCallback(() => {
         setConOpen(false);
@@ -444,87 +529,8 @@ function S010100050(props) {
         setNewOpen(true);
     }
 
-
-
-
-
-    const onIdDownloadHandler = () =>  {
-
-            axios.get(`/api/s01010050/download/tb_s10_member010_by_id?id=${dataMemId}&type=single`)
-                .then(response => {
-                    if (response) {
-                        alert('res');
-                         console.log(response);
-
-                    } else {
-                        alert("다운로드에 실패하였습니다.");
-                    }
-                })
-        
-    }
-
-    //     const onIdDownloadHandler = async event => {
-    //     event.preventDefault();
-    //     axios({
-    //         url: decodeURIComponent('1f39da861fcdab5734f147f53718d12a.jpg'),
-    //         method: 'GET',
-    //         responseType: 'blob'
-    //         }).then((response) => {
-    //         const url = window.URL.createObjectURL(new Blob([response.data]))
-    //         const link = document.createElement('a')
-    //         link.href = url
-    //         link.setAttribute('download', '1f39da861fcdab5734f147f53718d12a.jpg')
-    //         document.body.appendChild(link)
-    //         link.click()
-    //         })
-    //         const response = await fetch(
-    //         "../1f39da861fcdab5734f147f53718d12a.jpg"
-    //         );
-    //         if (response.status === 200) {
-    //         const blob = await response.blob();
-    //         console.log('blob',blob);
-    //         const url = URL.createObjectURL(blob);
-    //         console.log('url',url);
-    //         const link = document.createElement("a");
-    //         link.href = url;
-    //         link.download = "image";
-    //         document.body.appendChild(link);
-    //         link.click();
-    //         link.remove();
-    //         return { success: true };
-    //     }   
-    // }
-
-    // const onIdDownloadHandler = async (file_name, file_path) => {
-    //     const res = await CustomFetch('/fileDownload', {
-    //       responseType: 'blob',
-    //       method: 'POST', headers: {
-    //         'Content-Type': 'application/json',
-    //       },
-    //     }, {
-    //       "_id": noticeId,
-    //       file_name,
-    //       file_path
-    //     });
-
-    //     fileDownload(await (await new Response(res.body)).blob(), file_name);
-
-    //   }
-
-
-    const onRegDownloadHandler = (event) => {
-        // event.preventDefault();
-
-        // axios.get('/api/s010100150/regDownload')
-        //     .then(response => {
-        //         if (response) {
-        //             alert('res');
-
-
-        // } else {
-        //             alert("다운로드에 실패하였습니다.");
-        //         }
-        //     })
+    const getRegexData = (regex, data) => {
+        return data.replace(regex, "");
     }
 
 
@@ -536,7 +542,7 @@ function S010100050(props) {
                 <TableCell>{detailAllInfo.CONTRACT_TP}</TableCell>
                 <TableCell>{detailAllInfo.CONTRACT_ROOM}</TableCell>
                 <TableCell>{detailAllInfo.CONTRACT_TERM}개월 ({detailAllInfo.START_DATE} ~ {detailAllInfo.END_DATE})</TableCell>
-                <TableCell>{detailAllInfo.MEMBER_ST}</TableCell>
+                <TableCell>{detailAllInfo.CONTRACT_ST}</TableCell>
                 <TableCell>{detailAllInfo.PAY_DATE}일</TableCell>
                 <TableCell>{detailAllInfo.MONTHLY_FEE}</TableCell>
                 <TableCell>{detailAllInfo.CONTRACT_LOCKER}</TableCell>
@@ -609,17 +615,17 @@ function S010100050(props) {
 
                                     <Form.Control style={{ width: 5 + 'em', display: 'inline' }} size="sm"
                                         type="text" value={detailFstRegNo} id="detailRegNo" name="detailRegNo"
-                                        onChange={onDetailFstRegNoHandler} />
+                                        onChange={onDetailFstRegNoHandler} maxLength="3"/>
                                 &nbsp; - &nbsp;
 
                                 <Form.Control style={{ width: 3 + 'em', display: 'inline' }} size="sm"
                                         type="text" value={detailSndRegNo} id="detailRegNo" name="detailRegNo"
-                                        onChange={onDetailSndRegNoHandler} />
+                                        onChange={onDetailSndRegNoHandler} maxLength="2"/>
                                 &nbsp; - &nbsp;
 
                                 <Form.Control style={{ width: 7 + 'em', display: 'inline' }} size="sm"
                                         type="text" value={detailThdRegNo} id="detailRegNo" name="detailRegNo"
-                                        onChange={onDetailThdRegNoHandler} />
+                                        onChange={onDetailThdRegNoHandler} maxLength="5"/>
 
                                 </td>
                                 <th>회원구분</th>
@@ -635,7 +641,7 @@ function S010100050(props) {
                                 <th>퇴실일자</th>
                                 <td>
 
-                                    <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm"
+                                    <Form.Control style={{ width: 8 + 'em', display: 'inline' }} size="sm"
                                         type="text" value={endDateTest} disabled />
 
                                 </td>
@@ -647,7 +653,7 @@ function S010100050(props) {
                                 <th>성명</th>
                                 <td>
 
-                                    <Form.Control style={{ width: 5 + 'em', display: 'inline' }} size="sm"
+                                    <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm"
                                         type="text" value={detailName} id="detailName" name="detailName"
                                         onChange={onDetailNameHandler} />
                                 </td>
@@ -656,18 +662,18 @@ function S010100050(props) {
 
                                     <Form.Control style={{ width: 5 + 'em', display: 'inline' }} size="sm"
                                         type="text" value={detailFstEmpHp} id="detailEmpHp" name="detailEmpHp"
-                                        onChange={onDetailFstEmpHpHandler} />
+                                        onChange={onDetailFstEmpHpHandler} maxLength="3"/>
 
                                      &nbsp; - &nbsp;
                                      <Form.Control style={{ width: 5 + 'em', display: 'inline' }} size="sm"
                                         type="text" value={detailSndEmpHp} id="detailEmpHp" name="detailEmpHp"
-                                        onChange={onDetailSndEmpHpHandler} />
+                                        onChange={onDetailSndEmpHpHandler} maxLength="4"/>
 
 
                                      &nbsp; - &nbsp;
                                     <Form.Control style={{ width: 5 + 'em', display: 'inline' }} size="sm"
                                         type="text" value={detailThdEmpHp} id="detailEmpHp" name="detailEmpHp"
-                                        onChange={onDetailThdEmpHpHandler} />
+                                        onChange={onDetailThdEmpHpHandler} maxLength="4"/>
 
                                 </td>
                                 <th>E-mail</th>
@@ -705,13 +711,11 @@ function S010100050(props) {
                                         onClose={handleClose}
                                         closeAfterTransition
                                         BackdropComponent={Backdrop}
-                                        BackdropProps={{
-                                            timeout: 500,
-                                        }}
+                                     
                                     >
                                         <Fade in={isPostOpen}>
                                             <div className={classes.paper}>
-                                                <DaumPostcode autoClose style={postCodeStyle} onComplete={handleComplete} />
+                                                <DaumPostcode  style={postCodeStyle} onComplete={handleComplete} />
                                             </div>
                                         </Fade>
                                     </Modal>
@@ -733,24 +737,48 @@ function S010100050(props) {
                                 {/* onClick={onIdDownloadHandler} */}
                                 <th rowSpan="2" colSpan="2">첨부파일</th>
                                 <td colSpan="8">
-                                    <a href="#" onClick={onIdDownloadHandler} >{detailCeoIdCardImg}</a>&nbsp;
+                                <label htmlFor="file">대표자신분증:</label>&nbsp;
+                                    <Base64Downloader
+                                        base64={idCardImg}
+                                        downloadName={realIdCardFileName}
+                                        Tag="a"
+                                        extraAttributes={{ href: '#' }}
+                                        className="my-class-name"
+                                        style={{ color: 'orange' }}
+                                    >
+                                      {realIdCardFileName}
+                                    </Base64Downloader>
+                                    &nbsp;
+                                   
                                 <input type='file'
-                                        file={idCardFile}
-                                        name='idCardFile'
-                                        value={idCardFileName}
-                                        onChange={idCardHandleFileChange}
+                                        file={detailIdCardFile}
+                                        name='detailIdCardFile'
+                                        value={detailIdCardFileName}
+                                        onChange={detailIdCardHandleFileChange}
                                     />
                                 </td>
 
                             </tr>
                             <tr>
                                 <td colSpan="8">
-                                    <a href='#' onClick={onRegDownloadHandler}>{detailRegistCardImg}</a>&nbsp;
+                                <label htmlFor="file">사업자등록증:</label>&nbsp;
+                                <Base64Downloader
+                                        base64={busiLicfImg}
+                                        downloadName={realRegistCardFileName}
+                                        Tag="a"
+                                        extraAttributes={{ href: '#' }}
+                                        className="my-class-name"
+                                        style={{ color: 'orange' }}
+                                    >
+                                       {realRegistCardFileName}
+                                    </Base64Downloader>
+                                    &nbsp;
+                                   
                                 <input type='file'
-                                        file={registCardFile}
-                                        name='registCardFile'
-                                        value={registCardFileName}
-                                        onChange={registCardHandleFileChange}
+                                        file={detailBusiCardFile}
+                                        name='detailBusiCardFile'
+                                        value={detailBusiCardFileName}
+                                        onChange={detailBusiCardHandleFileChange}
                                     />
                                 </td>
                             </tr>
@@ -807,6 +835,9 @@ function S010100050(props) {
                         <Button variant="contained" color="primary" style={{ width: 100 }} id="btn-centerN" onClick={onModifyHandler} >
                             수정하기
                         </Button>
+                        <Button variant="contained" color="primary" style={{ width: 100 }} id="btn-centerN" onClick={onAllContractEndHandler} >
+                            종료
+                        </Button>
                         <Button variant="contained" color="primary" style={{ width: 70 }} id="btn-centerN" onClick={props.onHandleDetailClickClose} >
                             닫기
                         </Button>
@@ -819,7 +850,7 @@ function S010100050(props) {
                 maxWidth={"lg"}
                 open={conOpen}
                 onClose={onConContractHandler}>
-                <S010100010 dataNum={rNum} cDataForm={'I'} detailMemberList={detailMemberList} endFlag={mEndFlag} onConContractHandler={onConContractHandler} setConOpen={setConOpen} />
+                <S010100010 dataNum={rNum} cDataForm={'I'} detailMemberList={detailMemberList} onConContractHandler={onConContractHandler} setConOpen={setConOpen} />
             </Dialog>
 
             {/*신규계약 멤버ID클릭*/}

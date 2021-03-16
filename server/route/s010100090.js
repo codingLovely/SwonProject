@@ -3,14 +3,10 @@ const router = express.Router();
 
 const dbconfig = require('../config/database.js')();
 const connection = dbconfig.init();
-const bcrypt = require('bcrypt');
-const saltRounds = 10;
 
-const multer = require('multer');
-let upload = multer({ dest: './src/uploads' })
 
 // 직원 구분
-router.post('/classification', (req, res) => {
+router.post('/classification', (req, res,next) => {
 
     let sql = 'SELECT CD_V,CD_V_MEANING FROM TB_S10_CODE WHERE CD_TP = "EMP_TP"';
     connection.query(sql, (error, rows) => {
@@ -24,7 +20,7 @@ router.post('/classification', (req, res) => {
     });
 })
 
-router.post('/empList', (req, res) => {
+router.post('/empList', (req, res,next) => {
     let staffName = req.body.staffName;
     let memberNm = req.body.memberNm;
     let staffClass = req.body.staffClass;
@@ -56,7 +52,7 @@ router.post('/empList', (req, res) => {
     }
 
     sql += 'ORDER BY EMP.MEMBER_ID DESC';
-    console.log(sql);
+    // console.log(sql);
 
 
     connection.query(sql, (error, rows) => {
@@ -72,7 +68,7 @@ router.post('/empList', (req, res) => {
 })
 
 
-router.post('/approval', (req, res) => {
+router.post('/approval', (req, res,next) => {
 
     let checkEmpId = req.body.arr;
 

@@ -79,7 +79,7 @@ router.post('/searchMember', (req, res, next) => {
         '               ON member010.CEO_ID = emp010.EMP_ID ' +
         '   INNER JOIN TB_S10_CONTRACT010 con010 '+
         '   ON member010.MEMBER_ID = con010.MEMBER_ID '+
-        ' WHERE member010.CREATED_DATE BETWEEN DATE_FORMAT("' + startDate + '","%y-%m-%d") AND  DATE_FORMAT("' + endDate + '" ,"%y-%m-%d")' +
+        ' WHERE con010.CONTRACT_DATE BETWEEN DATE_FORMAT("' + startDate + '","%y-%m-%d") AND  DATE_FORMAT("' + endDate + '" ,"%y-%m-%d")' +
         ' AND  member010.MEMBER_ST != "D" '
 
     if (memberTp != null && memberTp != "" && memberTp != "전체")
@@ -96,13 +96,13 @@ router.post('/searchMember', (req, res, next) => {
         sql += ' AND emp010.NAME LIKE "%' + name + '%"';
     
     sql += ' ORDER BY member010.MEMBER_ID DESC';
-    console.log(sql);
+    // console.log(sql);
    
     connection.query(sql, (error, rows) => {
         if (error){
             setImmediate(() => {
                 next(new Error(error))
-                console.log(error);
+                // console.log(error);
             })
             //next(error);
         }else{

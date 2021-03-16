@@ -76,13 +76,14 @@ router.get('/insert/tb_s10_contract020_by_id', (req, res,next) => {
         '       CON.COMMENT, ' +
         '       CON.CONTRACT_TERM, ' +
         '       CON.PAY_METHOD,' +
+        '       PCON.PAYED_PLAN_MONEY,' +
         '       (SELECT CD_V_MEANING ' +
         ' FROM TB_S10_CODE ' +
         ' WHERE CD_TP = "PAY_METHOD" AND CD_V = CON.PAY_METHOD) AS "PAY_METHOD_M",' +
         '       DATE_FORMAT(PCON.PAY_PLAN_DATE,"%y-%m-%d") AS "PAY_PLAN_DATE", ' +
         '       PCON.CONTRACT_ID, ' +
         '       PCON.PAYED_FLAG, ' +
-        '       PCON.CONTRACT_COMMENT ' +
+        '       PCON.COMMENT ' +
         'FROM TB_S10_EMP010 EMP ' +
         'INNER JOIN TB_S10_MEMBER010 MEM ' +
         'ON EMP.EMP_ID = MEM.CEO_ID ' +
@@ -141,7 +142,7 @@ router.post('/paymentCancel', (req, res,next) => {
             '            LAST_UPDATE_DATE = SYSDATE(), ' +
             '            LAST_UPDATE_PROGRAM_ID = "S01010070", ' +
             '            PAYED_MONEY = PAYED_PLAN_MONEY, ' +
-            '            CONTRACT_COMMENT = ""' +
+            '            COMMENT = ""' +
             '         WHERE CONTRACT_ID =' + modalContractId + ' AND PAY_PLAN_DATE ="' + chkPayPlanDate + '"';
 
         connection.query(sql, function (error, rows) {  //쿼리문
@@ -200,7 +201,7 @@ router.post('/paymentUpdate', (req, res,next) => {
             '            LAST_UPDATE_DATE = SYSDATE(), ' +
             '            LAST_UPDATE_PROGRAM_ID = "S01010070", ' +
             '            PAYED_MONEY = PAYED_PLAN_MONEY, ' +
-            '            CONTRACT_COMMENT = "' + chkConComment + '"' +
+            '            COMMENT = "' + chkConComment + '"' +
             '         WHERE CONTRACT_ID =' + modalContractId + ' AND PAY_PLAN_DATE ="' + chkPayPlanDate + '"';
 
         connection.query(sql, function (error, rows) {  //쿼리문

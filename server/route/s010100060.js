@@ -43,7 +43,7 @@ router.post('/list', (req, res) => {
 
     if (userName != null && userName != "" && userName != "undefined")//null아니고 전체가 아닐때 때, null 아니고 공백이 아닐때
         sql += ' AND MEM.MEMBER_NM LIKE "%' + userName + '%" ';
-    if (paymentStatus != null && paymentStatus != "" && userName != "undefined")
+    if (paymentStatus != null && paymentStatus != "" && paymentStatus != "undefined"&& paymentStatus != "전체")
         sql += ' AND CON2.PAYED_FLAG = "' + paymentStatus + '"';
 
     sql += ' AND MEM.MEMBER_ST = "C" ORDER BY CON2.CONTRACT_ID DESC';

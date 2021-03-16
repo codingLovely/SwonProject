@@ -12,12 +12,14 @@ const app = express();
 // let mime = require('mime');
 // let fs = require('fs');
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+
 
 /** configuration */  
 app.set('port', process.env.PORT || 4001);
 
+// Request용량 50mb로 증가
+app.use(express.json({limit: '50mb'}));
+app.use(express.urlencoded({limit: '50mb'}));
 
 /** 회원현황 */ 
 // 이용계약서
