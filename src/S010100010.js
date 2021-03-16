@@ -605,7 +605,7 @@ function S010100010(props) {
     encodeBusiFileBase64(busiCardFile);
 
 
-    // 저장 가계약 
+    // 확정-가계약 저장함수
     const addMember = () =>{
 
         let startDate = startAsk_date.getFullYear() + '-' + (startAsk_date.getMonth() + 1) + '-' + startAsk_date.getDate();
@@ -835,6 +835,7 @@ function S010100010(props) {
             })
     }
 
+    // s010100050 -> insertMember010 
     const contractModify = () => {
 
         let modifyDataNum = props.dataNum;
@@ -849,7 +850,43 @@ function S010100010(props) {
 
         nullChk();
 
+       
+
+        let realIdCardFileName;
+        let realBusiCardFileName;
+
+        if(idCardFileName){
+            realIdCardFileName = idCardFileName.split('\\')[2].split('.')[0];    
+        }
+        
+        if(busiCardFileName){
+            realBusiCardFileName = busiCardFileName.split('\\')[2].split('.')[0];
+        }
+
+
         let body = {
+
+            idCardImg: idCardImg,
+            busiLicfImg: busiLicfImg,
+            realIdCardFileName:realIdCardFileName,
+            realBusiCardFileName:realBusiCardFileName,
+
+            memberNm: memberNm,
+            firstRegNo: firstRegNo,
+            secondRegNo: secondRegNo,
+            thirdRegNo: thirdRegNo,
+            memberTp: memberTp,
+            empIdName: empIdName,
+            firstEmpHp: firstEmpHp,
+            secondEmpHp: secondEmpHp,
+            thirdEmpHp: thirdEmpHp,
+
+            zipcode: zipcode,
+            empEmailId: empEmailId,
+            domainAddress: domainAddress,
+            empAddress: empAddress,
+            empDetailAddress: empDetailAddress,
+       
             //계약정보
             modifyDataNum: modifyDataNum,
             contractTp: contractTp,
@@ -865,7 +902,9 @@ function S010100010(props) {
             comment: comment,
             selectedOption: selectedOption
         }
+        
         console.log('body',body);
+        console.log('body2222222222222222222222222222222222222222222222',body);
 
         let dateEndFrame = dateEnd.toString().substring(2, 10);
 
@@ -873,7 +912,7 @@ function S010100010(props) {
         if (dateEndFrame === endAsk_date && contractTerm === contractTerm) {
 
             setDateCheckBtn('check');
-            // console.log('body',body);
+          ;
             axios.post('/api/s010100010/detailModifyContracId', body)
                 .then(response => {
                     if (response.data.success) {
@@ -926,7 +965,6 @@ function S010100010(props) {
             contractModify();
         }
     }
-
 
     
     const memStTModifyHandler = () => {

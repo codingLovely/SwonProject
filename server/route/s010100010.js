@@ -208,11 +208,6 @@ router.post('/detailNewContract_by_id', (req, res, next) => {
                 let wasteContracMonthDay = dateToString.substring(5, 6);
                 let wasteContractYearDay = dateToString.substring(0, 4);
 
-                // console.log('dateToString', dateToString);
-                // console.log('wasteDateDay', wasteDateDay);
-                // console.log('wasteContracMonthDay', wasteContracMonthDay);
-                // console.log('wasteContractYearDay', wasteContractYearDay);
-
                 let contractDateDay = parseInt(wasteDateDay);
                 let wasteMonth = parseInt(wasteContracMonthDay);
                 let contractYearDay = parseInt(wasteContractYearDay);
@@ -544,6 +539,37 @@ router.post('/detailModifyContracId', (req, res, next) => {
 
     connection.beginTransaction(function (error) {
 
+        let idCardImg = req.body.idCardImg;
+        let busiLicfImg = req.body.busiLicfImg;
+        let realIdCardFileName = req.body.realIdCardFileName;
+        let realBusiCardFileName = req.body.realBusiCardFileName;
+
+        let memberNm = req.body.memberNm;
+        let firstRegNo = req.body.firstRegNo;
+        let secondRegNo = req.body.secondRegNo;
+        let thirdRegNo = req.body.thirdRegNo;
+
+        let regNo = firstRegNo+'-'+secondRegNo+'-'+thirdRegNo;
+        
+        let memberTp = req.body.memberTp;
+        let empIdName = req.body.empIdName;
+        
+        let firstEmpHp = req.body.firstEmpHp;
+        let secondEmpHp = req.body.secondEmpHp;
+        let thirdEmpHp = req.body.thirdEmpHp;
+
+        let empHp = firstEmpHp +'-'+ secondEmpHp +'-'+ thirdEmpHp;
+
+
+        let zipcode = req.body.zipcode;
+        let empAddress = req.body.empAddress;
+        let empDetailAddress = req.body.empDetailAddress;
+
+        let empEmailId = req.body.empEmailId;
+        let domainAddress = req.body.domainAddress;
+
+        let emailAddr = empEmailId+'@'+domainAddress;
+
         let modifyDataNum = req.body.modifyDataNum;
         let comment = req.body.comment;
         let contractTp = req.body.contractTp;
@@ -559,33 +585,8 @@ router.post('/detailModifyContracId', (req, res, next) => {
         let contractMoney = req.body.contractMoney;
         let selectedOption = req.body.selectedOption;
 
-         console.log('contractPath', contractPath);
 
-        let modifySql = 'UPDATE TB_S10_CONTRACT010 CON ' +
-            '   INNER JOIN TB_S10_CONTRACT020 CON2 ON CON.CONTRACT_ID = CON2.CONTRACT_ID ' +
-            'SET ' +
-            '    CON.COMMENT =  "' + comment + '",' +
-            '    CON.CONTRACT_TP =  "' + contractTp + '",' +
-            '    CON.CONTRACT_ROOM = "' + contractTpVal + '",' +
-            '    CON.CONTRACT_LOCKER = "' + roomLockerTp + '",' +
-            '    CON.CONTRACT_TERM = ' + contractTerm + ',' +
-            '    CON.START_DATE = "' + startDate + '",' +
-            '    CON.END_DATE = "' + endDate + '",' +
-            '    CON.PAY_DATE = ' + payDate + ',' +
-            '    CON.CONTRACT_PATH = "' + contractPath + '",' +
-            '    CON.PAY_METHOD = "' + payMethod + '",' +
-            '    CON.CONTRACT_PATH = "' + contractPath + '",' +
-            '    CON.CONTRACT_DATE = "' + startDate + '",' +
-            '    CON.MONTHLY_FEE = "' + contractMoney + '",' +
-            '    CON2.PAYED_PLAN_MONEY = "' + contractMoney + '",' +
-            '    CON2.PAYED_FLAG = "' + selectedOption + '",' +
-            '    CON.LAST_UPDATE_DATE = SYSDATE(),' +
-            '    CON.LAST_UPDATE_PROGRAM_ID = "S010100010",' +
-            '    CON2.LAST_UPDATE_DATE = SYSDATE(),' +
-            '    CON2.LAST_UPDATE_PROGRAM_ID = "S010100010"' +
-            'WHERE CON.CONTRACT_ID = ' + modifyDataNum
-
-        // console.log('modifySql', modifySql);
+    
 
         let bringDateSql = 'SELECT DATE_FORMAT(PCON.PAY_PLAN_DATE,"%y-%m-%d") AS "PAY_PLAN_DATE", CON.CONTRACT_TERM AS "CONTRACT_TERM" ' +
             ' FROM TB_S10_CONTRACT010 CON INNER JOIN TB_S10_CONTRACT020 PCON ' +
@@ -616,18 +617,71 @@ router.post('/detailModifyContracId', (req, res, next) => {
                         })
                     });
                 }
-                //console.log('contract_term',termCountRow);
+
+                let modifySql = 'UPDATE TB_S10_EMP010 EMP INNER JOIN TB_S10_MEMBER010 MEM '+
+                ' ON EMP.EMP_ID = MEM.CEO_ID '+
+                ' INNER JOIN TB_S10_CONTRACT010 CON ON MEM.MEMBER_ID = CON.MEMBER_ID '+
+                ' INNER JOIN TB_S10_CONTRACT020 CON2 ON CON.CONTRACT_ID = CON2.CONTRACT_ID ' +
+                'SET ' +
+                    'EMP.LAST_UPDATE_DATE = SYSDATE(),'+
+                    'EMP.LAST_UPDATE_PROGRAM_ID ="S010100010",'+
+                    'EMP.NAME="'+empIdName+'",'+
+                    'EMP.EMP_HP="'+empHp+'",'+
+                    'EMP.EMP_EMAIL="'+emailAddr+'",'+
+                    'EMP.ZIP_CODE="'+zipcode+'",'+
+                    'EMP.ADDRESS="'+empAddress+'",'+
+                    'EMP.DETAIL_ADDRESS="'+empDetailAddress+'",'+
+                '    MEM.LAST_UPDATE_DATE = SYSDATE(), '+
+                '    MEM.LAST_UPDATE_PROGRAM_ID = "S010100010", '+
+                '    MEM.MEMBER_NM="'+memberNm+'",'+
+                '    MEM.REG_NO="'+regNo+'",'+
+                '    MEM.MEMBER_TP="'+memberTp+'"'
+                // '    MEM.MEMBER_ST,'+
+                // '    MEM.COMMENT="'+comment+'"'
+    
+                if(idCardImg){
+                    modifySql += ',MEM.ID_CARD_IMAGE="'+idCardImg+'",'+
+                    'MEM.ID_CARD_IMAGE_NAME="'+realIdCardFileName+'"'
+                }
+                if(busiLicfImg){
+                    modifySql += ',MEM.BUSI_LICS_IMAGE="'+busiLicfImg+'",'+
+                    'MEM.BUSI_LICS_IMAGE_NAME="'+realBusiCardFileName+'"'
+                }
+               
+                modifySql += ',CON.COMMENT =  "' + comment + '",' +
+                '    CON.CONTRACT_TP =  "' + contractTp + '",' +
+                '    CON.CONTRACT_ROOM = "' + contractTpVal + '",' +
+                '    CON.CONTRACT_LOCKER = "' + roomLockerTp + '",' +
+                '    CON.CONTRACT_TERM = ' + contractTerm + ',' +
+                '    CON.START_DATE = "' + startDate + '",' +
+                '    CON.END_DATE = "' + endDate + '",' +
+                '    CON.PAY_DATE = ' + payDate + ',' +
+                '    CON.CONTRACT_PATH = "' + contractPath + '",' +
+                '    CON.PAY_METHOD = "' + payMethod + '",' +
+                '    CON.CONTRACT_PATH = "' + contractPath + '",' +
+                '    CON.CONTRACT_DATE = "' + startDate + '",' +
+                '    CON.MONTHLY_FEE = "' + contractMoney + '",' +
+                '    CON2.PAYED_PLAN_MONEY = "' + contractMoney + '",' +
+                '    CON2.PAYED_FLAG = "' + selectedOption + '",' +
+                '    CON.LAST_UPDATE_DATE = SYSDATE(),' +
+                '    CON.LAST_UPDATE_PROGRAM_ID = "S010100010",' +
+                '    CON2.LAST_UPDATE_DATE = SYSDATE(),' +
+                '    CON2.LAST_UPDATE_PROGRAM_ID = "S010100010"' +
+                'WHERE CON.CONTRACT_ID = ' + modifyDataNum;
+
+                console.log('modifyDataNum',modifyDataNum);
+                console.log('modifySql',modifySql);
 
                 connection.query(modifySql, function (error, result) {
-                    console.log('memberSql: ' + result);
-                    if (error) {
-                        connection.rollback(function () {
-                            console.log('modifySql.error');
-                            setImmediate(() => {
-                                next(new Error(error));
-                            })
-                        });
-                    }
+                    console.log('modifySql: ' + result);
+                    // if (error) {
+                    //     connection.rollback(function () {
+                    //         console.log('modifySql.error');
+                    //         setImmediate(() => {
+                    //             next(new Error(error));
+                    //         })
+                    //     });
+                    // }
 
                     // 계약기간이 같으면
                     if (termCountRow[0].CONTRACT_TERM == contractTerm) {
@@ -1607,7 +1661,6 @@ router.post('/insertMember010', upload.fields([{ name: 'idCardFile', maxCount: 3
                                 });//payContract
                                 // 이용기간 있는 경우
                             } else {
-
                                 for (let i = 0; i < contractTerm; i++) {
 
                                     finalDate = contractYearDay + '-' + (wasteMonth + i) + '-' + contractDateDay;
@@ -1618,7 +1671,7 @@ router.post('/insertMember010', upload.fields([{ name: 'idCardFile', maxCount: 3
 
                                         payContractSql =
                                             'INSERT INTO TB_S10_CONTRACT020 ' +
-                                            '(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,PAYED_PLAN_MONEY,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID) ' +
+                                                '(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,PAYED_PLAN_MONEY,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID) ' +
                                             'VALUES(' +
                                             '(SELECT CONTRACT_ID ' +
                                             ' FROM TB_S10_CONTRACT010 ' +
@@ -1630,7 +1683,7 @@ router.post('/insertMember010', upload.fields([{ name: 'idCardFile', maxCount: 3
                                             ' AND MEMBER_NM ="' + memberNm + '" AND REG_NO ="' + regNo + '")),?,SYSDATE(),"s010100010",?,SYSDATE(),"s010100010")';
 
                                         payContractParams = [finalDate, contractMoney];
-                                        console.log('selectedOption',selectedOption);
+                                       
                                         updatePayedDate = 'UPDATE TB_S10_CONTRACT020 ' +
                                             '   SET PAYED_FLAG="' + selectedOption + '",PAYED_DATE="' + originDate + '"' +
                                             ' WHERE CONTRACT_ID =' +
@@ -1641,7 +1694,8 @@ router.post('/insertMember010', upload.fields([{ name: 'idCardFile', maxCount: 3
                                             ' WHERE CEO_ID = (SELECT EMP_ID ' +
                                             ' FROM TB_S10_EMP010 ' +
                                             ' WHERE NAME = "' + empIdName + '" AND EMP_HP = "' + empHp + '"  AND MEMBER_ID IS NULL)' +
-                                            ' AND MEMBER_NM ="' + memberNm + '" AND REG_NO ="' + regNo + '")) AND PAY_PLAN_DATE="' + originDate + '"'
+                                            ' AND MEMBER_NM ="' + memberNm + '" AND REG_NO ="' + regNo + '")) AND PAY_PLAN_DATE="' + originDate + '"';
+                                            console.log('updatePayedDate',updatePayedDate);    
 
                                         //     // 납부여부-아니오
                                     } else if (selectedOption === 'N') {
@@ -1686,7 +1740,6 @@ router.post('/insertMember010', upload.fields([{ name: 'idCardFile', maxCount: 3
 
 
                                     connection.query(payContractSql, payContractParams, function (error, result) {  //쿼리문
-                                        console.log('payContractSql', payContractSql);
                                         console.log('payContractSql :' + result);
 
                                         if (error) {
@@ -1703,23 +1756,9 @@ router.post('/insertMember010', upload.fields([{ name: 'idCardFile', maxCount: 3
                                                 }
                                             });
                                         }
-                                        connection.query(empMemberIdSql, function (error, result) {
-                                            console.log('empMemberIdSql: ' + result);
-                                            if (error) {
-                                                connection.rollback(function () {
-                                                    console.log('empMemberIdSql.error');
-                                                    if (error) {
-                                                        setImmediate(() => {
-                                                            next(new Error(error))
-                                                            console.log('error', error);
-                                                        })
-                                                        //next(error);
-                                                    }
-                                                });
-                                            }
-
+                        
                                             if ((payMethod === 'MO' && selectedOption === 'Y')) {
-
+                                                console.log('dddddddddddddd'); 
                                                 connection.query(updatePayedDate, function (error, result) {  //쿼리문
                                                     console.log('updatePayedDate :' + result);
 
@@ -1738,6 +1777,22 @@ router.post('/insertMember010', upload.fields([{ name: 'idCardFile', maxCount: 3
                                                             }
                                                         });
                                                     }
+
+                                                    connection.query(empMemberIdSql, function (error, result) {
+                                                        console.log('empMemberIdSql: ' + result);
+                                                        if (error) {
+                                                            connection.rollback(function () {
+                                                                console.log('empMemberIdSql.error');
+                                                                if (error) {
+                                                                    setImmediate(() => {
+                                                                        next(new Error(error))
+                                                                        console.log('error', error);
+                                                                    })
+                                                                    //next(error);
+                                                                }
+                                                            });
+                                                        }
+
                                                     connection.commit(function (err) {
                                                         if (error) {
                                                             connection.rollback(function () {
@@ -1762,8 +1817,23 @@ router.post('/insertMember010', upload.fields([{ name: 'idCardFile', maxCount: 3
                                                         }
                                                     });//commit
                                                 });// updatePayedDate
+                                                });// updatePayedDate
 
                                             } else {
+                                                 connection.query(empMemberIdSql, function (error, result) {
+                                                        console.log('empMemberIdSql: ' + result);
+                                                        if (error) {
+                                                            connection.rollback(function () {
+                                                                console.log('empMemberIdSql.error');
+                                                                if (error) {
+                                                                    setImmediate(() => {
+                                                                        next(new Error(error))
+                                                                        console.log('error', error);
+                                                                    })
+                                                                    //next(error);
+                                                                }
+                                                            });
+                                                        }
                                                 connection.commit(function (error) {
                                                     if (error) {
                                                         connection.rollback(function () {
@@ -1786,11 +1856,12 @@ router.post('/insertMember010', upload.fields([{ name: 'idCardFile', maxCount: 3
                                                         }
                                                     }
                                                 });//commit
+                                            });///empMemberIdSql
                                             }//else
-                                        });///empMemberIdSql
                                     });// payContract
                                 }// for
                             }//else ---- if(contractTerm===0)
+                            //일시불
                         } else if (payMethod === 'SI') {
                             console.log('일시불');
                             if (contractTerm == 0) {
@@ -2291,7 +2362,6 @@ router.post('/insertMember010', upload.fields([{ name: 'idCardFile', maxCount: 3
                                 }// for
                             }//else-------------if(contractTerm === 0)문  
                         }// if(payMethod === 'SI')
-
                     });// empMemberIdSql
                 });// empMemberIdSql
             });
