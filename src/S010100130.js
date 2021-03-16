@@ -16,14 +16,11 @@ import List from '@material-ui/core/List';
 import Typography from '@material-ui/core/Typography';
 import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
-import Badge from '@material-ui/core/Badge';
 import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import MenuIcon from '@material-ui/icons/Menu';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import NotificationsIcon from '@material-ui/icons/Notifications';
-import { mainListItems, secondaryListItems } from './listItems';
 import Button from '@material-ui/core/Button';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -150,7 +147,7 @@ let num = '';
 let rNum = 0;
 let chkSt = '';
 
-function S010100130() {
+function S010100130(props) {
 
     const classes = useStyles();
 
@@ -199,12 +196,12 @@ function S010100130() {
             ask_tp,
             endAsk_date
         }
-        // console.log('startAsk_date',startAsk_date);
-        // console.log('endAsk_date',endAsk_date);
+        // // console.log('startAsk_date',startAsk_date);
+        // // console.log('endAsk_date',endAsk_date);
 
         axios.post("/api/s010100130/search", body).then(response => {
             if (response.data.success) {
-                // console.log('검색결과:'+response.data.rows);
+                // // console.log('검색결과:'+response.data.rows);
                 setTb_s10_ask010(response.data.rows);
             } else {
                 alert('검색에 실패하였습니다.')
@@ -221,7 +218,7 @@ function S010100130() {
         axios.post('/api/s010100130/ask_tp')
             .then(response => {
                 if (response.data.success) {
-                    //console.log('Lov-ask_tp',response.data);
+                    //// console.log('Lov-ask_tp',response.data);
                     let arr = [{ key: '전체', value: '전체' }]
 
                     response.data.rows.map((data) =>
@@ -239,7 +236,7 @@ function S010100130() {
     
     // 상담등록 모달
     const onHandleClickOpen = () => {
-        //console.log('상담열기');
+        //// console.log('상담열기');
         setStoreOpen(true);
 
     };
@@ -252,7 +249,7 @@ function S010100130() {
 
     // 상세보기 모달
     const onDetailHandleClickOpen = (event) => {
-        //console.log('target',event.target.id);
+        //// console.log('target',event.target.id);
         num = event.target.id;
         rNum = parseInt(num);
         setNumForDetail(rNum);
@@ -273,6 +270,7 @@ function S010100130() {
         const newChecked = [...checked];
 
         if (currentIndex === -1) {
+        
             newChecked.push(value)
         } else {
             newChecked.splice(currentIndex, 1)
@@ -280,8 +278,8 @@ function S010100130() {
         setChecked(newChecked);
 
         newChecked.length > 0 ? chkSt = 'check' : chkSt = ''; 
-        // console.log('chkSt',chkSt);
-        // console.log('newChecked.length',newChecked.length);
+        // // console.log('chkSt',chkSt);
+        // // console.log('newChecked.length',newChecked.length);
 
     }
 
@@ -361,7 +359,7 @@ function S010100130() {
     
         axios.post("/api/s010100130/search", body).then(response => {
             if (response.data.success) {
-                // console.log('검색결과:'+response.data.rows);
+                // // console.log('검색결과:'+response.data.rows);
                 setTb_s10_ask010(response.data.rows);
             } else {
                 alert('검색에 실패하였습니다.')
@@ -370,12 +368,39 @@ function S010100130() {
 
     }
 
+
+    const logoutConfirm = () => {
+
+    axios.post('/api/s010100150/userLogout')
+    .then(response => {
+        if (response.data.logoutResult == true) {
+        alert('로그아웃 하였습니다.');
+        sessionStorage.removeItem('member');
+        sessionStorage.clear();
+        props.history.push('/');
+        // console.log(sessionStorage.getItem('member'));
+        }else if(response.data.loginResult == false){
+        alert(response.data.message);
+        alert('아이디 또는 비밀번호를 확인하세요.');
+        }
+    })
+
+    };
+
+    const logounCancelConfirm = () => alert('취소하였습니다.');
+
+    const onLogoutHandler = useConfirm(
+        "로그아웃 하시겠습니까?",
+        logoutConfirm,
+        logounCancelConfirm
+    );
+
     const excelHandler = (event) => {
 
         event.preventDefault();
 
         const ws = xlsx.utils.json_to_sheet(tb_s10_ask010);
-        console.log(tb_s10_ask010);
+        // console.log(tb_s10_ask010);
 
         ['NO', '문의구분', '문의일자', '문의방법', '접근경로', '문의자명', '연락처']
             .forEach((x, idx) => {
@@ -394,6 +419,8 @@ function S010100130() {
         xlsx.writeFile(wb, "상담현황.xlsx");
 
     }
+
+    
     
     const displayUsers = tb_s10_ask010.slice(pagesVisited,pagesVisited + usersPerPage).map((tb_s10_ask010, index) => {
         return (
@@ -412,6 +439,9 @@ function S010100130() {
            
         );
     });
+
+
+    
    
     return (
         <Fragment>
@@ -488,7 +518,7 @@ function S010100130() {
                             <ListItemIcon>
                             <LayersIcon />
                             </ListItemIcon>
-                            <Link to ="/"><ListItemText primary="로그아웃" /></Link>
+                            <span onClick ={onLogoutHandler}><ListItemText primary="로그아웃" /></span>
                         </ListItem>
                         </div>
                     <div hidden ={sessionStorage.getItem('member') != null}>

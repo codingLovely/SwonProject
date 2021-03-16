@@ -14,14 +14,11 @@ import List from '@material-ui/core/List';
 import Typography from '@material-ui/core/Typography';
 import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
-import Badge from '@material-ui/core/Badge';
 import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import MenuIcon from '@material-ui/icons/Menu';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import NotificationsIcon from '@material-ui/icons/Notifications';
-import { mainListItems, secondaryListItems } from './listItems';
 import Button from '@material-ui/core/Button';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -30,13 +27,10 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Title from './Title';
 import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogTitle from '@material-ui/core/DialogTitle';
 
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import ListSubheader from '@material-ui/core/ListSubheader';
 import DashboardIcon from '@material-ui/icons/Dashboard';
 import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
 import PeopleIcon from '@material-ui/icons/People';
@@ -305,7 +299,7 @@ function S010100160(props) {
         event.preventDefault();
 
         const ws = xlsx.utils.json_to_sheet(contractList);
-        //console.log(tb_s10_ask010);
+        //// console.log(tb_s10_ask010);
 
         ['회원명', '사업자번호','회원구분','No', '계약기간', '계약기간', '계약상태', '계약구분', '사물함', '호실' ,'계약기간','매월입금일','월회비','계약상태','시작날짜']
             .forEach((x, idx) => {
@@ -328,10 +322,51 @@ function S010100160(props) {
 
     }
 
-
-
-
-
+    const useConfirm = (message = null, onConfirm, onCancel) => {
+        if (!onConfirm || typeof onConfirm !== "function") {
+            return;
+        }
+        if (onCancel && typeof onCancel !== "function") {
+            return;
+        }
+    
+        const confirmAction = () => {
+            if (window.confirm(message)) {
+                onConfirm();
+            } else {
+                onCancel();
+            }
+        };
+    
+        return confirmAction;
+      };
+    
+      const approvalConfirm = () => {
+    
+        axios.post('/api/s010100150/userLogout')
+        .then(response => {
+          if (response.data.logoutResult == true) {
+            alert('로그아웃 하였습니다.');
+            sessionStorage.removeItem('member');
+            sessionStorage.clear();
+            props.history.push('/');
+            // console.log(sessionStorage.getItem('member'));
+          }else if(response.data.loginResult == false){
+            alert(response.data.message);
+            alert('아이디 또는 비밀번호를 확인하세요.');
+          }
+        })
+    
+      };
+    
+      const cancelConfirm = () => alert('취소하였습니다.');
+    
+      const onLogoutHandler = useConfirm(
+          "로그아웃 하시겠습니까?",
+          approvalConfirm,
+          cancelConfirm
+      );
+      
     return (
         <Fragment>
 
@@ -408,7 +443,7 @@ function S010100160(props) {
                                 <ListItemIcon>
                                 <LayersIcon />
                                 </ListItemIcon>
-                                <Link to ="/"><ListItemText primary="로그아웃" /></Link>
+                                <span onClick ={onLogoutHandler}><ListItemText primary="로그아웃" /></span>
                             </ListItem>
                             </div>
                         <div hidden ={sessionStorage.getItem('member') != null}>

@@ -16,7 +16,7 @@ registerLocale("ko", ko);
 function S010100140(props) {
 
     const rNum = props.num;
-    // console.log('rNum',rNum);
+    // // console.log('rNum',rNum);
     // 상세보기
     useEffect(() => {
       
@@ -25,7 +25,7 @@ function S010100140(props) {
             axios.get(`/api/s010100140/tb_s10_ask010_by_id?id=${rNum}&type=single`)
                 .then(response => {
                     if (response.data.success) {
-                        // console.log(response.data)
+                        // // console.log(response.data)
                         const askTp = (response.data.rows[0].ASK_TP);
                         const askDate = (response.data.rows[0].ASK_DATE);
                         const askMethod = (response.data.rows[0].ASK_METHOD);
@@ -84,7 +84,7 @@ function S010100140(props) {
         return await axios.post('/api/s010100140/selectTest', { firstVal: cdTp, secondVal: attribute2 })
             .then(response => {
                 if (response.data.success) {
-                    //console.log('modalAskTp',response.data.rows);
+                    //// console.log('modalAskTp',response.data.rows);
                     response.data.rows.map((data) =>
                         arr.push({
                             value: data.CD_V_MEANING,
@@ -107,7 +107,7 @@ function S010100140(props) {
                 alert("문의구분 데이터를 불러오는데 실패하였습니다.");
             })
         // return arr;
-        // console.log('arr', arr);
+        // // console.log('arr', arr);
     }
 
     const [startDate, setStartDate] = useState(new Date());

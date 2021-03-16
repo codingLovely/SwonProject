@@ -12,14 +12,11 @@ import List from '@material-ui/core/List';
 import Typography from '@material-ui/core/Typography';
 import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
-import Badge from '@material-ui/core/Badge';
 import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import MenuIcon from '@material-ui/icons/Menu';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import NotificationsIcon from '@material-ui/icons/Notifications';
-import { mainListItems, secondaryListItems } from './listItems';
 import Button from '@material-ui/core/Button';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -28,12 +25,10 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Title from './Title';
 import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
 
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import ListSubheader from '@material-ui/core/ListSubheader';
 import DashboardIcon from '@material-ui/icons/Dashboard';
 import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
 import PeopleIcon from '@material-ui/icons/People';
@@ -139,14 +134,14 @@ let paymentState = [{ key: '전체', value: '전체' },
 { key: 'Y', value: 'Y' },
 { key: 'N', value: 'N' }]
 
-function S010100060() {
+function S010100060(props) {
 
     const classes = useStyles();
 
     const [open, setOpen] = React.useState(true);
     const [userName, setUserName] = useState('');
     const [paymentStatus, setPaymentStatus] = useState('');
-    const [checked, setChecked] = useState([]);
+    const [payChecked, setPayChecked] = useState([]);
 
     const [startDate, setStartDate] = useState(new Date(moment().date('01')));
     const [endDate, setEndDate] = useState(new Date());
@@ -175,7 +170,7 @@ function S010100060() {
         axios.post('/api/s010100060/list', body)
             .then(response => {
                 if (response.data.success) {
-                    // console.log('list60', response.data.rows);
+                    // // console.log('list60', response.data.rows);
                     setPayStatusList(response.data.rows);
                 } else {
                     alert(response.data.message);
@@ -196,11 +191,11 @@ function S010100060() {
             paymentStatus: paymentStatus
         }
 
-        console.log(body);
+        // console.log(body);
         axios.post('/api/s010100060/list', body)
             .then(response => {
                 if (response.data.success) {
-                    //console.log('list60', response.data.rows);
+                   // console.log('list60', response.data.rows);
                     setPayStatusList(response.data.rows);
                 } else {
                     alert(response.data.message);
@@ -225,16 +220,17 @@ function S010100060() {
 
     const onPayHandleClickClose = useCallback(() => {
         setStoreOpen(false);
-        setChecked('');
         paymentSearchHandler();
+        // setPayChecked('');
+       
     });
 
 
     const handleToggle = (value) => {
-        //console.log('event', e.target.id);
-        const currentIndex = checked.indexOf(value);
+        // console.log('event', e.target.id);
+        const currentIndex = payChecked.indexOf(value);
         //전체 Checked된 State에서 현재 누를 Checkbox가 있는지 확인
-        const newChecked = [...checked];
+        const newChecked = [...payChecked];
 
         if (currentIndex === -1) {
             newChecked.push(value)
@@ -242,22 +238,23 @@ function S010100060() {
             newChecked.splice(currentIndex, 1)
         }
 
-        setChecked(newChecked);
+        setPayChecked(newChecked);
 
-        // console.log('currentIndex', currentIndex);
-        // console.log('checked', checked);
+         // console.log('currentIndex', currentIndex);
+         // console.log('checked', checked);
 
     }
 
     const onPaymenthandler = () => {
-        if (checked.length === 0) {
+        if (payChecked.length === 0) {
             alert('선택하세요');
-        } else if (checked.length > 1) {
+        } else if (payChecked.length > 1) {
             alert('하나만 체크하세요');
         } else {
-            setDataAllContract(checked);
-            //console.log(checked);
+            setDataAllContract(payChecked);
+            // console.log(checked);
             setStoreOpen(true);
+            // setPayChecked('');
         }
     }
 
@@ -265,7 +262,7 @@ function S010100060() {
         event.preventDefault();
 
         const ws = xlsx.utils.json_to_sheet(payStatusList);
-        console.log(payStatusList);
+        // console.log(payStatusList);
 
         ['회원명', '납부예정일', '납부여부', '납부일자', '계약기간', '계약기간', '대표자 성명', '대표자 연락처', '대표자 E-mail', '계약ID']
             .forEach((x, idx) => {
@@ -293,7 +290,7 @@ function S010100060() {
     const displayPayStList = payStatusList.slice(pagesVisited, pagesVisited + usersPerPage).map((payStatusList, index) => {
         return (
             <TableRow key={payStatusList.CONTRACT_ID}>
-                <TableCell><input type='checkbox' checked = {checked.indexOf(payStatusList.CONTRACT_ID) === -1 ? false:true} onChange={()=>handleToggle(payStatusList.CONTRACT_ID)} id={payStatusList.CONTRACT_ID} /></TableCell>
+                <TableCell><input type='checkbox' checked = {payChecked.indexOf(payStatusList.CONTRACT_ID) === -1 ? false:true} onChange={()=>handleToggle(payStatusList.CONTRACT_ID)} id={payStatusList.CONTRACT_ID} /></TableCell>
                 <TableCell>{payStatusList.CONTRACT_ID}</TableCell>
                 <TableCell>{payStatusList.MEMBER_NM}</TableCell>
                 <TableCell>{payStatusList.PAY_PLAN_DATE}</TableCell>
@@ -312,6 +309,51 @@ function S010100060() {
     const changePage = ({ selected }) => {
         setPageNumber(selected);
     }
+
+    const useConfirm = (message = null, onConfirm, onCancel) => {
+        if (!onConfirm || typeof onConfirm !== "function") {
+            return;
+        }
+        if (onCancel && typeof onCancel !== "function") {
+            return;
+        }
+    
+        const confirmAction = () => {
+            if (window.confirm(message)) {
+                onConfirm();
+            } else {
+                onCancel();
+            }
+        };
+    
+        return confirmAction;
+      };
+    
+      const approvalConfirm = () => {
+    
+        axios.post('/api/s010100150/userLogout')
+        .then(response => {
+          if (response.data.logoutResult == true) {
+            alert('로그아웃 하였습니다.');
+            sessionStorage.removeItem('member');
+            sessionStorage.clear();
+            props.history.push('/');
+            // console.log (sessionStorage.getItem('member'));
+          }else if(response.data.loginResult == false){
+            alert(response.data.message);
+            alert('아이디 또는 비밀번호를 확인하세요.');
+          }
+        })
+    
+      };
+    
+      const cancelConfirm = () => alert('취소하였습니다.');
+    
+      const onLogoutHandler = useConfirm(
+          "로그아웃 하시겠습니까?",
+          approvalConfirm,
+          cancelConfirm
+      );
 
     return (
         <Fragment>
@@ -388,7 +430,7 @@ function S010100060() {
                                 <ListItemIcon>
                                 <LayersIcon />
                                 </ListItemIcon>
-                                <Link to ="/"><ListItemText primary="로그아웃" /></Link>
+                                <span onClick={onLogoutHandler}><ListItemText primary="로그아웃" /></span>
                             </ListItem>
                             </div>
                         <div hidden ={sessionStorage.getItem('member') != null}>
@@ -536,6 +578,7 @@ function S010100060() {
                     dataContracId={dataAllContract} 
                     onPayHandleClickClose={onPayHandleClickClose} 
                     setStoreOpen={setStoreOpen}
+                    setPayChecked={setPayChecked}
                 />
             </Dialog>
         </Fragment>
