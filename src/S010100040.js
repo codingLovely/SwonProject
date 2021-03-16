@@ -550,17 +550,7 @@ function S010100040(props) {
                                             &nbsp;&nbsp;&nbsp;&nbsp;
                                             </div>
                                         <div className = "searchMenu">
-                                            {/* 종료 &nbsp;
-                    <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm" as="select"
-                                                multiple={false} onChange={contractStatusHandler} value={contractStatus}>
-                                                {endStatus.map(item => (
-                                                    <option key={item.key} value={item.key}>{item.value}</option>
-                                                ))}
-
-                                            </Form.Control>
-
-                                            &nbsp;&nbsp;&nbsp;&nbsp; */}
-
+                                    
                     상태 &nbsp;
                     <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm" as="select"
                                                 multiple={false} onChange={memberStHandler} value={memberSt}>
