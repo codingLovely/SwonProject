@@ -184,7 +184,7 @@ function S010100090(props) {
         axios.post('/api/s010100090/classification')
             .then(response => {
                 if (response.data.success) {
-                    let arr = [{ key: '전체', value: '전체' }]
+                    let arr = [{ key: '', value: '전체' }]
 
                     response.data.rows.map((data) =>
                         arr.push({

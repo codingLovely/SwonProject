@@ -128,7 +128,7 @@ function S010100100(props) {
         axios.post('/api/s010100090/classification')
             .then(response => {
                 if (response.data.success) {
-                    let arr = [{ key: '전체', value: '전체' }]
+                    let arr = [{ key: '', value: '선택' }]
 
                     response.data.rows.map((data) =>
                         arr.push({
@@ -641,10 +641,27 @@ function S010100100(props) {
 
                         setBirthDate(response.data.rows[0].BIRTH_DATE);
                         setEmpComment(response.data.rows[0].EMP_COMMENT);
-                        
-                        const famRelImg = new Buffer.from(response.data.rows[0].FAM_REL_CERT_IMAGE).toString();
-                        const gradCertImg = new Buffer.from(response.data.rows[0].GRADUATION_CERT_IMAGE).toString(); 
-                        const copyBankBookImg = new Buffer.from(response.data.rows[0].BANKBOOK_COPY_IMAGE).toString(); 
+
+                        let famRelImg;
+                        let gradCertImg;
+                        let copyBankBookImg;
+
+                        if(response.data.rows[0].FAM_REL_CERT_IMAGE){
+                            famRelImg = new Buffer.from(response.data.rows[0].FAM_REL_CERT_IMAGE).toString();    
+                        }else{
+                            famRelImg = '';
+                        }
+                        if(response.data.rows[0].GRADUATION_CERT_IMAGE){
+                            gradCertImg = new Buffer.from(response.data.rows[0].GRADUATION_CERT_IMAGE).toString();    
+                        }else{
+                            gradCertImg='';
+                        }
+                        if(response.data.rows[0].BANKBOOK_COPY_IMAGE){
+                            copyBankBookImg = new Buffer.from(response.data.rows[0].BANKBOOK_COPY_IMAGE).toString();
+                        }else{
+                            copyBankBookImg='';
+                        }
+                         
     
                         setDetailFamRelCert(famRelImg);
                         setDetailGraduationCert(gradCertImg);

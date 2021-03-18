@@ -130,7 +130,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 
-let paymentState = [{ key: '전체', value: '전체' },
+let paymentState = [{ key: '', value: '전체' },
 { key: 'Y', value: 'Y' },
 { key: 'N', value: 'N' }]
 

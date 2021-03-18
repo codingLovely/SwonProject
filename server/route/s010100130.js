@@ -37,7 +37,7 @@ router.post('/search', (req, res, next) => {
         '   AND CODE3.CD_TP = "ACCESS_PATH"' +
         '   AND CODE3.ATTRIBUTE2 = "ASK"' +
         'WHERE ASK010.ASK_DATE BETWEEN DATE_FORMAT("' + startDate + '","%y-%m-%d") AND  DATE_FORMAT("' + endDate + '" ,"%y-%m-%d")'+
-        '   AND ASK010.LAST_DELETE_FLAG IS NULL ';
+        'AND ASK010.LAST_DELETE_FLAG IS NULL ';
 
     if (ask_tp != null && ask_tp != "" && ask_tp != "전체")// null아니고 전체가 아닐 때, null 아니고 공백이 아닐때
         sql += ' AND ASK010.ASK_TP= "' + ask_tp + '" ';
