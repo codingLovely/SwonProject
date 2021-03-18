@@ -231,7 +231,7 @@ function S010100010(props) {
                         const modalCContractTp = response.data.rows[0].CONTRACT_TP;
                         const modalCContractTerm = response.data.rows[0].CONTRACT_TERM;
                         const modalCPayDate = response.data.rows[0].PAY_DATE;
-                        const modalCContractMoney = response.data.rows[0].PAYED_PLAN_MONEY;
+                        const modalCContractMoney = response.data.rows[0].MONTHLY_FEE;
                         // console.log('modalCContractMoney',modalCContractMoney);
                         const modalCPayMethod = response.data.rows[0].PAY_METHOD;
 
@@ -800,7 +800,7 @@ function S010100010(props) {
 
          // 납부방법 NUll체크
          if (contractPath== null || contractPath == '') {
-            return alert("납부방법을 선택하세요.");
+            return alert("계약접근경로를 선택하세요.");
         }
         
 
@@ -860,7 +860,7 @@ function S010100010(props) {
 
         let startDate = year + '-' + month + '-' + date;
 
-        // nullChk();
+        nullChk();
 
        
         let realIdCardFileName;

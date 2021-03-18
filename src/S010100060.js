@@ -157,9 +157,7 @@ function S010100060(props) {
         setOpen(false);
     };
 
-    useEffect(() => {
-        // let startDates = startDate.getFullYear() + '.' + (startDate.getMonth() + 1) + '.' + startDate.getDate();
-        // let endDates = endDate.getFullYear() + '.' + (endDate.getMonth() + 1) + '.' + endDate.getDate();
+    const paymentList = () => {
 
         let body = {
             startDate: startDate,
@@ -178,31 +176,20 @@ function S010100060(props) {
                 }
 
             })
+
+    }
+    useEffect(() => {
+        // let startDates = startDate.getFullYear() + '.' + (startDate.getMonth() + 1) + '.' + startDate.getDate();
+        // let endDates = endDate.getFullYear() + '.' + (endDate.getMonth() + 1) + '.' + endDate.getDate();
+
+        paymentList();
     }, [])
 
     const paymentSearchHandler = () => {
         // let startDates = startDate.getFullYear() + '.' + (startDate.getMonth() + 1) + '.' + startDate.getDate();
         // let endDates = endDate.getFullYear() + '.' + (endDate.getMonth() + 1) + '.' + endDate.getDate();
 
-        let body = {
-            startDate: startDate,
-            endDate: endDate,
-            userName: userName,
-            paymentStatus: paymentStatus
-        }
-
-        // console.log(body);
-        axios.post('/api/s010100060/list', body)
-            .then(response => {
-                if (response.data.success) {
-                   // console.log('list60', response.data.rows);
-                    setPayStatusList(response.data.rows);
-                } else {
-                    alert(response.data.message);
-                    alert('데이터 조회를 실패하였습니다.')
-                }
-
-            })
+        paymentList();
     }
 
 
@@ -579,6 +566,7 @@ function S010100060(props) {
                     onPayHandleClickClose={onPayHandleClickClose} 
                     setStoreOpen={setStoreOpen}
                     setPayChecked={setPayChecked}
+                    paymentList = {paymentList}
                 />
             </Dialog>
         </Fragment>
