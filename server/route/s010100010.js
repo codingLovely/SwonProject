@@ -449,6 +449,7 @@ router.get('/tb_s10_contract010_by_id', (req, res, next) => {
             '       CODE3.CD_V_MEANING AS "CONTRACT_TP_M" , CON.START_DATE, DATE_FORMAT(CON.END_DATE,"%y-%m-%d")AS END_DATE, ' +
             '       CON.END_FLAG ,' +
             '       CON.PAY_DATE,' +
+            '       CON.MONTHLY_FEE,' +
             '       CODE6.CD_V AS"CONTRACT_ROOM", CODE6.CD_V_MEANING AS"CONTRACT_ROOM_M",' +
             '       CODE7.CD_V AS"CONTRACT_LOCKER", CODE7.CD_V_MEANING AS"CONTRACT_LOCKER_M",' +
             '       CON.COMMENT,' +
@@ -567,6 +568,591 @@ router.post('/modifymemberSt', (req, res, next) => {
 })
 
 // 이용계약서 수정
+// router.post('/detailModifyContracId', (req, res, next) => {
+
+//     let payPlanDateModifySql;
+
+//     connection.beginTransaction(function (error) {
+
+//         let idCardImg = req.body.idCardImg;
+//         let busiLicfImg = req.body.busiLicfImg;
+//         let realIdCardFileName = req.body.realIdCardFileName;
+//         let realBusiCardFileName = req.body.realBusiCardFileName;
+
+//         let memberNm = req.body.memberNm;
+//         let firstRegNo = req.body.firstRegNo;
+//         let secondRegNo = req.body.secondRegNo;
+//         let thirdRegNo = req.body.thirdRegNo;
+
+//         let regNo = firstRegNo+'-'+secondRegNo+'-'+thirdRegNo;
+        
+//         let memberTp = req.body.memberTp;
+//         let empIdName = req.body.empIdName;
+        
+//         let firstEmpHp = req.body.firstEmpHp;
+//         let secondEmpHp = req.body.secondEmpHp;
+//         let thirdEmpHp = req.body.thirdEmpHp;
+
+//         let empHp = firstEmpHp +'-'+ secondEmpHp +'-'+ thirdEmpHp;
+
+
+//         let zipcode = req.body.zipcode;
+//         let empAddress = req.body.empAddress;
+//         let empDetailAddress = req.body.empDetailAddress;
+
+//         let empEmailId = req.body.empEmailId;
+//         let domainAddress = req.body.domainAddress;
+
+//         let emailAddr = empEmailId+'@'+domainAddress;
+
+//         let modifyDataNum = req.body.modifyDataNum;
+//         let comment = req.body.comment;
+//         let contractTp = req.body.contractTp;
+//         let contractTpVal = req.body.contractTpVal;
+//         let roomLockerTp = req.body.roomLockerTp;
+//         let contractTerm = req.body.contractTerm;
+//         let startDate = req.body.startAsk_date;
+
+//         let endDate = req.body.endDate;
+//         let payDate = req.body.startAsk_date.toString().substring(7, 10);
+//         let payMethod = req.body.payMethod;
+//         let contractPath = req.body.contractPath;
+//         let contractMoney = req.body.contractMoney;
+//         let selectedOption = req.body.selectedOption;
+
+//         let bringDateSql = 'SELECT DATE_FORMAT(PCON.PAY_PLAN_DATE,"%y-%m-%d") AS "PAY_PLAN_DATE", CON.CONTRACT_TERM AS "CONTRACT_TERM" ' +
+//             ' FROM TB_S10_CONTRACT010 CON INNER JOIN TB_S10_CONTRACT020 PCON ' +
+//             ' ON CON.CONTRACT_ID = PCON.CONTRACT_ID ' +
+//             ' WHERE CON.CONTRACT_ID =' + modifyDataNum;
+
+//         console.log('bringDateSql',bringDateSql);
+//         connection.query(bringDateSql, function (error, rows) {
+//             // console.log('memberSql: ' + rows);
+//             if (error) {
+//                 connection.rollback(function () {
+//                     console.log('bringDateSql.error');
+//                     setImmediate(() => {
+//                         next(new Error(error));
+//                     })
+//                 });
+
+//             }
+
+//             let termCountSql = 'SELECT CONTRACT_TERM FROM TB_S10_CONTRACT010 WHERE CONTRACT_ID = ' + modifyDataNum;
+//             //console.log(termCountSql);    
+//             connection.query(termCountSql, function (error, termCountRow) {
+
+//                 if (error) {
+//                     connection.rollback(function () {
+//                         console.log('termCountSql.error');
+//                         setImmediate(() => {
+//                             next(new Error(error));
+//                         })
+//                     });
+//                 }
+
+//                 let modifySql = 'UPDATE TB_S10_EMP010 EMP INNER JOIN TB_S10_MEMBER010 MEM '+
+//                 ' ON EMP.EMP_ID = MEM.CEO_ID '+
+//                 ' INNER JOIN TB_S10_CONTRACT010 CON ON MEM.MEMBER_ID = CON.MEMBER_ID '+
+//                 ' INNER JOIN TB_S10_CONTRACT020 CON2 ON CON.CONTRACT_ID = CON2.CONTRACT_ID ' +
+//                 'SET ' +
+//                     'EMP.LAST_UPDATE_DATE = SYSDATE(),'+
+//                     'EMP.LAST_UPDATE_PROGRAM_ID ="S010100010",'+
+//                     'EMP.NAME="'+empIdName+'",'+
+//                     'EMP.EMP_HP="'+empHp+'",'+
+//                     'EMP.EMP_EMAIL="'+emailAddr+'",'+
+//                     'EMP.ZIP_CODE="'+zipcode+'",'+
+//                     'EMP.ADDRESS="'+empAddress+'",'+
+//                     'EMP.DETAIL_ADDRESS="'+empDetailAddress+'",'+
+//                 '    MEM.LAST_UPDATE_DATE = SYSDATE(), '+
+//                 '    MEM.LAST_UPDATE_PROGRAM_ID = "S010100010", '+
+//                 '    MEM.MEMBER_NM="'+memberNm+'",'+
+//                 '    MEM.REG_NO="'+regNo+'",'+
+//                 '    MEM.MEMBER_TP="'+memberTp+'"'
+//                 // '    MEM.MEMBER_ST,'+
+//                 // '    MEM.COMMENT="'+comment+'"'
+    
+//                 if(idCardImg){
+//                     modifySql += ',MEM.ID_CARD_IMAGE="'+idCardImg+'",'+
+//                     'MEM.ID_CARD_IMAGE_NAME="'+realIdCardFileName+'"'
+//                 }
+//                 if(busiLicfImg){
+//                     modifySql += ',MEM.BUSI_LICS_IMAGE="'+busiLicfImg+'",'+
+//                     'MEM.BUSI_LICS_IMAGE_NAME="'+realBusiCardFileName+'"'
+//                 }
+               
+//                 modifySql += ',CON.COMMENT =  "' + comment + '",' +
+//                 '    CON.CONTRACT_TP =  "' + contractTp + '",' +
+//                 '    CON.CONTRACT_ROOM = "' + contractTpVal + '",' +
+//                 '    CON.CONTRACT_LOCKER = "' + roomLockerTp + '",' +
+//                 '    CON.CONTRACT_TERM = ' + contractTerm + ',' +
+//                 '    CON.START_DATE = "' + startDate + '",' +
+//                 '    CON.END_DATE = "' + endDate + '",' +
+//                 '    CON.PAY_DATE = ' + payDate + ',' +
+//                 '    CON.CONTRACT_PATH = "' + contractPath + '",' +
+//                 '    CON.PAY_METHOD = "' + payMethod + '",' +
+//                 '    CON.CONTRACT_PATH = "' + contractPath + '",' +
+//                 '    CON.MONTHLY_FEE = "' + contractMoney + '",' +
+//                 '    CON2.PAYED_PLAN_MONEY = "' + contractMoney + '",' +
+//                 '    CON2.PAYED_FLAG = "' + selectedOption + '",' +
+//                 '    CON.LAST_UPDATE_DATE = SYSDATE(),' +
+//                 '    CON.LAST_UPDATE_PROGRAM_ID = "S010100010",' +
+//                 '    CON2.LAST_UPDATE_DATE = SYSDATE(),' +
+//                 '    CON2.LAST_UPDATE_PROGRAM_ID = "S010100010"' +
+//                 'WHERE CON.CONTRACT_ID = ' + modifyDataNum;
+
+//                 // console.log('modifyDataNum',modifyDataNum);
+//                 // console.log('modifySql',modifySql);
+
+//                 connection.query(modifySql, function (error, result) {
+//                     console.log('modifySql: ' + result);
+//                     if (error) {
+//                         connection.rollback(function () {
+//                             console.log('modifySql.error');
+//                             setImmediate(() => {
+//                                 next(new Error(error));
+//                             })
+//                         });
+//                     }
+
+//                     // 계약기간이 같으면
+//                     if (termCountRow[0].CONTRACT_TERM == contractTerm) {
+
+//                         let dateToString = startDate.toString().substring(0, 10);
+
+//                         // let wasteDateDay = dateToString.substring(7, 10);
+//                         // let wasteContracMonthDay = dateToString.substring(6, 8);
+//                         // let wasteContractYearDay = dateToString.substring(0, 4);
+//                         let wasteDateDay = dateToString.substring(6, 8);
+//                         let wasteContracMonthDay = dateToString.substring(3, 5);
+//                         let wasteContractYearDay = dateToString.substring(0, 2);
+
+
+//                         // //날 01
+//                         let contractDateDay = parseInt(wasteDateDay);
+//                         let wasteMonth = parseInt(wasteContracMonthDay);
+//                         let contractYearDay = parseInt(wasteContractYearDay);
+
+//                         // console.log(contractDateDay);
+//                         // console.log(wasteMonth);
+//                         // console.log(contractYearDay);
+
+
+//                         let finalDate = '';
+//                         let originDate = '';
+
+
+
+//                         let payPlanDateModifySql = '';
+
+//                         // 월납
+//                         if (payMethod === 'MO') {
+
+//                             for (let i = 0; i < contractTerm; i++) {
+
+//                                 finalDate = contractYearDay + '-' + (wasteMonth + i) + '-' + contractDateDay;
+//                                 originDate = contractYearDay + '-' + (wasteMonth) + '-' + contractDateDay;
+//                                 // console.log('finalDate',finalDate);
+//                                 let updatePayedDate;
+//                                 let initPayedDate;
+
+
+//                                 // 납부여부-네
+//                                 if (selectedOption === 'Y') {
+
+
+//                                     payPlanDateModifySql = 'UPDATE TB_S10_CONTRACT020' +
+//                                         ' SET PAY_PLAN_DATE = "' + finalDate + '" ' +
+//                                         ' WHERE CONTRACT_ID = ' + modifyDataNum + ' AND PAY_PLAN_DATE ="' + rows[i].PAY_PLAN_DATE + '"';
+
+//                                     initPayedDate = 'UPDATE TB_S10_CONTRACT020' +
+//                                         ' SET PAYED_DATE = "0000-00-00", PAYED_FLAG ="N" ' +
+//                                         ' WHERE CONTRACT_ID = ' + modifyDataNum + ' AND PAY_PLAN_DATE ="' + rows[i].PAY_PLAN_DATE + '"';
+
+
+//                                     updatePayedDate = 'UPDATE TB_S10_CONTRACT020 ' +
+//                                         '   SET PAYED_FLAG="' + selectedOption + '",PAYED_DATE="' + originDate + '"' +
+//                                         ' WHERE CONTRACT_ID = ' + modifyDataNum + ' AND PAY_PLAN_DATE="' + originDate + '"';
+
+//                                     // console.log('updatePayedDate', updatePayedDate);
+//                                     // 납부여부-아니오
+//                                 } else if (selectedOption === 'N') {
+
+//                                     payPlanDateModifySql = 'UPDATE TB_S10_CONTRACT020' +
+//                                         ' SET PAY_PLAN_DATE = "' + finalDate + '", ' +
+//                                         ' PAYED_DATE = "0000-00-00", ' +
+//                                         ' PAYED_FLAG = "N" ' +
+//                                         ' WHERE CONTRACT_ID = ' + modifyDataNum + ' AND PAY_PLAN_DATE ="' + rows[i].PAY_PLAN_DATE + '"';
+
+//                                 }
+
+//                                 connection.query(payPlanDateModifySql, function (error, result) {  //쿼리문
+//                                     console.log('payPlanDateModifySql:' + result);
+
+//                                     if (error) {
+//                                         connection.rollback(function () {
+//                                             console.log('payPlanDateModifySql.error');
+//                                             // res.send({ success: false, message: "TB_S10_CONTRACT020 최초 등록 오류 : " + error });
+//                                             setImmediate(() => {
+//                                                 next(new Error(error));
+//                                             })
+//                                         });
+//                                     }
+//                                     if ((payMethod === 'MO' && selectedOption === 'Y')) {
+//                                         connection.query(initPayedDate, function (error, result) {  //쿼리문
+//                                             console.log('payPlanDateModifySql:' + result);
+
+//                                             if (error) {
+//                                                 connection.rollback(function () {
+//                                                     console.log('payPlanDateModifySql.error');
+//                                                     // res.send({ success: false, message: "TB_S10_CONTRACT020 최초 등록 오류 : " + error });
+//                                                     setImmediate(() => {
+//                                                         next(new Error(error));
+//                                                     })
+//                                                 });
+//                                             }
+
+//                                             connection.query(updatePayedDate, function (error, result) {  //쿼리문
+//                                                 console.log('updatePayedDate:' + result);
+
+//                                                 if (error) {
+//                                                     connection.rollback(function () {
+//                                                         console.log('payContractSql.error');
+//                                                         // res.send({ success: false, message: "TB_S10_CONTRACT020 최초 등록 오류 : " + error });
+//                                                         setImmediate(() => {
+//                                                             next(new Error(error));
+//                                                         })
+//                                                     });
+//                                                 }
+//                                                 connection.commit(function (error) {
+//                                                     if (error) {
+//                                                         connection.rollback(function () {
+//                                                             // res.send({ success: false, message: "COMMIT 오류 : " + error });
+//                                                             setImmediate(() => {
+//                                                                 next(new Error(error));
+//                                                             })
+//                                                         });
+//                                                     }
+//                                                 });//commit
+//                                             });
+//                                         });
+//                                     } else {
+//                                         connection.commit(function (error) {
+//                                             if (error) {
+//                                                 connection.rollback(function () {
+//                                                     // res.send({ success: false, message: "COMMIT 오류 : " + error });
+//                                                     setImmediate(() => {
+//                                                         next(new Error(error));
+//                                                     })
+//                                                 });
+//                                             }
+//                                         });//commit
+//                                     }
+
+//                                 });
+//                             }
+//                             console.log('success!');
+//                             res.send({ success: true });
+
+
+//                             // 일시불    
+//                         } else if (payMethod === 'SI') {
+
+//                             for (let i = 0; i < contractTerm; i++) {
+
+//                                 finalDate = contractYearDay + '-' + (wasteMonth + i) + '-' + contractDateDay;
+//                                 originDate = contractYearDay + '-' + (wasteMonth) + '-' + contractDateDay;
+//                                 // console.log('finalDate',finalDate);
+
+//                                 // 납부여부-네
+//                                 if (selectedOption === 'Y') {
+
+//                                     payPlanDateModifySql = 'UPDATE TB_S10_CONTRACT020' +
+//                                         ' SET PAY_PLAN_DATE = "' + finalDate + '", ' +
+//                                         ' PAYED_FLAG = "Y", PAYED_DATE="' + originDate + '" ' +
+//                                         ' WHERE CONTRACT_ID = ' + modifyDataNum + ' AND PAY_PLAN_DATE ="' + rows[i].PAY_PLAN_DATE + '"';
+
+//                                     // 납부여부-아니오
+//                                 } else if (selectedOption === 'N') {
+
+//                                     payPlanDateModifySql = 'UPDATE TB_S10_CONTRACT020' +
+//                                         ' SET PAY_PLAN_DATE = "' + finalDate + '", ' +
+//                                         ' PAYED_DATE = "0000-00-00", ' +
+//                                         ' PAYED_FLAG = "N" ' +
+//                                         ' WHERE CONTRACT_ID = ' + modifyDataNum + ' AND PAY_PLAN_DATE ="' + rows[i].PAY_PLAN_DATE + '"';
+
+//                                 }
+
+//                                 // contractMonthDay++;
+
+//                                 connection.query(payPlanDateModifySql, function (error, result) {  //쿼리문
+//                                     console.log(' payPlanDateModifySql :' + result);
+
+//                                     if (error) {
+//                                         connection.rollback(function () {
+//                                             console.log(' payPlanDateModifySql.error');
+                                          
+//                                             setImmediate(() => {
+//                                                 next(new Error(error));
+//                                             })
+//                                         });
+//                                     }
+
+
+//                                     connection.commit(function (error) {
+//                                         if (error) {
+//                                             connection.rollback(function () {
+                                               
+//                                                 setImmediate(() => {
+//                                                     next(new Error(error));
+//                                                 })
+//                                             });
+//                                         }
+//                                     });//commit
+//                                 });//payContract
+
+//                             }// for
+//                             console.log('success!');
+//                             res.send({ success: true });
+//                         }
+
+//                         // 계약기간이 다르면
+//                     } else if (termCountRow[0].CONTRACT_TERM != contractTerm) {
+
+//                         let dateToString = startDate.toString().substring(0, 10);
+
+//                         // let wasteDateDay = dateToString.substring(7, 10);
+//                         // let wasteContracMonthDay = dateToString.substring(6, 8);
+//                         // let wasteContractYearDay = dateToString.substring(0, 4);
+//                         let wasteDateDay = dateToString.substring(6, 8);
+//                         let wasteContracMonthDay = dateToString.substring(3, 5);
+//                         let wasteContractYearDay = dateToString.substring(0, 2);
+
+//                         // console.log(startDate.toString().substring(0, 10));
+//                         // //날 01
+//                         let contractDateDay = parseInt(wasteDateDay);
+//                         let wasteMonth = parseInt(wasteContracMonthDay);
+//                         let contractYearDay = parseInt(wasteContractYearDay);
+
+//                         let finalDate = '';
+//                         let originDate = '';
+
+//                         let insertPlanDateSql = '';
+//                         let planDateParams = '';
+
+//                         // 가계약-> 확정-> 없는 이용기간 데이터 입력
+
+//                         let delPayPlanDateSql = 'DELETE FROM TB_S10_CONTRACT020 WHERE CONTRACT_ID=' + modifyDataNum;
+
+//                         connection.query(delPayPlanDateSql, function (error, result) {  //쿼리문
+//                             console.log('delPayPlanDateSql: ' + result);
+//                             if (error) {
+//                                 connection.rollback(function () {
+//                                     console.log('delPayPlanDateSql.error');
+//                                     setImmediate(() => {
+//                                         next(new Error(error));
+//                                     })
+//                                 });
+//                             }
+
+//                             // 월납
+//                             if (payMethod === 'MO') {
+//                                 let updateDate = '';
+//                                 for (let i = 0; i < contractTerm; i++) {
+
+//                                     finalDate = contractYearDay + '-' + (wasteMonth + i) + '-' + contractDateDay;
+//                                     originDate = contractYearDay + '-' + (wasteMonth) + '-' + contractDateDay;
+
+//                                     // 납부여부-네
+//                                     if (selectedOption === 'Y') {
+
+//                                         insertPlanDateSql = 'INSERT INTO TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_FLAG) VALUES (?,?,SYSDATE(),"s010100010",SYSDATE(),"S010100010","N")';
+//                                         planDateParams = [modifyDataNum, finalDate];
+//                                         console.log('insertPlanDateSql',insertPlanDateSql);
+
+//                                         if (rows[0].CONTRACT_TERM != 0) {
+                                            
+//                                             updateDate = 'UPDATE TB_S10_CONTRACT020' +
+//                                                 ' SET PAYED_DATE = "' + originDate + '", PAYED_FLAG ="Y"' +
+//                                                 ' WHERE CONTRACT_ID = ' + modifyDataNum + ' AND PAY_PLAN_DATE ="' + rows[i].PAY_PLAN_DATE + '"';
+//                                                 console.log('updateDate',updateDate);
+
+//                                         } else if (rows[0].CONTRACT_TERM === 0) {
+
+//                                             'UPDATE TB_S10_CONTRACT020 ' +
+//                                                 '   SET PAYED_FLAG="' + selectedOption + '",PAYED_DATE="' + originDate + '"' +
+//                                                 ' WHERE CONTRACT_ID = ' + modifyDataNum + ' AND PAY_PLAN_DATE="' + originDate + '"';
+//                                         }
+//                                         // 납부여부-아니오
+//                                     } else if (selectedOption === 'N') {
+
+//                                         insertPlanDateSql = 'INSERT INTO TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_FLAG) VALUES (?,?,SYSDATE(),"s010100010",SYSDATE(),"S010100010","N")';
+//                                         planDateParams = [modifyDataNum, finalDate];
+
+//                                     }
+
+
+//                                     connection.query(insertPlanDateSql, planDateParams, function (error, result) {  //쿼리문
+//                                         console.log('insertPlanDateSql :' + result);
+
+//                                         if (error) {
+//                                             connection.rollback(function () {
+//                                                 console.log('payPlanDateModifySql.error');
+//                                                 setImmediate(() => {
+//                                                     next(new Error(error));
+//                                                 })
+//                                             });
+//                                         }
+//                                         if ((payMethod === 'MO' && selectedOption === 'Y')) {
+//                                             if (rows[0].CONTRACT_TERM != 0) {
+//                                                 connection.query(updateDate, function (error, result) {  //쿼리문
+//                                                     console.log('updateDate:' + result);
+
+//                                                     if (error) {
+//                                                         connection.rollback(function () {
+//                                                             console.log('updateDate.error');
+//                                                             setImmediate(() => {
+//                                                                 next(new Error(error));
+//                                                             })
+//                                                         });
+//                                                     }
+//                                                     connection.commit(function (error) {
+//                                                         if (error) {
+//                                                             connection.rollback(function () {
+//                                                                 setImmediate(() => {
+//                                                                     next(new Error(error));
+//                                                                 })
+//                                                             });
+//                                                         }
+//                                                     });//commit
+//                                                 });
+//                                             }
+//                                         } else {
+//                                             connection.commit(function (error) {
+//                                                 if (error) {
+//                                                     connection.rollback(function () {
+                                                        
+//                                                         setImmediate(() => {
+//                                                             next(new Error(error));
+//                                                         })
+//                                                     });
+//                                                 }
+
+//                                                 console.log('success!');
+//                                                 res.send({ success: true });
+//                                             });//commit
+//                                         }
+
+//                                     });//payContract
+                                    
+
+
+//                                 }
+
+//                                 if (rows[0].CONTRACT_TERM === 0) {
+
+//                                     updateDate = 'UPDATE TB_S10_CONTRACT020 ' +
+//                                         '   SET PAYED_FLAG="' + selectedOption + '",PAYED_DATE="' + originDate + '"' +
+//                                         ' WHERE CONTRACT_ID = ' + modifyDataNum + ' AND PAY_PLAN_DATE="' + originDate + '"';
+//                                     connection.query(updateDate, function (error, result) {  //쿼리문
+//                                         console.log('updateDate:' + result);
+
+//                                         if (error) {
+//                                             connection.rollback(function (error) {
+//                                                 console.log('updateDate.error');
+//                                                 setImmediate(() => {
+//                                                     next(new Error(error))
+//                                                     console.log('error', error);
+//                                                 })
+//                                             });
+//                                         }
+//                                         connection.commit(function (error) {
+//                                             if (error) {
+//                                                 connection.rollback(function () {
+//                                                     setImmediate(() => {
+//                                                         next(new Error(error))
+//                                                         console.log('error', error);
+//                                                     })
+//                                                 });
+//                                             }
+
+//                                         });//commit
+//                                     });
+
+//                                     console.log('success!');
+//                                     res.send({ success: true });
+
+//                                 }
+//                                 // 일시불    
+//                             } else if (payMethod === 'SI') {
+
+//                                 for (let i = 0; i < contractTerm; i++) {
+
+//                                     finalDate = contractYearDay + '-' + (wasteMonth + i) + '-' + contractDateDay;
+//                                     originDate = contractYearDay + '-' + (wasteMonth) + '-' + contractDateDay;
+//                                     // console.log('finalDate',finalDate);
+
+//                                     // 납부여부-네
+//                                     if (selectedOption === 'Y') {
+
+
+//                                         insertPlanDateSql = 'INSERT INTO TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_FLAG,PAYED_DATE) VALUES (?,?,SYSDATE(),"s010100010",SYSDATE(),"S010100010","Y",?)';
+//                                         planDateParams = [modifyDataNum, finalDate, originDate];
+
+
+
+//                                         // 납부여부-아니오
+//                                     } else if (selectedOption === 'N') {
+
+//                                         insertPlanDateSql = 'INSERT INTO TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_FLAG) VALUES (?,?,SYSDATE(),"s010100010",SYSDATE(),"S010100010","N")';
+//                                         planDateParams = [modifyDataNum, finalDate];
+
+//                                     }
+
+
+//                                     connection.query(insertPlanDateSql, planDateParams, function (error, result) {  //쿼리문
+//                                         console.log('payPlanDateModifySql :' + result);
+
+//                                         if (error) {
+//                                             connection.rollback(function (error) {
+//                                                 console.log('payPlanDateModifySql.error');
+//                                                 // res.send({ success: false, message: "TB_S10_CONTRACT020 최초 등록 오류 : " + error });
+//                                                 setImmediate(() => {
+//                                                     next(new Error(error))
+//                                                     console.log('error', error);
+//                                                 })
+//                                             });
+//                                         }
+
+
+//                                         connection.commit(function (error) {
+//                                             if (error) {
+//                                                 connection.rollback(function (error) {
+//                                                     // res.send({ success: false, message: "COMMIT 오류 : " + error });
+//                                                     setImmediate(() => {
+//                                                         next(new Error(error))
+//                                                         console.log('error', error);
+//                                                     })
+//                                                 });
+//                                             }
+//                                         });//commit
+//                                     });//payContract
+
+//                                 }// for
+//                                 console.log('success!');
+//                                 res.send({ success: true });
+//                             }
+//                         });// delete sql
+//                     }//elseif
+                    
+//                 });
+
+//             });//commit
+//         });//modifySql
+//     })//transaction
+// })
+
+// 이용계약서 수정
 router.post('/detailModifyContracId', (req, res, next) => {
 
     let payPlanDateModifySql;
@@ -624,7 +1210,7 @@ router.post('/detailModifyContracId', (req, res, next) => {
             ' ON CON.CONTRACT_ID = PCON.CONTRACT_ID ' +
             ' WHERE CON.CONTRACT_ID =' + modifyDataNum;
 
-            console.log('bringDateSql',bringDateSql);
+        console.log('bringDateSql',bringDateSql);
         connection.query(bringDateSql, function (error, rows) {
             // console.log('memberSql: ' + rows);
             if (error) {
@@ -1135,19 +1721,17 @@ router.post('/detailModifyContracId', (req, res, next) => {
                                                 });
                                             }
                                         });//commit
-                                    });//payContract
+                                    });
 
                                 }// for
-                               
+                               console.log('success!');
+                               res.send({ success: true });
                             }
                         });// delete sql
                     }//elseif
-                    console.log('success!');
-                    res.send({ success: true });
                 });
-
-            });//commit
-        });//modifySql
+            });
+        });
     })//transaction
 })
 

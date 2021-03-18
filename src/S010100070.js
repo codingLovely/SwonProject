@@ -355,13 +355,15 @@ function S010100070(props) {
                 .then(response => {
                     if (response.data.success) {
                         alert('취소처리되었습니다.');
-                        paymentStList();
                         setChecked('');
+                        paymentStList();
+                        props.paymentList();
                         props.setStoreOpen(false);
                        
                     } else {
                         alert(response.data.message);
                         alert('취소처리를 실패하였습니다.');
+                        props.paymentList();
                         props.setStoreOpen(false);
                       
                     }
@@ -419,17 +421,19 @@ function S010100070(props) {
             .then(response => {
                 if (response.data.success) {
                     alert('납부처리 되었습니다.');
-                    paymentStList();
+                   // paymentStList();
                     setChecked('');
+                    paymentStList();
                     props.setPayChecked('');
+                    props.paymentList();
                     props.setStoreOpen(false);
                     
                 } else {
                     alert(response.data.message);
                     alert('납부처리를 실패하였습니다.');
                     props.setPayChecked('');
+                    props.paymentList();
                     props.setStoreOpen(false);
-                   
                 }
             })
         
