@@ -80,7 +80,7 @@ function S010100140(props) {
      * */
 
     async function getLovByCdTp(cdTp, attribute2) {
-        let arr = [{ key: '선택', value: '선택' }];
+        let arr = [{ key: '', value: '선택' }];
         return await axios.post('/api/s010100140/selectTest', { firstVal: cdTp, secondVal: attribute2 })
             .then(response => {
                 if (response.data.success) {
@@ -270,7 +270,7 @@ function S010100140(props) {
                                 <td>
                                 
                                     <DatePicker
-                                        id="dateSize"
+                                        className="dateSize"
                                         locale="ko"
                                         selected={startDate.setHours(9, 0, 0, 0)}
                                         onChange={date => setStartDate(date)}

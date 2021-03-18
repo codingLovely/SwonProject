@@ -76,7 +76,9 @@ router.post('/approval', (req, res,next) => {
         // console.log('checkEmpId',checkEmpId);
         for (let i = 0; i < checkEmpId.length; i++) {
             let sql = 'UPDATE TB_S10_EMP010 ' +
-                'SET APPROVAL_FLAG = "Y" ' +
+                'SET APPROVAL_FLAG = "Y", ' +
+                '  LAST_UPDATE_DATE = SYSDATE(),'+
+                '  LAST_UPDATE_PROGRAM_ID = "S010100090"'+
                 'WHERE EMP_ID = ' + checkEmpId[i];
 
             connection.query(sql, (error) => {//쿼리문
@@ -98,7 +100,9 @@ router.post('/approval', (req, res,next) => {
 
     } else {
         let sql = 'UPDATE TB_S10_EMP010 ' +
-            'SET APPROVAL_FLAG = "Y" ' +
+            'SET APPROVAL_FLAG = "Y", ' +
+            '  LAST_UPDATE_DATE = SYSDATE(),'+
+            '  LAST_UPDATE_PROGRAM_ID = "S010100090"'+
             'WHERE EMP_ID = ' + checkEmpId[0];
 
         connection.query(sql, (error) => {//쿼리문

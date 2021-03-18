@@ -167,68 +167,6 @@ router.post('/userLogin', (req, res, next) => {
 })
 
 
-
-// passport.serializeUser(function(user, done) {
-//   console.log("serializeUser ", user)
-//   done(null, user.ID);
-// });
-
-// passport.deserializeUser(function(id, done) {
-//     console.log("deserializeUser id ", id)
-//     let userinfo;
-//     let sql = 'SELECT * FROM TB_S10_EMP010 WHERE ID=?';
-//     connection.query(sql , [id], function (err, result) {
-//       if(err) console.log('mysql 에러');     
-
-//       console.log("deserializeUser mysql result : " , result);
-//       let json = JSON.stringify(result[0]);
-//       userinfo = JSON.parse(json);
-//       done(null, userinfo);
-//     })    
-// });
-
-
-
-// passport.use(new LocalStrategy({
-//   usernameField: 'email',
-//   passwordField: 'password'
-//   },
-//   function(username, password, done){
-//     console.log('ggggggggggggggggg1');
-
-//     let sql = 'SELECT EMP_EMAIL,CEO_FLAG,MEMBER_ID FROM TB_S10_EMP010 WHERE EMP_EMAIL = ? AND PWD = ?';
-//     params = [username, password]
-//     connection.query(sql ,  params, function (err, result) {
-//       if(err) console.log('mysql 에러');  
-//       console.log('gggggggggggggggg2g');
-//       // 입력받은 ID와 비밀번호에 일치하는 회원정보가 없는 경우   
-//       if(result.length === 0){
-//         console.log("결과 없음");
-//         console.log('ggggggggggggggg3gg');
-//         return done(null, false, { message: 'Incorrect' });
-//       }else{
-//         console.log(result);
-//         console.log('gggggggggggggggg4g');
-//         let json = JSON.stringify(result[0]);
-//         let userinfo = JSON.parse(json);
-//         console.log("userinfo " + userinfo);
-//         return done(null, userinfo);  // result값으로 받아진 회원정보를 return해줌
-//       }
-//     })
-
-
-
-
-
-
-//   }
-// ))
-
-
-
-
-
-
 router.post('/userLogout', (req, res) => {
 
   req.session.destroy(function (err) {
@@ -249,7 +187,7 @@ router.post('/findPwd', (req, res) => {
   let sndResidentRegiNum = req.body.sndResidentRegiNum;
 
   let countSql = 'SELECT COUNT(*) AS "COUNT" FROM TB_S10_EMP010 WHERE EMP_EMAIL="' + email + '" AND REG_NUMBER1 = ' + fstResidentRegiNum + ' AND REG_NUMBER2 = ' + sndResidentRegiNum;
-  console.log('countSql', countSql);
+ 
   connection.query(countSql, (error, rows) => {
     if (error) throw error;
     console.log(rows);
@@ -263,8 +201,8 @@ router.post('/findPwd', (req, res) => {
       res.send({ success: false, rows });
     }
   });
-
-
 })
+
+
 
 module.exports = router;

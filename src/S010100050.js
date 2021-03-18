@@ -489,6 +489,7 @@ function S010100050(props) {
     }
 
     const onAllContractEndHandler = (event) => {
+        console.log('dataMemId',dataMemId);
         let body = {
             dataMemId: dataMemId
         }
@@ -756,6 +757,7 @@ function S010100050(props) {
                                         value={detailIdCardFileName}
                                         onChange={detailIdCardHandleFileChange}
                                     />
+                                <div className = 'fileStar'> * jpg,jpeg,png 파일만 가능합니다.</div>
                                 </td>
 
                             </tr>
@@ -779,7 +781,8 @@ function S010100050(props) {
                                         name='detailBusiCardFile'
                                         value={detailBusiCardFileName}
                                         onChange={detailBusiCardHandleFileChange}
-                                    />
+                                />
+                                <div className = 'fileStar'> * jpg,jpeg,png 파일만 가능합니다.</div>
                                 </td>
                             </tr>
                         </tbody>

@@ -140,16 +140,13 @@ router.post('/insertEmp', upload.fields([{ name: 'famRelCertificate', maxCount: 
 router.post('/modifyEmp', upload.fields([{ name: 'famRelCertificate', maxCount: 3 }, { name: 'graduationCertificate', maxCount: 5 }, { name: 'copyOfBankbook', maxCount: 5 }]), (req, res,next) => {
 
     let empId = req.body.empId;
-    let memberNm = req.body.memberNm;
     let empName = req.body.empName;
     let fstResidentRegiNum = req.body.fstResidentRegiNum;
     let sndResidentRegiNum = req.body.sndResidentRegiNum;
 
-    let ResidentRegiNum = fstResidentRegiNum + '-' + sndResidentRegiNum;
-
     let empTp = req.body.empTp;
     let finalSchoolName = req.body.finalSchoolName;
-    // console.log('empTp',empTp);
+    
     let firstEmpHp = req.body.firstEmpHp;
     let secondEmpHp = req.body.secondEmpHp;
     let thirdEmpHp = req.body.thirdEmpHp;
@@ -184,62 +181,85 @@ router.post('/modifyEmp', upload.fields([{ name: 'famRelCertificate', maxCount: 
     let realGraduationFileName=req.body.realGraduationFileName;
     let realCopyOfBankFileName=req.body.realCopyOfBankFileName;
 
-    bcrypt.hash(pwd, saltRounds, function(err, hash) {
-  
-    let empModifySql =
-        'UPDATE TB_S10_EMP010 ' +
-           'SET CREATED_DATE = sysdate(),' +
-                'CREATED_PROGRAM_ID = "s010100100",' +
-                'LAST_UPDATE_DATE = sysdate(),' +
-                'LAST_UPDATE_PROGRAM_ID ="s010100100",' +
-                'NAME="' + empName + '",' +
-                'REG_NUMBER1="' + fstResidentRegiNum + '",' +
-                'REG_NUMBER2="' + sndResidentRegiNum + '",' +
-                'EMP_TP="' + empTp + '",' +
-                'FINAL_SCHOOL_NAME="' + finalSchoolName + '",' +
-                'EMP_HP="' + empHp + '",' +
-                'EMP_EMAIL="' + empEmail + '",' +
-                'ZIP_CODE="' + zipcode + '",' +
-                'ADDRESS="' + empAddress + '",' +
-                'DETAIL_ADDRESS="' + empDetailAddress + '",' +
-                'EMP_NUMBER="' + empNum + '",' +
-                'EMP_LEVEL="' + empLevel + '",' +
-                'JOIN_DATE="' + joinDate + '",' +
-                'DEPT_NM="' + deptNm + '",' +
-                'PWD="' + hash + '",' +
-                'WAGES="' + wages + '",' +
-                'RETIRE_DATE="' + retireDate + '",' +
-                'BIRTH_DATE="' + fstResidentRegiNum + '",' +
-                'COMMENT="' + empComment + '"'
+    let hasPwdSql = 'SELECT PWD FROM TB_S10_EMP010 WHERE EMP_ID =' + empId;
 
-    if (famRelFile) {
-        empModifySql +=
-            ',FAM_REL_CERT_IMAGE="' +famRelFile + '",' +
-            'FAM_REL_CERT_IMAGE_NAME="' + realFamRelCertFileName + '" ' 
-    }
-    if(graduationFile){
-        empModifySql +=
-            ',GRADUATION_CERT_IMAGE="' + graduationFile + '",' +
-            'GRADUATION_CERT_IMAGE_NAME="' + realGraduationFileName + '" ' 
-    }
-    if(bankbookFile){
-        empModifySql +=
-            ',BANKBOOK_COPY_IMAGE="' + bankbookFile + '",' +
-            'BANKBOOK_COPY_IMAGE_NAME="' + realCopyOfBankFileName + '" ' 
-    }
- 
-    empModifySql += ' WHERE EMP_ID =' + empId;
 
-    connection.query(empModifySql, (error, rows) => {
+    connection.query(hasPwdSql, (error, rows) => {
         if (error){
             setImmediate(()=>{
                 next(new Error(error));
             })
         }else{
-            res.send({ success: true, rows });
-        }
-    });
+
+        bcrypt.hash(pwd, saltRounds, function(error, hash) {
+  
+            let empModifySql =
+                'UPDATE TB_S10_EMP010 ' +
+                   'SET CREATED_DATE = sysdate(),' +
+                        'CREATED_PROGRAM_ID = "s010100100",' +
+                        'LAST_UPDATE_DATE = sysdate(),' +
+                        'LAST_UPDATE_PROGRAM_ID ="s010100100",' +
+                        'NAME="' + empName + '",' +
+                        'REG_NUMBER1="' + fstResidentRegiNum + '",' +
+                        'REG_NUMBER2="' + sndResidentRegiNum + '",' +
+                        'EMP_TP="' + empTp + '",' +
+                        'FINAL_SCHOOL_NAME="' + finalSchoolName + '",' +
+                        'EMP_HP="' + empHp + '",' +
+                        'EMP_EMAIL="' + empEmail + '",' +
+                        'ZIP_CODE="' + zipcode + '",' +
+                        'ADDRESS="' + empAddress + '",' +
+                        'DETAIL_ADDRESS="' + empDetailAddress + '",' +
+                        'EMP_NUMBER="' + empNum + '",' +
+                        'EMP_LEVEL="' + empLevel + '",' +
+                        'JOIN_DATE="' + joinDate + '",' +
+                        'DEPT_NM="' + deptNm + '"' 
+                        
+                        if(pwd !== rows[0].PWD){
+                            empModifySql += ',PWD="' + hash + '"' 
+                        }
+
+                        if(pwd === rows[0].PWD){
+                            empModifySql += ',PWD="' + pwd + '"' 
+                        }
+                        
+                        empModifySql += ',WAGES="' + wages + '",' +
+                        'RETIRE_DATE="' + retireDate + '",' +
+                        'BIRTH_DATE="' + fstResidentRegiNum + '",' +
+                        'COMMENT="' + empComment + '"'
+        
+            if (famRelFile) {
+                empModifySql +=
+                    ',FAM_REL_CERT_IMAGE="' +famRelFile + '",' +
+                    'FAM_REL_CERT_IMAGE_NAME="' + realFamRelCertFileName + '" ' 
+            }
+            if(graduationFile){
+                empModifySql +=
+                    ',GRADUATION_CERT_IMAGE="' + graduationFile + '",' +
+                    'GRADUATION_CERT_IMAGE_NAME="' + realGraduationFileName + '" ' 
+            }
+            if(bankbookFile){
+                empModifySql +=
+                    ',BANKBOOK_COPY_IMAGE="' + bankbookFile + '",' +
+                    'BANKBOOK_COPY_IMAGE_NAME="' + realCopyOfBankFileName + '" ' 
+            }
+         
+            empModifySql += ' WHERE EMP_ID =' + empId;
+        
+            connection.query(empModifySql, (error, rows) => {
+                if (error){
+                    setImmediate(()=>{
+                        next(new Error(error));
+                    })
+                }else{
+                    res.send({ success: true, rows });
+                }
+            });
+        });
+
+    }
 });
+
+
 })
 
 

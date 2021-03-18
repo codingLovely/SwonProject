@@ -722,6 +722,11 @@ function S010100010(props) {
             return alert("납부방법을 선택하세요.");
         }
 
+        // 납부방법 NUll체크
+        if (contractPath== null || contractPath == '') {
+            return alert("납부방법을 선택하세요.");
+        }
+
         // 중복확인
         if (regNoCheckBtn == '') {
             return alert('사업자 번호 중복확인 하세요.');
@@ -792,6 +797,13 @@ function S010100010(props) {
         if (payMethod == null || payMethod == '') {
             return alert("납부방법을 선택하세요.");
         }
+
+         // 납부방법 NUll체크
+         if (contractPath== null || contractPath == '') {
+            return alert("납부방법을 선택하세요.");
+        }
+        
+
     }
     // 신규계약추가
     const newMemberIdStorage = () => {
@@ -848,10 +860,9 @@ function S010100010(props) {
 
         let startDate = year + '-' + month + '-' + date;
 
-        nullChk();
+        // nullChk();
 
        
-
         let realIdCardFileName;
         let realBusiCardFileName;
 
@@ -862,6 +873,20 @@ function S010100010(props) {
         if(busiCardFileName){
             realBusiCardFileName = busiCardFileName.split('\\')[2].split('.')[0];
         }
+
+       let conMoney;
+       if(contractMoney==null||contractMoney==undefined||contractMoney==''){
+           conMoney=0;
+       }else{
+           conMoney = contractMoney;
+       }
+       let selOption;
+       if(selectedOption==null||selectedOption==undefined||selectedOption==''){
+            selOption='N';
+       }else{
+            selOption=selectedOption;
+       }
+      
 
 
         let body = {
@@ -892,7 +917,7 @@ function S010100010(props) {
             contractTp: contractTp,
             contractTpVal: contractTpVal,
             roomLockerTp: roomLockerTp,
-            contractMoney: contractMoney,
+            contractMoney: conMoney,
             contractTerm: contractTerm,
             startAsk_date: startDate,
             endDate: dateEnd,
@@ -900,19 +925,16 @@ function S010100010(props) {
             payMethod: payMethod,
             contractPath: contractPath,
             comment: comment,
-            selectedOption: selectedOption
+            selectedOption: selOption
         }
         
-        console.log('body',body);
-        console.log('body2222222222222222222222222222222222222222222222',body);
-
         let dateEndFrame = dateEnd.toString().substring(2, 10);
 
         // 날짜 수정x
         if (dateEndFrame === endAsk_date && contractTerm === contractTerm) {
 
             setDateCheckBtn('check');
-          ;
+          
             axios.post('/api/s010100010/detailModifyContracId', body)
                 .then(response => {
                     if (response.data.success) {
@@ -928,10 +950,9 @@ function S010100010(props) {
                     }
                 })
 
-        } else {
-
-            if (dateCheckBtn == 'check') {
-
+        } else { 
+            if(contractTp==null||contractTp==''||contractTp==undefined||contractTpVal==null ||contractTpVal==''||contractTpVal==undefined){
+               
                 axios.post('/api/s010100010/detailModifyContracId', body)
                     .then(response => {
                         if (response.data.success) {
@@ -945,10 +966,32 @@ function S010100010(props) {
                             alert('이용계약서 수정을 실패 하였습니다');
                         }
                     })
+            }else{
 
-            } else if (dateCheckBtn == '') {
-                alert('날짜 중복확인 하세요');
+                if (dateCheckBtn == 'check') {
+
+                    axios.post('/api/s010100010/detailModifyContracId', body)
+                        .then(response => {
+                            if (response.data.success) {
+                                alert('이용계약서를 수정하였습니다');
+                                setDateCheckBtn('');
+                                props.setConOpen(false);
+                                props.detailMemberList();
+    
+                            } else {
+                                alert(response.data.message);
+                                alert('이용계약서 수정을 실패 하였습니다');
+                            }
+                        })
+    
+                } else if (dateCheckBtn == '') {
+                    alert('날짜 중복확인 하세요');
+                } 
+
             }
+
+
+            
         }
         
     }
@@ -974,6 +1017,7 @@ function S010100010(props) {
     }
     const memberStHandler = () => {
 
+        if(memberNm&&firstRegNo&&secondRegNo&&thirdRegNo){
            // 가계약을 확정으로
            let memberBody = {
             rNum: rNum
@@ -991,7 +1035,9 @@ function S010100010(props) {
                     alert('확정실패 하였습니다');
                 }
             })
-
+        }else{
+            alert('회원명과 사업자번호를 저장하세요.');
+        }
     }
 
     const [printMemberSheetOpen, setPrintMemberSheetOpen] = useState(false);
@@ -1225,6 +1271,7 @@ function S010100010(props) {
             contractId: rNum
         }
 
+        console.log('dateEnd',dateEnd);
         // console.log(modalMemberId);
         if (contractTerm.length === 0) {
             alert('개월수를 입력하세요');
@@ -1590,7 +1637,7 @@ function S010100010(props) {
                                 &nbsp;개월 &nbsp;
 
                                 <DatePicker
-                                        id="dateSize"
+                                        className="dateSize"
                                         locale="ko"
                                         selected={startAsk_date.setHours(9, 0, 0, 0)}
                                         onChange={date => setStartAsk_date(date)}
@@ -1623,7 +1670,7 @@ function S010100010(props) {
                                     {contractTerm}개월 &nbsp;
 
                                 <DatePicker
-                                        id="dateSize"
+                                        className="dateSize"
                                         multiple={false}
                                         locale="ko"
                                         selected={startAsk_date.setHours(9, 0, 0, 0)}//Front = 한국시 BackEnd = 표준시 9시간차이

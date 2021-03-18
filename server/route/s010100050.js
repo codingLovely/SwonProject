@@ -142,7 +142,11 @@ router.post('/modifyMember', upload.fields([{ name: 'idCardFile', maxCount: 3 },
         '  EMP.EMP_EMAIL="' + detailEmpEmail + '",' +
         '  EMP.ZIP_CODE = "' + detailZipcode + '",' +
         '  EMP.ADDRESS = "' + detailAddress + '",' +
-        '  EMP.DETAIL_ADDRESS ="' + detailDetailAddress + '"'
+        '  EMP.DETAIL_ADDRESS ="' + detailDetailAddress + '",'+
+        '  MEM.LAST_UPDATE_DATE = SYSDATE(),'+
+        '  MEM.LAST_UPDATE_PROGRAM_ID = "S010100050,"'+
+        '  EMP.LAST_UPDATE_DATE = SYSDATE(),'+
+        '  EMP.LAST_UPDATE_PROGRAM_ID = "S010100050"'
         
         if(detailIdCardImg){
             sql += ',  MEM.ID_CARD_IMAGE="'+detailIdCardImg+'",'+
@@ -168,11 +172,13 @@ router.post('/modifyMember', upload.fields([{ name: 'idCardFile', maxCount: 3 },
     });
 
 })
+
 router.post('/allContractEnd', (req, res, next) => {
    
    
     let dataMemId = req.body.dataMemId;
-    
+
+
     let sql =
         'UPDATE TB_S10_MEMBER010 MEM INNER JOIN TB_S10_CONTRACT010 CON ON' +
         '  MEM.MEMBER_ID = CON.MEMBER_ID ' +
@@ -180,9 +186,12 @@ router.post('/allContractEnd', (req, res, next) => {
         '  MEM.RETIRE_DATE = sysdate(), ' +
         '  MEM.MEMBER_ST = "F", ' +
         '  CON.END_FLAG = "Y",' +
-        '  CON.CONTRACT_ST = "F"'
+        '  CON.CONTRACT_ST = "F",'+
+        '  MEM.LAST_UPDATE_DATE = SYSDATE(),'+
+        '  MEM.LAST_UPDATE_PROGRAM_ID = "S010100050",'+
+        '  CON.LAST_UPDATE_DATE = SYSDATE(),'+
+        '  CON.LAST_UPDATE_PROGRAM_ID = "S010100050"'+
         'WHERE MEM.MEMBER_ID="' + dataMemId + '"'
-        
      
 
     connection.query(sql, (error, rows) => {  //쿼리문

@@ -179,7 +179,7 @@ function S010100040(props) {
         axios.get('/api/s010100040/selectMemberTp')
             .then(response => {
                 if (response.data.success) {
-                    let arr = [{ key: '전체', value: '전체' }]
+                    let arr = [{ key: '', value: '전체' }]
 
                     response.data.rows.map((data) =>
                         arr.push({
@@ -197,7 +197,7 @@ function S010100040(props) {
             })
     }, [])
 
-    const endStatus = [{ key: '전체', value: '전체' },
+    const endStatus = [{ key: '', value: '전체' },
     { key: 'Y', value: 'Y' },
     { key: 'N', value: 'N' }]
 
@@ -206,7 +206,7 @@ function S010100040(props) {
         axios.get('/api/s010100040/selectMemberSt')
             .then(response => {
                 if (response.data.success) {
-                    let arr = [{ key: '전체', value: '전체' }]
+                    let arr = [{ key: '', value: '전체' }]
 
                     response.data.rows.map((data) =>
                         arr.push({

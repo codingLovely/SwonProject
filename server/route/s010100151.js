@@ -26,7 +26,11 @@ router.post('/findPwd', (req, res,next) => {
           bcrypt.hash(ceoPwd, saltRounds, function(err, hash) {
             
          
-          let sql = 'UPDATE TB_S10_EMP010 SET PWD = "'+hash+'" WHERE EMP_EMAIL="'+email+'" AND REG_NUMBER1 = '+fstResidentRegiNum+' AND REG_NUMBER2 = '+sndResidentRegiNum;
+          let sql = 'UPDATE TB_S10_EMP010 '+
+                       'SET PWD = "'+hash+'",'+
+                       '  LAST_UPDATE_DATE = SYSDATE(),'+
+                       '  LAST_UPDATE_PROGRAM_ID = "S010100151"'+
+                       ' WHERE EMP_EMAIL="'+email+'" AND REG_NUMBER1 = '+fstResidentRegiNum+' AND REG_NUMBER2 = '+sndResidentRegiNum;
     
           connection.query(sql, function(err, rows){          
                   res.send({success:true})
