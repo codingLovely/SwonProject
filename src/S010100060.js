@@ -146,7 +146,7 @@ function S010100060(props) {
     const [startDate, setStartDate] = useState(new Date(moment().date('01')));
     const [endDate, setEndDate] = useState(new Date());
 
-    const [payStatusList, setPayStatusList] = useState([].slice(0, 5));
+    const [payStatusList, setPayStatusList] = useState([].slice(0,20));
     const [storeOpen, setStoreOpen] = useState(false);
     const [dataAllContract, setDataAllContract] = useState('');
 
@@ -179,16 +179,10 @@ function S010100060(props) {
 
     }
     useEffect(() => {
-        // let startDates = startDate.getFullYear() + '.' + (startDate.getMonth() + 1) + '.' + startDate.getDate();
-        // let endDates = endDate.getFullYear() + '.' + (endDate.getMonth() + 1) + '.' + endDate.getDate();
-
         paymentList();
     }, [])
 
     const paymentSearchHandler = () => {
-        // let startDates = startDate.getFullYear() + '.' + (startDate.getMonth() + 1) + '.' + startDate.getDate();
-        // let endDates = endDate.getFullYear() + '.' + (endDate.getMonth() + 1) + '.' + endDate.getDate();
-
         paymentList();
     }
 
@@ -208,8 +202,6 @@ function S010100060(props) {
     const onPayHandleClickClose = useCallback(() => {
         setStoreOpen(false);
         paymentSearchHandler();
-        // setPayChecked('');
-       
     });
 
 
@@ -245,11 +237,9 @@ function S010100060(props) {
         }
     }
 
-    const excelHandler = (event) => {
-        event.preventDefault();
+    const excelHandler = () => {
 
         const ws = xlsx.utils.json_to_sheet(payStatusList);
-        // console.log(payStatusList);
 
         ['회원명', '납부예정일', '납부여부', '납부일자', '계약기간', '계약기간', '대표자 성명', '대표자 연락처', '대표자 E-mail', '계약ID']
             .forEach((x, idx) => {
@@ -293,6 +283,7 @@ function S010100060(props) {
 
 
     const pageCount = Math.ceil(payStatusList.length / usersPerPage);
+    
     const changePage = ({ selected }) => {
         setPageNumber(selected);
     }

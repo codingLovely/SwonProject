@@ -2,8 +2,60 @@ const express = require('express');
 const router = express.Router();
 const dbconfig = require('../config/database.js')();
 const connection = dbconfig.init();
+const moment = require('moment');
 
 
+
+router.post('/xlsx', (req, res, next) => {
+   
+    const startDate = moment(req.body.startDate).format('YYYY-MM-DD');
+    const endDate = moment(req.body.endDate).format('YYYY-MM-DD');
+    let ask_tp = req.body.ask_tp;
+    let searchName = req.body.ask_name;
+
+
+    let sql =
+        'SELECT ' +
+        '   ASK010.ASK_ID' +
+        ',  CODE1.CD_V_MEANING AS "ASK_TP"' +
+        ',  DATE_FORMAT(ASK010.ASK_DATE,"%y-%m-%d") AS "ASK_DATE"' +
+        ',  CODE2.CD_V_MEANING AS "ASK_METHOD"' +
+        ',  ASK010.ASK_NAME' +
+        ',  ASK_INFO ' +
+        ',  CODE3.CD_V_MEANING AS "ASK_PATH"' + 
+        'FROM TB_S10_ASK010 ASK010' +
+        '   LEFT JOIN TB_S10_CODE CODE1' +
+        '   ON ASK010.ASK_TP = CODE1.CD_V' +
+        '   AND CODE1.CD_TP = "CONTRACT_TP"' +
+        '   AND CODE1.ATTRIBUTE2 = "ASK"' +
+        '   LEFT OUTER JOIN TB_S10_CODE CODE2' +
+        '   ON ASK010.ASK_METHOD = CODE2.CD_V' +
+        '   AND CODE2.CD_TP = "ASK_METHOD"' +
+        '   LEFT OUTER JOIN TB_S10_CODE CODE3' +
+        '   ON ASK010.ASK_PATH = CODE3.CD_V' +
+        '   AND CODE3.CD_TP = "ACCESS_PATH"' +
+        '   AND CODE3.ATTRIBUTE2 = "ASK"' +
+        'WHERE ASK010.ASK_DATE BETWEEN DATE_FORMAT("' + startDate + '","%y-%m-%d") AND  DATE_FORMAT("' + endDate + '" ,"%y-%m-%d")'+
+        'AND ASK010.LAST_DELETE_FLAG IS NULL';
+
+    if (ask_tp != null && ask_tp != "" && ask_tp != "전체")
+        sql += ' AND ASK010.ASK_TP= "' + ask_tp + '" ';
+    if (searchName != null && searchName != "")
+        sql += ' AND ASK010.ASK_NAME LIKE "%' + searchName + '%"'
+        
+        sql += ' ORDER BY ASK010.ASK_ID DESC';
+
+        console.log('sql',sql);
+    connection.query(sql, (error, rows) => {
+        if (error){
+            setImmediate(()=>{
+                next(new Error(error));
+            })
+        }else{
+            res.send({ success: true, rows });
+        }
+    })
+})
 
 
 // 검색하기

@@ -223,8 +223,7 @@ function S010100150(props) {
         }
       })
   }
-// // console.log(sessionStorage.getItem('member') === null);
-// // console.log(sessionStorage.getItem('member'));
+
   return (
 
     <div className={classes.root}>
@@ -389,9 +388,7 @@ function S010100150(props) {
                       </Link>
                     </Grid>
                   </Grid>
-
-
-         
+     
                 </form>
               </div>
 

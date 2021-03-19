@@ -12,6 +12,13 @@ const app = express();
 // let mime = require('mime');
 // let fs = require('fs');
 
+const moment = require('moment');
+
+require('moment-timezone');
+moment.tz.setDefault("Asia/Seoul");
+
+
+
 
 
 /** configuration */  
@@ -65,6 +72,11 @@ app.use(function (error, req, res, next) {
 
 /** 연결 알림 */
 const server = app.listen(app.get('port'), () => {
-    server.setTimeout(3 * 60 * 1000);
+    // server.setTimeout(60 * 60 * 1000);
+
+    require('moment-timezone');
+    moment.tz.setDefault("Asia/Seoul");
+
     console.log('portNumber : ' + app.get('port') + "connected");
+    console.log(moment().format('YYYY-MM-DD HH:mm:ss'));
 })

@@ -11,6 +11,7 @@ let url = require('url');
 let request = require('request');
 const Path = require('path');
 const Axios = require('axios');
+const moment = require('moment');
 
 let Stream = require('stream').Transform;
 
@@ -144,7 +145,7 @@ router.post('/modifyMember', upload.fields([{ name: 'idCardFile', maxCount: 3 },
         '  EMP.ADDRESS = "' + detailAddress + '",' +
         '  EMP.DETAIL_ADDRESS ="' + detailDetailAddress + '",'+
         '  MEM.LAST_UPDATE_DATE = SYSDATE(),'+
-        '  MEM.LAST_UPDATE_PROGRAM_ID = "S010100050,"'+
+        '  MEM.LAST_UPDATE_PROGRAM_ID = "S010100050",'+
         '  EMP.LAST_UPDATE_DATE = SYSDATE(),'+
         '  EMP.LAST_UPDATE_PROGRAM_ID = "S010100050"'
         

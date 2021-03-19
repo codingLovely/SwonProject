@@ -2,9 +2,6 @@ import React, {useState} from 'react';
 import './css/S010100130.css';
 import axios from 'axios';
 
-// import 'react-datepicker/dist/react-datepicker.css';
-// import 'react-datepicker/dist/react-datepicker-cssmodules.min.css';
-
 import clsx from 'clsx';
 import { makeStyles } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -130,18 +127,17 @@ function S010100151(props) {
 
     const [open, setOpen] = React.useState(true);
 
+    const [email, setEmail] = useState("")
+    const [empRegNo, setEmpRegNo] = useState("")
+    const [fstResidentRegiNum, setFstResidentRegiNum] = useState('');
+    const [sndResidentRegiNum, setSndResidentRegiNum] = useState('');
+
     const handleDrawerOpen = () => {
         setOpen(true);
     };
     const handleDrawerClose = () => {
         setOpen(false);
     };
-
-    const [email, setEmail] = useState("")
-    const [empRegNo, setEmpRegNo] = useState("")
-    const [fstResidentRegiNum, setFstResidentRegiNum] = useState('');
-    const [sndResidentRegiNum, setSndResidentRegiNum] = useState('');
-
 
     const onEmailHandler = (event) => {
         setEmail(event.currentTarget.value)
@@ -188,10 +184,6 @@ function S010100151(props) {
         
     }
 
-    const onEmpRegNoHandler = (event) => {
-        setEmpRegNo(event.currentTarget.value)
-
-    }
 
 
 

@@ -144,15 +144,9 @@ function S010100090(props) {
     const classes = useStyles();
 
     const [open, setOpen] = React.useState(true);
-    const handleDrawerOpen = () => {
-        setOpen(true);
-    };
-    const handleDrawerClose = () => {
-        setOpen(false);
-    };
     const [storeOpen, setStoreOpen] = React.useState(false);
 
-    const [empInfo, setEmpInfo] = useState([].slice(0, 10));
+    const [empInfo, setEmpInfo] = useState([].slice(0, 20));
 
     const [staffName, setStaffName] = useState('');
     const [memberNm, setMemberNm] = useState('');
@@ -178,6 +172,12 @@ function S010100090(props) {
     const changePage = ({ selected }) => {
         setPageNumber(selected);
     }
+    const handleDrawerOpen = () => {
+        setOpen(true);
+    };
+    const handleDrawerClose = () => {
+        setOpen(false);
+    };
 
     // 직원 구분
     useEffect(() => {
@@ -329,7 +329,7 @@ function S010100090(props) {
         } else {
             const checkedList = empChecked[0].split(',');
             empIdM = checkedList[1];
-            // // console.log('empIdM',empIdM);
+            // console.log('empIdM',empIdM);
             setdataForm('U');
             setEmpId(empIdM);
             setStoreOpen(true);
@@ -423,7 +423,6 @@ function S010100090(props) {
             sessionStorage.removeItem('member');
             sessionStorage.clear();
             props.history.push('/');
-            // console.log(sessionStorage.getItem('member'));
             }else if(response.data.loginResult == false){
             alert(response.data.message);
             alert('아이디 또는 비밀번호를 확인하세요.');
@@ -440,9 +439,7 @@ function S010100090(props) {
             logounCancelConfirm
         );
 
-    const excelHandler = (event) => {
-
-        event.preventDefault();
+    const excelHandler = () => {
 
         const ws = xlsx.utils.json_to_sheet(empInfo);
        

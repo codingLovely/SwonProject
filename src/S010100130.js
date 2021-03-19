@@ -2,9 +2,6 @@ import React, { Fragment, useEffect, useState, useCallback } from 'react';
 import './css/S010100130.css';
 import axios from 'axios';
 import S010100140 from './S010100140';
-import taste from './utils/taste';
-// import 'react-datepicker/dist/react-datepicker.css';
-// import 'react-datepicker/dist/react-datepicker-cssmodules.min.css';
 
 import clsx from 'clsx';
 import { makeStyles } from '@material-ui/core/styles';
@@ -158,7 +155,7 @@ function S010100130(props) {
     const [data] = useState('I');
 
     const [numForDetail, setNumForDetail] = useState('');
-    const [tb_s10_ask010, setTb_s10_ask010] = useState([].slice(0,10));
+    const [tb_s10_ask010, setTb_s10_ask010] = useState([].slice(0,20));
     const [ask_tps, setAsk_tps] = useState([{}])
     const [startAsk_date, setStartAsk_date] = useState(new Date());
     const [endAsk_date, setEndAsk_date] = useState(new Date());
@@ -395,9 +392,23 @@ function S010100130(props) {
         logounCancelConfirm
     );
 
-    const excelHandler = (event) => {
+    const excelHandler = () => {
+        // const body = {
+        //     startAsk_date,
+        //     ask_name,
+        //     ask_tp,
+        //     endAsk_date
+        // }
 
-        event.preventDefault();
+        // axios.post('/api/s010100130/xlsx', body).then(response => {
+        //     if (response.data.success) {
+        //         setAskXlsx(response.data.rows);
+        //         console.log(response.data.rows);
+        //     } else {
+        //         alert('검색에 실패하였습니다.')
+        //     }
+       
+
 
         const ws = xlsx.utils.json_to_sheet(tb_s10_ask010);
         // console.log(tb_s10_ask010);
@@ -417,7 +428,7 @@ function S010100130(props) {
 
         xlsx.utils.book_append_sheet(wb, ws, "Sheet1");
         xlsx.writeFile(wb, "상담현황.xlsx");
-
+    // })
     }
 
     
@@ -530,11 +541,10 @@ function S010100130(props) {
                         </ListItem>
                         </div>
                     </div>
-                    {/* <taste/> */}
+
              </List>
         </Drawer>
-
-
+           
                 {/* 메인화면  */}
                 <main className={classes.content}>
                     <form onSubmit={onHandleFormSubmit}>
@@ -661,7 +671,6 @@ function S010100130(props) {
                                     </Paper>
                                 </Grid>
                             </Grid>
-
                         </Container>
                     </form>
                 </main>
@@ -670,13 +679,23 @@ function S010100130(props) {
             <Dialog
                 maxWidth={"lg"}
                 open={mOpen}>
-                <S010100140 dataForm={"U"} num={numForDetail} searchAsk ={searchAsk} onDetailHandleClickClose={onDetailHandleClickClose} setMOpen={setMOpen}/>
+                <S010100140 
+                    dataForm={"U"} 
+                    num={numForDetail} 
+                    searchAsk ={searchAsk} 
+                    onDetailHandleClickClose={onDetailHandleClickClose} 
+                    setMOpen={setMOpen}/>
             </Dialog>
                       
             <Dialog
                 maxWidth={"lg"}
                 open={storeOpen}>
-                <S010100140 dataForm={data} num={numForDetail} searchAsk ={searchAsk} onHandleClickClose={onHandleClickClose} setStoreOpen={setStoreOpen} />
+                <S010100140 
+                    dataForm={data} 
+                    num={numForDetail} 
+                    searchAsk ={searchAsk} 
+                    onHandleClickClose={onHandleClickClose} 
+                    setStoreOpen={setStoreOpen} />
             </Dialog>
            
         </Fragment>

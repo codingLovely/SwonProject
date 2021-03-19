@@ -145,13 +145,13 @@ function S010100040(props) {
     const [contractStatus, setContractStatus] = useState('')
     const [memberSt, setMemberSt] = useState('')
     const [name, setName] = useState('')
-    const [tbMember, setTbMember] = useState([].slice(0, 5))
+    const [tbMember, setTbMember] = useState([].slice(0, 20))
 
     const [memberStatus, setMemberStatus] = useState([{}]);
     const [memberType, setMemberType] = useState([{}]);
 
-    const [startDate, setStartDate] = useState(new Date(moment().date('01')));
-    const [endDate, setEndDate] = useState(new Date());
+    const [startDate, setStartDate] = useState(moment().date('01'));
+    const [endDate, setEndDate] = useState(moment());
 
     const [open, setOpen] = React.useState(true);
     const [storeOpen, setStoreOpen] = React.useState(false);
@@ -197,9 +197,6 @@ function S010100040(props) {
             })
     }, [])
 
-    const endStatus = [{ key: '', value: '전체' },
-    { key: 'Y', value: 'Y' },
-    { key: 'N', value: 'N' }]
 
     useEffect(() => {
 
@@ -295,7 +292,6 @@ function S010100040(props) {
 
     const onHandleDetailClickOpen = (event) => {
         memberId = event.target.id;
-        // console.log('memberId',memberId);
         setMemberIdModal(memberId);
         setModalOpen(true);
     }
@@ -377,7 +373,6 @@ function S010100040(props) {
             sessionStorage.removeItem('member');
             sessionStorage.clear();
             props.history.push('/');
-            // console.log (sessionStorage.getItem('member'));
           }else if(response.data.loginResult == false){
             alert(response.data.message);
             alert('아이디 또는 비밀번호를 확인하세요.');
@@ -498,21 +493,21 @@ function S010100040(props) {
                                             <DatePicker
                                             locale='ko'
                                             selected={startDate}
-                                            onChange={date => setStartDate(date)}
+                                            onChange={date => setStartDate(moment(date))}
                                             selectsStart
                                             startDate={startDate}
                                             endDate={endDate}
-                                            defaultValue={moment(moment().date('01'),'YYYY-MM-DD')}
+                                            defaultValue={startDate}
                                         /> &nbsp;~&nbsp;
                                         <DatePicker
                                             locale='ko'
                                             selected={endDate}
-                                            onChange={date => setEndDate(date)}
+                                            onChange={date => setEndDate(moment(date))}
                                             selectsEnd
                                             startDate={startDate}
                                             endDate={endDate}
                                             // minDate={startDate}
-                                            defaultValue={moment(moment(),'YYYY-MM-DD')}
+                                            defaultValue={endDate}
                                         />
                                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 
@@ -650,7 +645,13 @@ function S010100040(props) {
                 maxWidth={"lg"}
                 open={modalOpen}
                 onClose={onHandleDetailClickClose}>
-                <S010100050 dataMemId={memberIdModal} dataForm={"U"} memberList={memberList} onHandleDetailClickClose={onHandleDetailClickClose} setModalOpen={setModalOpen} setModalOpen={setModalOpen}/>
+                <S010100050 
+                    dataMemId={memberIdModal} 
+                    dataForm={"U"} 
+                    memberList={memberList}
+                    onHandleDetailClickClose={onHandleDetailClickClose} 
+                    setModalOpen={setModalOpen} 
+                    setModalOpen={setModalOpen}/>
             </Dialog>
 
             {/* 신규등록 */}
@@ -658,7 +659,10 @@ function S010100040(props) {
                 maxWidth={"lg"}
                 open={storeOpen}
                 onClose={onHandleClickClose}>
-                <S010100010 onHandleClickClose={onHandleClickClose} setStoreOpen={setStoreOpen} memberList={memberList}/>
+                <S010100010 
+                    onHandleClickClose={onHandleClickClose} 
+                    setStoreOpen={setStoreOpen} 
+                    memberList={memberList}/>
             </Dialog>
 
         </Fragment>

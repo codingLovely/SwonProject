@@ -860,8 +860,6 @@ function S010100010(props) {
 
         let startDate = year + '-' + month + '-' + date;
 
-        nullChk();
-
        
         let realIdCardFileName;
         let realBusiCardFileName;
@@ -873,20 +871,6 @@ function S010100010(props) {
         if(busiCardFileName){
             realBusiCardFileName = busiCardFileName.split('\\')[2].split('.')[0];
         }
-
-       let conMoney;
-       if(contractMoney==null||contractMoney==undefined||contractMoney==''){
-           conMoney=0;
-       }else{
-           conMoney = contractMoney;
-       }
-       let selOption;
-       if(selectedOption==null||selectedOption==undefined||selectedOption==''){
-            selOption='N';
-       }else{
-            selOption=selectedOption;
-       }
-      
 
 
         let body = {
@@ -917,7 +901,7 @@ function S010100010(props) {
             contractTp: contractTp,
             contractTpVal: contractTpVal,
             roomLockerTp: roomLockerTp,
-            contractMoney: conMoney,
+            contractMoney: contractMoney,
             contractTerm: contractTerm,
             startAsk_date: startDate,
             endDate: dateEnd,
@@ -925,7 +909,7 @@ function S010100010(props) {
             payMethod: payMethod,
             contractPath: contractPath,
             comment: comment,
-            selectedOption: selOption
+            selectedOption: selectedOption
         }
         
         let dateEndFrame = dateEnd.toString().substring(2, 10);
@@ -1803,7 +1787,7 @@ function S010100010(props) {
                                 <th colSpan="2" className="info">계약접근경로</th>
                                 <td hidden={forPrint}>
 
-                                    <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm" as="select" multiple={false} onChange={onContractPathHandler} value={contractPath}>
+                                    <Form.Control style={{ width: 6 + 'em', display: 'inline' }} size="sm" as="select" multiple={false} onChange={onContractPathHandler} value={contractPath||''}>
                                         {contractpaths.map(item => (
                                             <option key={item.key} value={item.key}>{item.value}</option>
                                         ))}

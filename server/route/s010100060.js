@@ -3,13 +3,13 @@ const router = express.Router();
 
 const dbconfig = require('../config/database.js')();
 const connection = dbconfig.init();
-
+const moment = require('moment');
 // 납부 현황
 
 router.post('/list', (req, res) => {
 
-    let startDate = req.body.startDate.toString().substring(0, 10);;
-    let endDate = req.body.endDate.toString().substring(0, 10);;
+    const startDate = moment(req.body.startDate).format('YYYY-MM-DD');
+    const endDate = moment(req.body.endDate).format('YYYY-MM-DD');
     let userName = req.body.userName;
     let paymentStatus = req.body.paymentStatus;
 
@@ -41,12 +41,12 @@ router.post('/list', (req, res) => {
         ' WHERE CON2.PAY_PLAN_DATE BETWEEN date_format("' + startDate + '","%y.%m.%d") AND date_format("' + endDate + '","%y.%m.%d") '
 
 
-    if (userName != null && userName != "" && userName != "undefined")//null아니고 전체가 아닐때 때, null 아니고 공백이 아닐때
+    if (userName != null && userName != "" && userName != "undefined")
         sql += ' AND MEM.MEMBER_NM LIKE "%' + userName + '%" ';
     if (paymentStatus != null && paymentStatus != "" && paymentStatus != "undefined"&& paymentStatus != "전체")
         sql += ' AND CON2.PAYED_FLAG = "' + paymentStatus + '"';
 
-    sql += ' AND MEM.MEMBER_ST = "C" ORDER BY CON2.CONTRACT_ID DESC';
+    sql += ' AND MEM.MEMBER_ST = "C" AND CON.CONTRACT_TERM != 0 ORDER BY CON2.CONTRACT_ID DESC';
 
     connection.query(sql, (error, rows) => {
         if (error){

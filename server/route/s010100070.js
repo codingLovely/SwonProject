@@ -3,13 +3,13 @@ const router = express.Router();
 
 const dbconfig = require('../config/database.js')();
 const connection = dbconfig.init();
-
+const moment = require('moment');
 // 납부 현황
 
 router.post('/list', (req, res,next) => {
 
-    let startDate = req.body.startDate.toString().substring(0, 10);;
-    let endDate = req.body.endDate.toString().substring(0, 10);;
+    const startDate = moment(req.body.startDate).format('YYYY-MM-DD');
+    const endDate = moment(req.body.endDate).format('YYYY-MM-DD');
     let userName = req.body.userName;
     let paymentStatus = req.body.paymentStatus;
 

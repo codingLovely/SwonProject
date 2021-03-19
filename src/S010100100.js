@@ -15,6 +15,7 @@ import Form from 'react-bootstrap/Form';
 
 import DatePicker, { registerLocale } from 'react-datepicker';
 import ko from 'date-fns/locale/ko';
+
 registerLocale('ko', ko);
 
 
@@ -280,14 +281,6 @@ function S010100100(props) {
           
             join = joinDate.getFullYear()+'-'+ (joinDate.getMonth()+1)+'-'+joinDate.getDate();
         }
-        // if(retireDate == '' || retireDate == undefined || retireDate == null ){
-         
-        //     retire='0000-00-00';
-        // }
-        // if(joinDate == '' || joinDate == undefined || joinDate == null){
-           
-        //     join='0000-00-00';
-        // }
 
 
         let realFamRelCertFileName;

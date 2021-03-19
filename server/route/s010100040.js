@@ -5,6 +5,7 @@ const router = express.Router();
 const dbconfig = require('../config/database.js')();
 const connection = dbconfig.init();
 
+const moment = require('moment');
 
 // 회원구분 selectBox
 router.get('/selectMemberTp', (req, res, next) => {
@@ -40,8 +41,10 @@ router.get('/selectMemberSt', (req, res, next) => {
 
 // 회원현황 조회
 router.post('/searchMember', (req, res, next) => {
-    let startDate = req.body.startDate.toString().substring(0, 10);
-    let endDate = req.body.endDate.toString().substring(0, 10);
+    //let startDate = req.body.startDate.toString().substring(0, 10);
+    //let endDate = req.body.endDate.toString().substring(0, 10);
+    const startDate = moment(req.body.startDate).format('YYYY-MM-DD');
+    const endDate = moment(req.body.endDate).format('YYYY-MM-DD');
     let memberNm = req.body.memberNm;
     let regNo = req.body.regNo;
     let name = req.body.name;
@@ -50,6 +53,7 @@ router.post('/searchMember', (req, res, next) => {
     let memberSt = req.body.memberSt;
 
     console.log('startDate',startDate);
+    console.log('endDate',endDate);
 
     let sql =
         'SELECT DISTINCT(member010.MEMBER_ID) ' +
@@ -98,8 +102,7 @@ router.post('/searchMember', (req, res, next) => {
         sql += ' AND emp010.NAME LIKE "%' + name + '%"';
     
     sql += ' ORDER BY member010.MEMBER_ID DESC';
-     
-   
+  
     connection.query(sql, (error, rows) => {
         if (error){
             setImmediate(() => {

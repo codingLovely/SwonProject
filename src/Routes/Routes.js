@@ -12,6 +12,7 @@ import S010100160 from '../S010100160';
 import S010100151 from '../S010100151';
 
 import LeaseAgreement from '../utils/LeaseAgreement';
+import ScreenLayout from '../ScreenLayout';
 //export default
  function Routes (props){
    return(
@@ -47,8 +48,10 @@ import LeaseAgreement from '../utils/LeaseAgreement';
           <Route exact path = "/useContract" component = {S010100010} />
           {/* 회원상세현황 */}
           <Route exact path = "/memberDetails" component = {S010100050} />
-          {/*임대차계약서 */}
+          {/* 임대차계약서 */}
           <Route exact path = "/leasAgreement" component = {LeaseAgreement} /> 
+          {/* ScreenLayout */}
+          <Route exact path = "/d" component = {ScreenLayout} />
           
           
           

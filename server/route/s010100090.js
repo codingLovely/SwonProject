@@ -3,7 +3,7 @@ const router = express.Router();
 
 const dbconfig = require('../config/database.js')();
 const connection = dbconfig.init();
-
+const moment = require('moment');
 
 // 직원 구분
 router.post('/classification', (req, res,next) => {
@@ -25,8 +25,8 @@ router.post('/empList', (req, res,next) => {
     let memberNm = req.body.memberNm;
     let staffClass = req.body.staffClass;
     let closeStatus = req.body.retireChecked[0];
-    let startDate = req.body.startDate.toString().substring(0, 10);
-    let endDate = req.body.endDate.toString().substring(0, 10);
+    const startDate = moment(req.body.startDate).format('YYYY-MM-DD');
+    const endDate = moment(req.body.endDate).format('YYYY-MM-DD');
 
     // console.log('closeStatus',closeStatus);
     let sql = 'SELECT ' +

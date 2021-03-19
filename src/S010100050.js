@@ -164,7 +164,7 @@ function S010100050(props) {
     const [mEndFlag, setMEndFlag] = useState('');
 
     const [pageNumber, setPageNumber] = useState(0);
-    const usersPerPage = 10;
+    const usersPerPage =20;
     const pagesVisited = pageNumber * usersPerPage;
     const pageCount = Math.ceil(detailAllInfo / usersPerPage);
 
@@ -488,7 +488,7 @@ function S010100050(props) {
 
     }
 
-    const onAllContractEndHandler = (event) => {
+    const onAllContractEndHandler = () => {
         console.log('dataMemId',dataMemId);
         let body = {
             dataMemId: dataMemId

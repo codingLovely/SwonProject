@@ -3,6 +3,7 @@ const router = express.Router();
 
 const dbconfig = require('../config/database.js')();
 const connection = dbconfig.init();
+const moment = require('moment');
 
 router.post('/contractTp',(req,res,next)=>{
     let sql = 'SELECT CD_V,CD_V_MEANING FROM TB_S10_CODE WHERE CD_TP = "CONTRACT_TP"';
@@ -35,8 +36,8 @@ router.post('/contractSt',(req,res,next)=>{
 })
 
 router.post('/search',(req,res,next)=>{
-    let startDate = req.body.startDate;
-    let endDate = req.body.endDate;
+    const startDate = moment(req.body.startDate).format('YYYY-MM-DD');
+    const endDate = moment(req.body.endDate).format('YYYY-MM-DD');
     let contractTp = req.body.contractTp;
     let contractSt = req.body.contractSt;
     

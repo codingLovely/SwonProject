@@ -18,6 +18,7 @@ import xlsx from 'xlsx';
 
 import DatePicker, { registerLocale } from 'react-datepicker';
 import ko from 'date-fns/locale/ko';
+
 registerLocale("ko", ko);
 
 const drawerWidth = 240;
@@ -136,11 +137,15 @@ function S010100070(props) {
     const [checked, setChecked] = useState([]);
     const [sequenceChk, setSequenceChk] = useState('');
     const [checkStatusChk, setCheckStatusChk] = useState('');
+    
+    const [payMethodM, setPayMethodM] = useState('');
 
     const [pageNumber,setPageNumber] = useState(0);
     const usersPerPage = 12;
     const pagesVisited = pageNumber * usersPerPage;
     const pageCount = Math.ceil(paymentStatusList/usersPerPage);
+
+    const classes = useStyles();
         
     const changePage = ({selected}) => {
         setPageNumber(selected);
@@ -174,10 +179,6 @@ function S010100070(props) {
         setPayMethod(event.currentTarget.value);
     }
 
-    const payPlanMoneyHandler = (event) => {
-        setPayPlanMoney(event.currentTarget.value);
-    }
-
     const paymentStList = () => {
         axios.get(`/api/s010100070/insert/tb_s10_contract020_by_id?id=${dataContracId}`)
             .then(response => {
@@ -186,7 +187,6 @@ function S010100070(props) {
                     response.data.rows.map((row) => {
                         if (row.PAYED_DATE === null || row.PAYED_DATE === undefined) row.PAYED_DATE = makeYYMMDD(new Date());
                         if (row.COMMENT === null || row.COMMENT === undefined) row.COMMENT = '';
-                        // // console.log('row', row);
                     })
 
                     setPaymentStatusList(response.data.rows);
@@ -232,7 +232,7 @@ function S010100070(props) {
                 newChecked.splice(currentIndex, 1)
             }
             setChecked(newChecked);
-            // // console.log('Checked',checked);
+            // console.log('Checked',checked);
             
     }
 
@@ -243,8 +243,7 @@ function S010100070(props) {
 
     }
  
-    const excelBtnHandler = (event) => {
-        event.preventDefault();
+    const excelBtnHandler = () => {
 
         const ws = xlsx.utils.json_to_sheet(paymentStatusList);
 
@@ -270,7 +269,6 @@ function S010100070(props) {
 
     const makeYYMMDD = (value) => {
         let year = (value.getFullYear() + '').substring(2);
-        // // console.log('year',year);
         let month = value.getMonth() + 1;
         let date = value.getDate();
         month = month < 10 ? '0' + month : month;
@@ -368,7 +366,6 @@ function S010100070(props) {
                       
                     }
                 })
-            // paymentStList();
         }else if(checked.length === 0){
             alert('선택하세요');
         }
@@ -409,7 +406,7 @@ function S010100070(props) {
             newChecked: newChecked,
             checked: checked
         }
-        // // console.log('newChecked', body);
+        // console.log('newChecked', body);
          
 
             if(sequenceChk ==''){
@@ -421,7 +418,7 @@ function S010100070(props) {
             .then(response => {
                 if (response.data.success) {
                     alert('납부처리 되었습니다.');
-                   // paymentStList();
+                  
                     setChecked('');
                     paymentStList();
                     props.setPayChecked('');
@@ -458,8 +455,6 @@ function S010100070(props) {
         approvalConfirm,
         cancelConfirm
     );
-
-    const [payMethodM, setPayMethodM] = useState('');
 
     return (
 
