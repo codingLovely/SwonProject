@@ -46,8 +46,10 @@ router.post('/list', (req, res) => {
     if (paymentStatus != null && paymentStatus != "" && paymentStatus != "undefined"&& paymentStatus != "전체")
         sql += ' AND CON2.PAYED_FLAG = "' + paymentStatus + '"';
 
-    sql += ' AND MEM.MEMBER_ST = "C" AND CON.CONTRACT_TERM != 0 ORDER BY CON2.CONTRACT_ID DESC';
+    sql += ' AND CON.CONTRACT_ST = "C" ORDER BY CON2.CONTRACT_ID DESC';
 
+
+    console.log('sql',sql);
     connection.query(sql, (error, rows) => {
         if (error){
             setImmediate(()=>{

@@ -611,9 +611,9 @@ function S010100100(props) {
                         setEmpLevel(response.data.rows[0].EMP_LEVEL);
 
                         const modalJoinDate = response.data.rows[0].JOIN_DATE;
-                        
-                        if(modalJoinDate === '0000-00-00'){
-                            // console.log('조인날짜 00000');
+                        // console.log('response.data.rows[0].JOIN_DATE',response.data.rows[0].JOIN_DATE);
+                        if(modalJoinDate === '0000-00-00'||modalJoinDate === null){
+                             // console.log('조인날짜 00000');
                             setJoinDate('')
                         }else{
                             // console.log('조인날짜 있음');
@@ -626,7 +626,7 @@ function S010100100(props) {
 
                         const modalRetireDate = response.data.rows[0].RETIRE_DATE;
                        
-                        if(modalRetireDate === '0000-00-00'){
+                        if(modalRetireDate === '0000-00-00'||modalRetireDate === null){
                             setRetireDate('')
                         }else{
                             setRetireDate(new Date(modalRetireDate));

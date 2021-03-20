@@ -36,7 +36,7 @@ function LeaseAgreement (props){
 
     useEffect(() => {
       const rNum = props.dataNum;
-      axios.get(`/api/memStList/tb_s10_contract010_by_id?id=${rNum}&type=single`)
+      axios.get(`/api/s010100010/tb_s10_contract010_by_id?id=${rNum}&type=single`)
           .then(response => {
               if (response.data.success) {
 

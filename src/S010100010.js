@@ -798,7 +798,7 @@ function S010100010(props) {
             return alert("납부방법을 선택하세요.");
         }
 
-         // 납부방법 NUll체크
+         // 계약접근경로 NUll체크
          if (contractPath== null || contractPath == '') {
             return alert("계약접근경로를 선택하세요.");
         }
@@ -999,29 +999,76 @@ function S010100010(props) {
         contractModify();
 
     }
+
+
+
+
     const memberStHandler = () => {
 
         if(memberNm&&firstRegNo&&secondRegNo&&thirdRegNo){
+
+            if (empIdName == null || empIdName == '') {
+                return alert("대표자를 입력하세요.");
+            }
+    
+            // 연락처 NUll체크
+            if (firstEmpHp == null || firstEmpHp == '' || secondEmpHp == null || secondEmpHp == '' || thirdEmpHp == null || thirdEmpHp == '') {
+                return alert("연락처를 입력하세요.");
+            }
+
+            // 계약구분 NUll체크
+            if (contractTp == null || contractTp == '') {
+                return alert("계약구분을 선택하세요.");
+            }
+
+            // 호실 NUll체크
+            if (contractTpVal == null || contractTpVal == '') {
+                return alert("호실을 선택하세요.");
+            }
+
+            // 이용기간 NUll체크
+            if (contractTerm == null || contractTerm == '' || contractTerm == '0') {
+                return alert("이용기간을 입력하세요.");
+            }
+
+            // 입금일 NUll체크
+            if (selectedOption == null || selectedOption == '') {
+                return alert("납부여부를 선택하세요.");
+            }
+
+            // 납부방법 NUll체크
+            if (payMethod == null || payMethod == '') {
+                return alert("납부방법을 선택하세요.");
+            }
+
+            // 계약접근경로 NUll체크
+            if (contractPath== null || contractPath == '') {
+                return alert("계약접근경로를 선택하세요.");
+            }
+          
+
+            contractModify();
+
            // 가계약을 확정으로
            let memberBody = {
-            rNum: rNum
-        }
-        axios.post('/api/s010100010/modifymemberSt', memberBody)
-            .then(response => {
-                if (response.data.success) {
-                    alert('확정되었습니다');
-                    props.detailMemberList();
-                    setMemberStModal(false);
-                    props.setConOpen(false);
+                rNum: rNum
+            }
+                axios.post('/api/s010100010/modifymemberSt', memberBody)
+                    .then(response => {
+                        if (response.data.success) {
+                            alert('확정되었습니다');
+                            props.detailMemberList();
+                            setMemberStModal(false);
+                            props.setConOpen(false);
 
-                } else {
-                    alert(response.data.message);
-                    alert('확정실패 하였습니다');
+                        } else {
+                            alert(response.data.message);
+                            alert('확정실패 하였습니다');
+                        }
+                    })
+                }else{
+                    alert('회원명과 사업자번호를 먼저 저장하세요.');
                 }
-            })
-        }else{
-            alert('회원명과 사업자번호를 저장하세요.');
-        }
     }
 
     const [printMemberSheetOpen, setPrintMemberSheetOpen] = useState(false);

@@ -198,11 +198,11 @@ function S010100070(props) {
                     setPaymentEmpEmail(response.data.rows[0].EMP_EMAIL);
                     setPaymentEmpComment(response.data.rows[0].COMMENT);
                     setPayMethodM(response.data.rows[0].PAY_METHOD);
-                    if(response.data.rows[0].PAY_METHOD_M === null){
-                        setPayMethod('가계약');
-                    }else{
+                    // if(response.data.rows[0].PAY_METHOD_M === null){
+                    //     setPayMethod('가계약');
+                    // }else{
                         setPayMethod(response.data.rows[0].PAY_METHOD_M);
-                    }
+                    // }
 
                 } else {
                     alert(response.data.message);

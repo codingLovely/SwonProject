@@ -91,11 +91,23 @@ router.post('/contHier', (req, res, next) => {
 router.post('/roomLockerHier', (req, res, next) => {
 
     //console.log(firstVal);
-    let sql = ' SELECT DISTINCT(CODE1.CD_V),CODE1.CD_V_MEANING ' +
-        '   FROM TB_S10_CODE CODE1 ' +
-        '   INNER JOIN TB_S10_CODE CODE2 ON CODE1.CD_TP = CODE2.CD_V ' +
-        '   LEFT JOIN TB_S10_CONTRACT010 CON  ON CODE1.CD_V = CON.CONTRACT_LOCKER ' +
-        '  WHERE (CON.CONTRACT_ID IS NULL OR CON.END_FLAG = "Y") AND CODE1.CD_TP LIKE "L"';
+    let sql = 'SELECT CODE1.CD_V,CODE1.CD_V_MEANING,CONTRACT_ID, CONTRACT_LOCKER, END_FLAG  '+
+                'FROM TB_S10_CODE CODE1  '+  
+            'INNER JOIN TB_S10_CODE CODE2  '+  
+            'ON CODE1.CD_TP = CODE2.CD_V  '+  
+            'LEFT JOIN (  '+  
+                'SELECT CONTRACT_LOCKER,CONTRACT_ID,(select  '+  
+            'case when count(distinct(END_FLAG)) = 2  '+   
+            'then "N"  '+    
+            'when count(distinct(END_FLAG)) = 1 and END_FLAG = "Y"  '+  
+            'then "Y"  '+    
+            'when count(distinct(END_FLAG)) = 1 and END_FLAG = "N"  '+  
+            'then "N"  '+   
+            'end) AS END_FLAG  '+  
+            'FROM TB_S10_CONTRACT010  '+   
+            'GROUP BY CONTRACT_LOCKER   '+
+            ')  AS CON ON CODE1.CD_V = CON.CONTRACT_LOCKER  '+  
+            'WHERE (CON.CONTRACT_ID IS NULL OR CON.END_FLAG ="Y") AND CODE1.CD_TP LIKE "L"  ';
 
     connection.query(sql, (error, rows) => {  //쿼리문
         if (error) {
@@ -503,7 +515,7 @@ router.get('/tb_s10_contract010_by_id', (req, res, next) => {
 
 //memberId 이용계약서
 router.get('/insert/tb_s10_contract010_by_id', (req, res, next) => {
-    console.log('gg');
+  
     let type = req.query.type
     let memberId = req.query.id
     //console.log(memberId);
@@ -840,7 +852,7 @@ router.post('/detailModifyContracId', (req, res, next) => {
                                                     console.log('납부여부 아니오');
 
                                                     payPlanDateModifySql = 'UPDATE TB_S10_CONTRACT020' +
-                                                        ' SET PAY_PLAN_DATE = "' + finalDate + '", ' +
+                                                        ' SET PAY_PLAN_DATE = "' + finalDate + '",PAYED_DATE = "0000-00-00", ' +
                                                         ' PAYED_FLAG = "N" ' +
                                                         ' WHERE CONTRACT_ID = ' + modifyDataNum + ' AND PAY_PLAN_DATE ="' + rows[0].PAY_PLAN_DATE + '"';
 
@@ -848,8 +860,7 @@ router.post('/detailModifyContracId', (req, res, next) => {
                                                     console.log('납부여부 없음 ');
 
                                                     payPlanDateModifySql = 'UPDATE TB_S10_CONTRACT020' +
-                                                        ' SET PAY_PLAN_DATE = "' + finalDate + '", ' +
-                                                        ' PAYED_FLAG = "N" ' +
+                                                        ' SET PAYED_DATE = "0000-00-00",PAY_PLAN_DATE = "' + finalDate + '" ' +
                                                         ' WHERE CONTRACT_ID = ' + modifyDataNum + ' AND PAY_PLAN_DATE ="' + rows[0].PAY_PLAN_DATE + '"';
 
                                                 }
@@ -923,7 +934,7 @@ router.post('/detailModifyContracId', (req, res, next) => {
                                             } else {
 
                                                 for (let i = 0; i < contractTerm; i++) {
-                                                        console.log('ggg');
+                                                       
                                                     finalDate = contractYearDay + '-' + (wasteMonth + i) + '-' + contractDateDay;
                                                     originDate = contractYearDay + '-' + (wasteMonth) + '-' + contractDateDay;
 
@@ -949,15 +960,14 @@ router.post('/detailModifyContracId', (req, res, next) => {
                                                     } else if (selectedOption === 'N') {
 
                                                         payPlanDateModifySql = 'UPDATE TB_S10_CONTRACT020' +
-                                                            ' SET PAY_PLAN_DATE = "' + finalDate + '", ' +
+                                                            ' SET PAY_PLAN_DATE = "' + finalDate + '",PAYED_DATE = "0000-00-00", ' +
                                                             ' PAYED_FLAG = "N" ' +
                                                             ' WHERE CONTRACT_ID = ' + modifyDataNum + ' AND PAY_PLAN_DATE ="' + rows[i].PAY_PLAN_DATE + '"';
 
                                                     } else {
 
                                                         payPlanDateModifySql = 'UPDATE TB_S10_CONTRACT020' +
-                                                            ' SET PAY_PLAN_DATE = "' + finalDate + '", ' +
-                                                            ' PAYED_FLAG = "N" ' +
+                                                            ' SET PAY_PLAN_DATE = "' + finalDate + '" ' +
                                                             ' WHERE CONTRACT_ID = ' + modifyDataNum + ' AND PAY_PLAN_DATE ="' + rows[i].PAY_PLAN_DATE + '"';
 
                                                     }
@@ -1046,17 +1056,16 @@ router.post('/detailModifyContracId', (req, res, next) => {
 
                                                     // 납부여부-아니오
                                                 } else if (selectedOption === 'N') {
-
+                                                    console.log('납부여부 아니오');
                                                     payPlanDateModifySql = 'UPDATE TB_S10_CONTRACT020' +
-                                                        ' SET PAY_PLAN_DATE = "' + finalDate + '", ' +
+                                                        ' SET PAY_PLAN_DATE = "' + finalDate + '",PAYED_DATE="0000-00-00", ' +
                                                         ' PAYED_FLAG = "N" ' +
                                                         ' WHERE CONTRACT_ID = ' + modifyDataNum + ' AND PAY_PLAN_DATE ="' + rows[0].PAY_PLAN_DATE + '"';
 
                                                 } else {
 
                                                     payPlanDateModifySql = 'UPDATE TB_S10_CONTRACT020' +
-                                                        ' SET PAY_PLAN_DATE = "' + finalDate + '", ' +
-                                                        ' PAYED_FLAG = "N" ' +
+                                                        ' SET PAYED_DATE = "0000-00-00", PAY_PLAN_DATE = "' + finalDate + '" ' +
                                                         ' WHERE CONTRACT_ID = ' + modifyDataNum + ' AND PAY_PLAN_DATE ="' + rows[0].PAY_PLAN_DATE + '"';
 
                                                 }
@@ -1109,9 +1118,9 @@ router.post('/detailModifyContracId', (req, res, next) => {
 
                                                     // 납부여부-아니오
                                                     } else if (selectedOption === 'N') {
-
+                                                        console.log('일시불 납부여부 아니오!!');
                                                         payPlanDateModifySql = 'UPDATE TB_S10_CONTRACT020' +
-                                                            ' SET PAY_PLAN_DATE = "' + finalDate + '", ' +
+                                                            ' SET PAY_PLAN_DATE = "' + finalDate + '",PAYED_DATE = "0000-00-00", ' +
                                                             ' PAYED_FLAG = "N" ' +
                                                             ' WHERE CONTRACT_ID = ' + modifyDataNum + ' AND PAY_PLAN_DATE ="' + rows[i].PAY_PLAN_DATE + '"';
 
@@ -1119,8 +1128,7 @@ router.post('/detailModifyContracId', (req, res, next) => {
                                                     } else {
 
                                                         payPlanDateModifySql = 'UPDATE TB_S10_CONTRACT020' +
-                                                            ' SET PAY_PLAN_DATE = "' + finalDate + '", ' +
-                                                            ' PAYED_FLAG = "N" ' +
+                                                            ' SET PAY_PLAN_DATE = "' + finalDate + '",PAYED_DATE = "0000-00-00" ' +
                                                             ' WHERE CONTRACT_ID = ' + modifyDataNum + ' AND PAY_PLAN_DATE ="' + rows[i].PAY_PLAN_DATE + '"';
 
                                                     }
@@ -1177,15 +1185,14 @@ router.post('/detailModifyContracId', (req, res, next) => {
                                                 } else if (selectedOption === 'N') {
 
                                                     payPlanDateModifySql = 'UPDATE TB_S10_CONTRACT020' +
-                                                        ' SET PAY_PLAN_DATE = "' + finalDate + '", ' +
+                                                        ' SET PAY_PLAN_DATE = "' + finalDate + '", PAYED_DATE = "0000-00-00",' +
                                                         ' PAYED_FLAG = "N" ' +
                                                         ' WHERE CONTRACT_ID = ' + modifyDataNum + ' AND PAY_PLAN_DATE ="' + rows[0].PAY_PLAN_DATE + '"';
 
                                                 } else {
 
                                                     payPlanDateModifySql = 'UPDATE TB_S10_CONTRACT020' +
-                                                        ' SET PAY_PLAN_DATE = "' + finalDate + '", ' +
-                                                        ' PAYED_FLAG = "N" ' +
+                                                        ' SET PAYED_DATE = "0000-00-00",PAY_PLAN_DATE = "' + finalDate + '" ' +
                                                         ' WHERE CONTRACT_ID = ' + modifyDataNum + ' AND PAY_PLAN_DATE ="' + rows[0].PAY_PLAN_DATE + '"';
 
                                                 }
@@ -1246,16 +1253,14 @@ router.post('/detailModifyContracId', (req, res, next) => {
                                                     } else if (selectedOption === 'N') {
 
                                                         payPlanDateModifySql = 'UPDATE TB_S10_CONTRACT020' +
-                                                            ' SET PAY_PLAN_DATE = "' + finalDate + '", ' +
+                                                            ' SET PAY_PLAN_DATE = "' + finalDate + '",PAYED_DATE = "0000-00-00", ' +
                                                             ' PAYED_FLAG = "N" ' +
                                                             ' WHERE CONTRACT_ID = ' + modifyDataNum + ' AND PAY_PLAN_DATE ="' + rows[i].PAY_PLAN_DATE + '"';
 
                                                     } else {
 
                                                         payPlanDateModifySql = 'UPDATE TB_S10_CONTRACT020' +
-                                                            ' SET PAY_PLAN_DATE = "' + finalDate + '", ' +
-                                                           
-                                                            ' PAYED_FLAG = "N" ' +
+                                                            ' SET PAYED_DATE = "0000-00-00", PAY_PLAN_DATE = "' + finalDate + '"' +
                                                             ' WHERE CONTRACT_ID = ' + modifyDataNum + ' AND PAY_PLAN_DATE ="' + rows[i].PAY_PLAN_DATE + '"';
 
                                                     }
@@ -1333,6 +1338,8 @@ router.post('/detailModifyContracId', (req, res, next) => {
                                         // 계약기간이 다르면
                                     } else if (termCountRow[0].CONTRACT_TERM != contractTerm) {
 
+                                       
+
                                         let dateToString = startDate.toString().substring(0, 10);
 
                                         let wasteDateDay = dateToString.substring(6, 8);
@@ -1387,12 +1394,12 @@ router.post('/detailModifyContracId', (req, res, next) => {
                                                         // 납부여부-아니오
                                                     } else if (selectedOption === 'N') {
 
-                                                        insertPlanDateSql = 'INSERT INTO TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_FLAG) VALUES (?,?,SYSDATE(),"s010100010",SYSDATE(),"S010100010","N")';
+                                                        insertPlanDateSql = 'INSERT INTO TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_FLAG,PAYED_DATE) VALUES (?,?,SYSDATE(),"s010100010",SYSDATE(),"S010100010","N","0000-00-00")';
                                                         planDateParams = [modifyDataNum, finalDate];
 
                                                     } else{
 
-                                                        insertPlanDateSql = 'INSERT INTO TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_FLAG) VALUES (?,?,SYSDATE(),"s010100010",SYSDATE(),"S010100010","N")';
+                                                        insertPlanDateSql = 'INSERT INTO TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_DATE,PAYED_FLAG) VALUES (?,?,SYSDATE(),"s010100010",SYSDATE(),"S010100010","0000-00-00","")';
                                                         planDateParams = [modifyDataNum, finalDate];
                                                     
                                                     }
@@ -1403,7 +1410,7 @@ router.post('/detailModifyContracId', (req, res, next) => {
 
                                                         if (error) {
                                                             connection.rollback(function () {
-                                                                console.log('payPlanDateModifySql.error');
+                                                                console.log('insertPlanDateSql.error');
                                                                 setImmediate(() => {
                                                                     next(new Error(error));
                                                                 })
@@ -1432,13 +1439,13 @@ router.post('/detailModifyContracId', (req, res, next) => {
                                                 } else {
 
                                                     for (let i = 0; i < contractTerm; i++) {
-
+                                                        
                                                         finalDate = contractYearDay + '-' + (wasteMonth + i) + '-' + contractDateDay;
                                                         originDate = contractYearDay + '-' + (wasteMonth) + '-' + contractDateDay;
 
                                                         // 납부여부-네
                                                         if (selectedOption === 'Y') {
-                                                            
+                                                          
                                                             insertPlanDateSql = 'INSERT INTO TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_FLAG) VALUES (?,?,SYSDATE(),"s010100010",SYSDATE(),"S010100010","N")';
                                                             planDateParams = [modifyDataNum, finalDate];
     
@@ -1449,11 +1456,12 @@ router.post('/detailModifyContracId', (req, res, next) => {
                                                             // 납부여부-아니오
                                                         } else if (selectedOption === 'N') {
 
-                                                            insertPlanDateSql = 'INSERT INTO TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_FLAG) VALUES (?,?,SYSDATE(),"s010100010",SYSDATE(),"S010100010","N")';
+                                                            insertPlanDateSql = 'INSERT INTO TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_FLAG,PAYED_DATE) VALUES (?,?,SYSDATE(),"s010100010",SYSDATE(),"S010100010","N","0000-00-00")';
                                                             planDateParams = [modifyDataNum, finalDate];
 
                                                         } else{
-                                                            insertPlanDateSql = 'INSERT INTO TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_FLAG) VALUES (?,?,SYSDATE(),"s010100010",SYSDATE(),"S010100010","N")';
+                                                           
+                                                            insertPlanDateSql = 'INSERT INTO TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_DATE,PAYED_FLAG) VALUES (?,?,SYSDATE(),"s010100010",SYSDATE(),"S010100010","0000-00-00","")';
                                                             planDateParams = [modifyDataNum, finalDate];
                                                         }
 
@@ -1463,7 +1471,7 @@ router.post('/detailModifyContracId', (req, res, next) => {
 
                                                             if (error) {
                                                                 connection.rollback(function () {
-                                                                    console.log('payPlanDateModifySql.error');
+                                                                    console.log('insertPlanDateSql.error');
                                                                     setImmediate(() => {
                                                                         next(new Error(error));
                                                                     })
@@ -1532,23 +1540,23 @@ router.post('/detailModifyContracId', (req, res, next) => {
                                                         // 납부여부-아니오
                                                     } else if (selectedOption === 'N') {
 
-                                                        insertPlanDateSql = 'INSERT INTO TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_FLAG) VALUES (?,?,SYSDATE(),"s010100010",SYSDATE(),"S010100010","N")';
+                                                        insertPlanDateSql = 'INSERT INTO TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_FLAG,PAYED_DATE) VALUES (?,?,SYSDATE(),"s010100010",SYSDATE(),"S010100010","N","0000-00-00")';
                                                         planDateParams = [modifyDataNum, finalDate];
 
                                                     } else {
 
-                                                        insertPlanDateSql = 'INSERT INTO TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_FLAG) VALUES (?,?,SYSDATE(),"s010100010",SYSDATE(),"S010100010","N")';
+                                                        insertPlanDateSql = 'INSERT INTO TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_DATE,PAYED_FLAG) VALUES (?,?,SYSDATE(),"s010100010",SYSDATE(),"S010100010","0000-00-00","")';
                                                         planDateParams = [modifyDataNum, finalDate];
                                                     }
 
                                                     
 
                                                     connection.query(insertPlanDateSql, planDateParams, function (error, result) {  //쿼리문
-                                                        console.log('payPlanDateModifySql :' + result);
+                                                        console.log('insertPlanDateSql :' + result);
 
                                                         if (error) {
                                                             connection.rollback(function (error) {
-                                                                console.log('payPlanDateModifySql.error');
+                                                                console.log('insertPlanDateSql.error');
                                                                
                                                                 setImmediate(() => {
                                                                     next(new Error(error))
@@ -1592,23 +1600,22 @@ router.post('/detailModifyContracId', (req, res, next) => {
                                                             // 납부여부-아니오
                                                         } else if (selectedOption === 'N') {
 
-                                                            insertPlanDateSql = 'INSERT INTO TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_FLAG) VALUES (?,?,SYSDATE(),"s010100010",SYSDATE(),"S010100010","N")';
+                                                            insertPlanDateSql = 'INSERT INTO TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_FLAG,PAYED_DATE) VALUES (?,?,SYSDATE(),"s010100010",SYSDATE(),"S010100010","N","0000-00-00")';
                                                             planDateParams = [modifyDataNum, finalDate];
 
                                                         } else {
 
-                                                            insertPlanDateSql = 'INSERT INTO TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_FLAG) VALUES (?,?,SYSDATE(),"s010100010",SYSDATE(),"S010100010","N")';
+                                                            insertPlanDateSql = 'INSERT INTO TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_DATE,PAYED_FLAG) VALUES (?,?,SYSDATE(),"s010100010",SYSDATE(),"S010100010","0000-00-00","")';
                                                             planDateParams = [modifyDataNum, finalDate];
                                                         }
 
 
                                                         connection.query(insertPlanDateSql, planDateParams, function (error, result) {  //쿼리문
-                                                            console.log('payPlanDateModifySql :' + result);
+                                                            console.log('insertPlanDateSql :' + result);
 
                                                             if (error) {
                                                                 connection.rollback(function (error) {
                                                                     console.log('payPlanDateModifySql.error');
-                                                                    // res.send({ success: false, message: "TB_S10_CONTRACT020 최초 등록 오류 : " + error });
                                                                     setImmediate(() => {
                                                                         next(new Error(error))
                                                                         console.log('error', error);
@@ -1620,7 +1627,6 @@ router.post('/detailModifyContracId', (req, res, next) => {
                                                             connection.commit(function (error) {
                                                                 if (error) {
                                                                     connection.rollback(function (error) {
-                                                                        // res.send({ success: false, message: "COMMIT 오류 : " + error });
                                                                         setImmediate(() => {
                                                                             next(new Error(error))
                                                                             console.log('error', error);
@@ -1652,12 +1658,12 @@ router.post('/detailModifyContracId', (req, res, next) => {
                                                     // 납부여부-아니오
                                                     } else if (selectedOption === 'N') {
 
-                                                        insertPlanDateSql = 'INSERT INTO TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_FLAG) VALUES (?,?,SYSDATE(),"s010100010",SYSDATE(),"S010100010","N")';
+                                                        insertPlanDateSql = 'INSERT INTO TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_FLAG,PAYED_DATE) VALUES (?,?,SYSDATE(),"s010100010",SYSDATE(),"S010100010","N","0000-00-00")';
                                                         planDateParams = [modifyDataNum, finalDate];
 
                                                     } else {
 
-                                                        insertPlanDateSql = 'INSERT INTO TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_FLAG) VALUES (?,?,SYSDATE(),"s010100010",SYSDATE(),"S010100010","N")';
+                                                        insertPlanDateSql = 'INSERT INTO TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_DATE,PAYED_FLAG) VALUES (?,?,SYSDATE(),"s010100010",SYSDATE(),"S010100010","0000-00-00","")';
                                                         planDateParams = [modifyDataNum, finalDate];
                                                     }
 
@@ -1695,7 +1701,7 @@ router.post('/detailModifyContracId', (req, res, next) => {
                                                
 
                                                 } else {
-                                              
+                                             
                                                     for (let i = 0; i < contractTerm; i++) {
 
                                                         finalDate = contractYearDay + '-' + (wasteMonth + i) + '-' + contractDateDay;
@@ -1704,7 +1710,7 @@ router.post('/detailModifyContracId', (req, res, next) => {
 
                                                         // 납부여부-네
                                                         if (selectedOption === 'Y') {
-
+                                                          
                                                             insertPlanDateSql = 'INSERT INTO TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_FLAG,PAYED_DATE) VALUES (?,?,SYSDATE(),"s010100010",SYSDATE(),"S010100010","N",?)';
                                                             planDateParams = [modifyDataNum, finalDate, originDate];
 
@@ -1715,13 +1721,13 @@ router.post('/detailModifyContracId', (req, res, next) => {
 
                                                             // 납부여부-아니오
                                                         } else if (selectedOption === 'N') {
-
-                                                            insertPlanDateSql = 'INSERT INTO TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_FLAG) VALUES (?,?,SYSDATE(),"s010100010",SYSDATE(),"S010100010","N")';
+                                                           
+                                                            insertPlanDateSql = 'INSERT INTO TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_FLAG,PAYED_DATE) VALUES (?,?,SYSDATE(),"s010100010",SYSDATE(),"S010100010","N","0000-00-00")';
                                                             planDateParams = [modifyDataNum, finalDate];
 
                                                         } else {
-
-                                                            insertPlanDateSql = 'INSERT INTO TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_FLAG) VALUES (?,?,SYSDATE(),"s010100010",SYSDATE(),"S010100010","N")';
+                                                                
+                                                            insertPlanDateSql = 'INSERT INTO TB_S10_CONTRACT020(CONTRACT_ID,PAY_PLAN_DATE,CREATED_DATE,CREATED_PROGRAM_ID,LAST_UPDATE_DATE,LAST_UPDATE_PROGRAM_ID,PAYED_DATE,PAYED_FLAG) VALUES (?,?,SYSDATE(),"s010100010",SYSDATE(),"S010100010","0000-00-00","")';
                                                             planDateParams = [modifyDataNum, finalDate];
                                                         }
 
@@ -1774,7 +1780,6 @@ router.post('/detailModifyContracId', (req, res, next) => {
                                                             connection.commit(function (error) {
                                                                 if (error) {
                                                                     connection.rollback(function (error) {
-                                                                        // res.send({ success: false, message: "COMMIT 오류 : " + error });
                                                                         setImmediate(() => {
                                                                             next(new Error(error))
                                                                             console.log('error', error);

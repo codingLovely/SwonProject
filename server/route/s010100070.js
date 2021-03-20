@@ -78,8 +78,8 @@ router.get('/insert/tb_s10_contract020_by_id', (req, res,next) => {
         '       CON.PAY_METHOD,' +
         '       PCON.PAYED_PLAN_MONEY,' +
         '       (SELECT CD_V_MEANING ' +
-        ' FROM TB_S10_CODE ' +
-        ' WHERE CD_TP = "PAY_METHOD" AND CD_V = CON.PAY_METHOD) AS "PAY_METHOD_M",' +
+                  ' FROM TB_S10_CODE ' +
+                         ' WHERE CD_TP = "PAY_METHOD" AND CD_V = CON.PAY_METHOD) AS "PAY_METHOD_M",' +
         '       DATE_FORMAT(PCON.PAY_PLAN_DATE,"%y-%m-%d") AS "PAY_PLAN_DATE", ' +
         '       PCON.CONTRACT_ID, ' +
         '       PCON.PAYED_FLAG, ' +
