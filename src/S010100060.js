@@ -1,9 +1,10 @@
 import React, { Fragment, useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import S010100070 from './S010100070';
+import s010100060 from './service/s010100060';
 
 import clsx from 'clsx';
-import { makeStyles } from '@material-ui/core/styles';
+// import { makeStyles } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Drawer from '@material-ui/core/Drawer';
 import AppBar from '@material-ui/core/AppBar';
@@ -46,89 +47,7 @@ import moment from 'moment';
 import ReactPaginate from 'react-paginate';
 
 import xlsx from 'xlsx';
-
-const drawerWidth = 240;
-
-const useStyles = makeStyles((theme) => ({
-    root: {
-        display: 'flex',
-    },
-    toolbar: {
-        paddingRight: 24,
-    },
-    toolbarIcon: {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'flex-end',
-        padding: '0 8px',
-        ...theme.mixins.toolbar,
-    },
-    appBar: {
-        zIndex: theme.zIndex.drawer + 1,
-        transition: theme.transitions.create(['width', 'margin'], {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.leavingScreen,
-        }),
-    },
-    appBarShift: {
-        marginLeft: drawerWidth,
-        width: `calc(100% - ${drawerWidth}px)`,
-        transition: theme.transitions.create(['width', 'margin'], {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.enteringScreen,
-        }),
-    },
-    menuButton: {
-        marginRight: 36,
-    },
-    menuButtonHidden: {
-        display: 'none',
-    },
-    title: {
-        flexGrow: 1,
-    },
-    drawerPaper: {
-        position: 'relative',
-        whiteSpace: 'nowrap',
-        width: drawerWidth,
-        transition: theme.transitions.create('width', {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.enteringScreen,
-        }),
-    },
-    drawerPaperClose: {
-        overflowX: 'hidden',
-        transition: theme.transitions.create('width', {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.leavingScreen,
-        }),
-        width: theme.spacing(7),
-        [theme.breakpoints.up('sm')]: {
-            width: theme.spacing(9),
-        },
-    },
-    appBarSpacer: theme.mixins.toolbar,
-    content: {
-        flexGrow: 1,
-        height: '100vh',
-        overflow: 'auto',
-    },
-    container: {
-        paddingTop: theme.spacing(4),
-        paddingBottom: theme.spacing(4),
-    },
-    paper: {
-        padding: theme.spacing(2),
-        display: 'flex',
-        overflow: 'auto',
-        flexDirection: 'column',
-    },
-    fixedHeight: {
-        height: 240,
-    },
-
-}));
-
+import {useStyles} from './Test';
 
 let paymentState = [{ key: '', value: '전체' },
 { key: 'Y', value: 'Y' },
@@ -159,23 +78,22 @@ function S010100060(props) {
 
     const paymentList = () => {
 
-        let body = {
-            startDate: startDate,
-            endDate: endDate
+        let paymentSearchVal = {
+            startDate:startDate,
+            endDate:endDate,
+            memberNm:userName,
+            paymentStatus:paymentStatus
         }
 
-    
-        axios.post('/api/s010100060/list', body)
-            .then(response => {
-                if (response.data.success) {
-                    // // console.log('list60', response.data.rows);
-                    setPayStatusList(response.data.rows);
-                } else {
-                    alert(response.data.message);
-                    alert('데이터 조회를 실패하였습니다.')
-                }
+        s010100060.getPaymentInfo(paymentSearchVal).then((res) => {
+            // console.log('res.data',res.data);
+            if(res.status === 200){
+                setPayStatusList(res.data);
+            }else{
+                alert('데이터 조회를 실패하였습니다.');
+            }
+        });
 
-            })
 
     }
     useEffect(() => {
@@ -206,7 +124,6 @@ function S010100060(props) {
 
 
     const handleToggle = (value) => {
-        // console.log('event', e.target.id);
         const currentIndex = payChecked.indexOf(value);
         //전체 Checked된 State에서 현재 누를 Checkbox가 있는지 확인
         const newChecked = [...payChecked];
@@ -218,10 +135,6 @@ function S010100060(props) {
         }
 
         setPayChecked(newChecked);
-
-         // console.log('currentIndex', currentIndex);
-         // console.log('checked', checked);
-
     }
 
     const onPaymenthandler = () => {
@@ -231,9 +144,7 @@ function S010100060(props) {
             alert('하나만 체크하세요');
         } else {
             setDataAllContract(payChecked);
-            // console.log(checked);
             setStoreOpen(true);
-            // setPayChecked('');
         }
     }
 
@@ -266,17 +177,17 @@ function S010100060(props) {
 
     const displayPayStList = payStatusList.slice(pagesVisited, pagesVisited + usersPerPage).map((payStatusList, index) => {
         return (
-            <TableRow key={payStatusList.CONTRACT_ID}>
-                <TableCell><input type='checkbox' checked = {payChecked.indexOf(payStatusList.CONTRACT_ID) === -1 ? false:true} onChange={()=>handleToggle(payStatusList.CONTRACT_ID)} id={payStatusList.CONTRACT_ID} /></TableCell>
-                <TableCell>{payStatusList.CONTRACT_ID}</TableCell>
-                <TableCell>{payStatusList.MEMBER_NM}</TableCell>
-                <TableCell>{payStatusList.PAY_PLAN_DATE}</TableCell>
-                <TableCell>{payStatusList.PAYED_FLAG}</TableCell>
-                <TableCell>{payStatusList.PAYED_DATE=== '00-00-00'||null ? '' :payStatusList.PAYED_DATE}</TableCell>
-                <TableCell>{payStatusList.START_DATE} ~ {payStatusList.END_DATE}</TableCell>
-                <TableCell>{payStatusList.NAME}</TableCell>
-                <TableCell>{payStatusList.EMP_HP}</TableCell>
-                <TableCell>{payStatusList.EMP_EMAIL}</TableCell>
+            <TableRow key={payStatusList.contractId}>
+                <TableCell><input type='checkbox' checked = {payChecked.indexOf(payStatusList.contractId) === -1 ? false:true} onChange={()=>handleToggle(payStatusList.contractId)} id={payStatusList.contractId} /></TableCell>
+                <TableCell>{payStatusList.contractId}</TableCell>
+                <TableCell>{payStatusList.memberNm}</TableCell>
+                <TableCell>{payStatusList.payPlanDate}</TableCell>
+                <TableCell>{payStatusList.payedFlag}</TableCell>
+                <TableCell>{payStatusList.payedDate=== '00-00-00'||null ? '' :payStatusList.payedDate}</TableCell>
+                <TableCell>{payStatusList.startDate} ~ {payStatusList.endDate}</TableCell>
+                <TableCell>{payStatusList.name}</TableCell>
+                <TableCell>{payStatusList.empHp}</TableCell>
+                <TableCell>{payStatusList.empEmail}</TableCell>
             </TableRow>
         )
     });

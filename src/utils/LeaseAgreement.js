@@ -41,7 +41,14 @@ function LeaseAgreement (props){
               if (response.data.success) {
 
                 const modalCContractDate = response.data.rows[0].CONTRACT_DATE;
-                const modalCContractMoney = numberWithCommas(response.data.rows[0].PAYED_PLAN_MONEY);
+
+                let modalCContractMoney;
+                if((response.data.rows[0].PAYED_PLAN_MONEY === null)||(response.data.rows[0].PAYED_PLAN_MONEY === '')||(response.data.rows[0].PAYED_PLAN_MONEY === undefined)){
+                    modalCContractMoney = '';
+                }else{
+                    modalCContractMoney = numberWithCommas(response.data.rows[0].PAYED_PLAN_MONEY);
+                }   
+               
                 const contractMoney =response.data.rows[0].PAYED_PLAN_MONEY;
                
                 const modalCContractTpValM = response.data.rows[0].CONTRACT_ROOM_M;
@@ -79,7 +86,10 @@ function LeaseAgreement (props){
                 setEndMonth(wasteEndMonth);
                 setEndDay(wasteEndDay);
 
+             
                 setContractMoney(modalCContractMoney);
+             
+                
                 setVatMoney(VatMoney);
                 setRoomLockerTp(modalCContractTpValM);
                 setContractPayDate(modalCPayDate);
@@ -111,7 +121,7 @@ function LeaseAgreement (props){
             mm='0'+mm
         } 
 
-    return(
+        return(
                         <Fragment>
                         <div className = "agreementWrapper">
                         <h1> 임 대 차 계 약 서 </h1>

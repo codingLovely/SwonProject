@@ -3,6 +3,7 @@ import axios from "axios";
 import './css/S010100040.css';
 import S010100010 from './S010100010';
 import S010100050 from './S010100050';
+import s010100040 from './service/s010100040';
 
 import clsx from 'clsx';
 import { makeStyles } from '@material-ui/core/styles';
@@ -47,10 +48,13 @@ import moment from 'moment';
 import ReactPaginate from 'react-paginate';
 
 import xlsx from 'xlsx';
+// import {useStyles} from './Test';
+
+let memberId = '';
 
 const drawerWidth = 240;
 
-const useStyles = makeStyles((theme) => ({
+let useStyles = makeStyles((theme) => ({
     root: {
         display: 'flex',
     },
@@ -128,102 +132,48 @@ const useStyles = makeStyles((theme) => ({
         height: 240,
     },
 
-}));
+}))
 
-
-let memberId = '';
 
 function S010100040(props) {
 
     const classes = useStyles();
 
-    const [modalOpen, setModalOpen] = React.useState(false);
-
-    const [memberNm, setMemberNm] = useState('')
-    const [regNo, setRegNo] = useState('')
-    const [memberTp, setMemberTp] = useState('')
+    const [modalOpen,setModalOpen] = React.useState(false);
+    const [memberNm,setMemberNm] = useState('')
+    const [regNo,setRegNo] = useState('')
+    const [memberTp,setMemberTp] = useState('')
     const [contractStatus, setContractStatus] = useState('')
     const [memberSt, setMemberSt] = useState('')
     const [name, setName] = useState('')
     const [tbMember, setTbMember] = useState([].slice(0, 20))
-
     const [memberStatus, setMemberStatus] = useState([{}]);
     const [memberType, setMemberType] = useState([{}]);
-
     const [startDate, setStartDate] = useState(moment().date('01'));
     const [endDate, setEndDate] = useState(moment());
-
     const [open, setOpen] = React.useState(true);
     const [storeOpen, setStoreOpen] = React.useState(false);
     const [memberIdModal, setMemberIdModal] = useState(0);
-
     const [pageNumber, setPageNumber] = useState(0);
     const usersPerPage = 20;
     const pagesVisited = pageNumber * usersPerPage;
     const pageCount = Math.ceil(tbMember.length / usersPerPage);
 
+
     const changePage = ({ selected }) => {
         setPageNumber(selected);
     }
-
     const handleDrawerOpen = () => {
         setOpen(true);
-    };
+    }
     const handleDrawerClose = () => {
         setOpen(false);
-    };
-
-
-    useEffect(() => {
-
-        axios.get('/api/s010100040/selectMemberTp')
-            .then(response => {
-                if (response.data.success) {
-                    let arr = [{ key: '', value: '전체' }]
-
-                    response.data.rows.map((data) =>
-                        arr.push({
-                            value: data.CD_V_MEANING,
-                            key: data.CD_V
-
-                        }));
-
-                    setMemberType(arr);
-
-                } else {
-                    alert(response.data.message);
-                    alert("회원상태 데이터를 불러오는데 실패하였습니다.");
-                }
-            })
-    }, [])
-
-
-    useEffect(() => {
-
-        axios.get('/api/s010100040/selectMemberSt')
-            .then(response => {
-                if (response.data.success) {
-                    let arr = [{ key: '', value: '전체' }]
-
-                    response.data.rows.map((data) =>
-                        arr.push({
-                            value: data.CD_V_MEANING,
-                            key: data.CD_V
-
-                        }));
-
-                    setMemberStatus(arr);
-
-                } else {
-                    alert(response.data.message);
-                    alert("회원상태 데이터를 불러오는데 실패하였습니다.");
-                }
-            })
-    }, [])
+    }
 
     // 조회
     const memberList = () => {
-        const body = {
+    
+        let searchListValue = {
             startDate,
             endDate,
             memberNm,
@@ -234,26 +184,69 @@ function S010100040(props) {
             memberSt
         }
 
-        console.log('startDate',startDate);
-        console.log('endDate',endDate);
 
-        axios.post('/api/s010100040/searchMember', body)
-            .then(response => {
-                if (response.data.success) {
-                    setTbMember(response.data.rows);
-                    // // console.log('response.data.success',response.data.rows);
-                } else {
-                    alert(response.data.message);
-                    alert("데이터 목록을 가져오는 것을 실패하였습니다.")
-                }
-            })
+        s010100040.getMemStList(searchListValue).then((res) => {
+            // console.log('res.data',res.data);
+            if(res.status === 200){
+                setTbMember(res.data);
+            }else{
+                alert('실패');
+            }
+            });
     }
 
     useEffect(() => {
+
+        let cdTpValue='MEMBER_TP';
+        
+        s010100040.getSelectBox(cdTpValue).then((res) => {
+            
+            if(res.status === 200){
+                
+                let memTpArr = [{ key: '', value: '전체' }]
+               
+                res.data.map((data) =>
+                    memTpArr.push({
+                        value: data.cd_v_meaning,
+                        key: data.cd_v
+                    })
+                    );
+
+                setMemberType(memTpArr);               
+            }else{
+                alert('실패');
+            }
+        });
+
+        cdTpValue='MEMBER_ST';
+
+        s010100040.getSelectBox(cdTpValue).then((res) => {
+            
+            if(res.status === 200){
+                
+                let memStArr = [{ key: '', value: '전체' }]
+
+                res.data.map((data) =>
+                    memStArr.push({
+                        value: data.cd_v_meaning,
+                        key: data.cd_v
+
+                    }));
+
+                setMemberStatus(memStArr);            
+            }else{
+                alert('실패');
+            }
+        });
+
+        // 전체조회
         memberList();
+
     }, [])
 
-    const onSearchSubmitHandler = (event) => {
+
+    // 조회버튼
+    const onSearchSubmitHandler = () => {
         memberList();
     }
 
@@ -286,10 +279,6 @@ function S010100040(props) {
         setMemberTp(event.currentTarget.value);
     }
 
-    const contractStatusHandler = (event) => {
-        setContractStatus(event.currentTarget.value);
-    }
-
     const onHandleDetailClickOpen = (event) => {
         memberId = event.target.id;
         setMemberIdModal(memberId);
@@ -302,11 +291,11 @@ function S010100040(props) {
     });
 
     const onSNSHandler = (event) => {
-
+           // 추후개발
     }
 
     const onEmailHandler = (event) => {
-
+           // 추후개발
     }
 
     const excelHandler = (event) => {
@@ -332,15 +321,15 @@ function S010100040(props) {
     const displayMemSt = tbMember.slice(pagesVisited, pagesVisited + usersPerPage).map((tbMember, index) => {
         return (
             <TableRow key={index}>
-                <TableCell id={tbMember.MEMBER_ID} >{tbMember.MEMBER_ID}</TableCell>
-                <TableCell>{tbMember.MEMBER_NM}</TableCell>
-                <TableCell>{tbMember.REG_NO}</TableCell>
-                <TableCell onClick={onHandleDetailClickOpen} className='underLineForDetail' id={tbMember.MEMBER_ID}>{tbMember.NAME}</TableCell>
-                <TableCell>{tbMember.EMP_HP}</TableCell>
-                <TableCell>{tbMember.EMP_EMAIL}</TableCell>
-                <TableCell>{tbMember.MEMBER_TP}</TableCell>
-                <TableCell>{tbMember.MEMBER_ST}</TableCell>
-                <TableCell>{tbMember.END_FLAG}</TableCell>
+                <TableCell id={tbMember.tbS10Member010.member_id} >{tbMember.tbS10Member010.member_id}</TableCell>
+                <TableCell>{tbMember.tbS10Member010.member_nm}</TableCell>
+                <TableCell>{tbMember.tbS10Member010.reg_no}</TableCell>
+                <TableCell onClick={onHandleDetailClickOpen} className='underLineForDetail' id={tbMember.tbS10Member010.member_id}>{tbMember.name}</TableCell>
+                <TableCell>{tbMember.emp_hp}</TableCell>
+                <TableCell>{tbMember.emp_email}</TableCell>
+                <TableCell>{tbMember.tbS10Member010.member_tp}</TableCell>
+                <TableCell>{tbMember.tbS10Member010.member_st}</TableCell>
+                <TableCell>{tbMember.tbS10Member010.tbS10Contract010.end_flag}</TableCell>
             </TableRow>
         )
     });
@@ -364,6 +353,7 @@ function S010100040(props) {
         return confirmAction;
       };
     
+
       const approvalConfirm = () => {
     
         axios.post('/api/s010100150/userLogout')

@@ -32,7 +32,7 @@ app.use(express.urlencoded({limit: '50mb'}));
 // 이용계약서
 app.use('/api/s010100010',require('./route/s010100010'));
 // 회원목록
-app.use('/api/s010100040',require('./route/s010100040'));
+// app.use('/api/s010100040',require('./route/s010100040'));
 // 회원상세
 app.use('/api/s010100050',require('./route/s010100050'));
 
@@ -72,7 +72,7 @@ app.use(function (error, req, res, next) {
 
 /** 연결 알림 */
 const server = app.listen(app.get('port'), () => {
-    // server.setTimeout(60 * 60 * 1000);
+   
 
     require('moment-timezone');
     moment.tz.setDefault("Asia/Seoul");

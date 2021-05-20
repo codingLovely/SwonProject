@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
-import { post } from 'axios';
 import './css/S010100050.css';
 import S010100010 from './S010100010';
+import s010100040 from './service/s010100040';
+import s010100050 from './service/s010100050';
 import Base64Downloader from 'react-base64-downloader';
 import DaumPostcode from 'react-daum-postcode';
 
-import { makeStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -20,96 +19,8 @@ import Backdrop from '@material-ui/core/Backdrop';
 import Fade from '@material-ui/core/Fade';
 import Form from 'react-bootstrap/Form';
 
-
 import ReactPaginate from 'react-paginate';
-
-
-const drawerWidth = 240;
-
-const useStyles = makeStyles((theme) => ({
-    root: {
-        display: 'flex',
-    },
-    toolbar: {
-        paddingRight: 24,
-    },
-    toolbarIcon: {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'flex-end',
-        padding: '0 8px',
-        ...theme.mixins.toolbar,
-    },
-    appBar: {
-        zIndex: theme.zIndex.drawer + 1,
-        transition: theme.transitions.create(['width', 'margin'], {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.leavingScreen,
-        }),
-    },
-    appBarShift: {
-        marginLeft: drawerWidth,
-        width: `calc(100% - ${drawerWidth}px)`,
-        transition: theme.transitions.create(['width', 'margin'], {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.enteringScreen,
-        }),
-    },
-    menuButton: {
-        marginRight: 36,
-    },
-    menuButtonHidden: {
-        display: 'none',
-    },
-    title: {
-        flexGrow: 1,
-    },
-    drawerPaper: {
-        position: 'relative',
-        whiteSpace: 'nowrap',
-        width: drawerWidth,
-        transition: theme.transitions.create('width', {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.enteringScreen,
-        }),
-    },
-    drawerPaperClose: {
-        overflowX: 'hidden',
-        transition: theme.transitions.create('width', {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.leavingScreen,
-        }),
-        width: theme.spacing(7),
-        [theme.breakpoints.up('sm')]: {
-            width: theme.spacing(9),
-        },
-    },
-    appBarSpacer: theme.mixins.toolbar,
-    content: {
-        flexGrow: 1,
-        height: '100vh',
-        overflow: 'auto',
-    },
-    container: {
-        paddingTop: theme.spacing(4),
-        paddingBottom: theme.spacing(4),
-    },
-    paper: {
-        padding: theme.spacing(2),
-        display: 'flex',
-        overflow: 'auto',
-        flexDirection: 'column',
-    },
-    fixedHeight: {
-        height: 240,
-    },
-    modal: {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-}));
-
+import {useStyles} from './Test';
 
 let num = '';
 let rNum = 0;
@@ -192,110 +103,92 @@ function S010100050(props) {
 
 
     useEffect(() => {
+    let cdTpValue='MEMBER_TP';
+        
+        s010100040.getSelectBox(cdTpValue).then((res) => {
+            
+            if(res.status === 200){
+                
+                let arr = [{ key: '선택', value: '선택' }]
 
-        axios.get('/api/s010100050/memberTpDetail')
-            .then(response => {
-                if (response.data.success) {
-                    let arr = [{ key: '선택', value: '선택' }]
+                res.data.map((data) =>
+                    arr.push({
+                        value: data.cd_v_meaning,
+                        key: data.cd_v
+                    }));
 
-                    response.data.rows.map((data) =>
-                        arr.push({
-                            value: data.CD_V_MEANING,
-                            key: data.CD_V
-                        }));
+                memberTpDetail = arr;
+            } else {
+                alert(" 데이터를 불러오는데 실패하였습니다.");
+            }
+        });
 
-                    memberTpDetail = arr;
-                } else {
-                    alert(response.data.message);
-                    alert(" 데이터를 불러오는데 실패하였습니다.");
-                }
-            })
+
     }, [])
 
     const detailMemberList = () => {
-        let body = {
-            dataMemId: dataMemId
-        }
-
-        axios.post('/api/s010100050/detailMember_by_id', body)
-            .then(response => {
-                if (response.data.success) {
-
-                    const memberId = response.data.rows[0].MEMBER_ID;
-                    const modalMemberNm = response.data.rows[0].MEMBER_NM;
-                    const modalRegNo = response.data.rows[0].REG_NO;
-                    const modalMemberTp = response.data.rows[0].MEMBER_TP;
-                    const modalName = response.data.rows[0].NAME;
-                    const modalEmpHp = response.data.rows[0].EMP_HP;
-                    const modalEmpEmail = response.data.rows[0].EMP_EMAIL;
-                    const modalZip = response.data.rows[0].ZIP_CODE;
-                    const modalAddr = response.data.rows[0].ADDRESS;
-                    const modalDetailAddr = response.data.rows[0].DETAIL_ADDRESS;
-                    //const modalAddress = zip + ' ' + addr + ' ' + detailAddr;
-                    const modalEndDate = response.data.rows[0].END_DATE;
-                    const modalEndFlag = response.data.rows[0].END_FLAG;
-                    const modalRetireDate = response.data.rows[0].RETIRE_DATE;
-
-                    const modalRegNos = modalRegNo.split('-');
-                    const modalEmpHps = modalEmpHp.split('-');
-                    const modalEmpEmails = modalEmpEmail.split('@');
-
-                    
-                    setDetailAllInfo(response.data.rows);
-                    setDetailMemberId(memberId);
-            
-                    if(modalRetireDate === '00-00-00'){
-                        setEndDateTest('');
-                    }else{
-                        setEndDateTest(response.data.rows[0].RETIRE_DATE);
-                    }
-                    
-                 
-
-                    setDetailMemberNm(modalMemberNm);
-
-                    setDetailFstRegNo(modalRegNos[0]);
-                    setDetailSndRegNo(modalRegNos[1]);
-                    setDetailThdRegNo(modalRegNos[2]);
-
-                    setDetailMemberTp(modalMemberTp);
-                    setDetailName(modalName);
-
-                    setDetailFstEmpHp(modalEmpHps[0]);
-                    setDetailSndEmpHp(modalEmpHps[1]);
-                    setDetailThdEmpHp(modalEmpHps[2]);
-
-                    setDetailEmpEmail(modalEmpEmails[0]);
-                    setDetailDomain(modalEmpEmails[1]);
-                    setMEndFlag(modalEndFlag);
-                    //setStartAsk_date(new Date(modalEndDate));
-
-                    setDetailZipcode(modalZip);
-                    setDetailAddress(modalAddr);
-                    setDetailDetailAddress(modalDetailAddr);
-                  
-                    
-                    const idCardImg = new Buffer.from(response.data.rows[0].ID_CARD_IMAGE).toString();
-                    const busiLicfImg = new Buffer.from(response.data.rows[0].BUSI_LICS_IMAGE).toString(); 
-
-                    setIdCardImg(idCardImg);
-                    setRealIdCardFileName(response.data.rows[0].ID_CARD_IMAGE_NAME);
-                   
-                    setBusiLicfImg(busiLicfImg);
-                    setRealRegistCardFileName(response.data.rows[0].BUSI_LICS_IMAGE_NAME);
-
-                } else {
-                    alert(response.data.message);
-                    alert('상세정보 데이터를 불러오는데 실패하였습니다.');
+        let memberId = dataMemId;
+        
+        s010100050.getDetailMemInfo(memberId).then((res) => {
+            if(res.status === 200){
+                
+                    setDetailAllInfo(res.data);
+                    setDetailMemberId(res.data[0].memberId);
+                if((res.data[0].retireDate) === '00-00-00'){
+                    setEndDateTest('');
+                }else{
+                    setEndDateTest(res.data[0].retireDate);
                 }
-            })
+
+                    setDetailMemberNm(res.data[0].memberNm);
+                    setDetailMemberTp(res.data[0].memberTp);
+                    setDetailName(res.data[0].name);
+                    setMEndFlag(res.data[0].countMemberConEndFlag);
+                    setDetailZipcode(res.data[0].zipcode);
+                    setDetailAddress(res.data[0].empAddress);
+                    setDetailDetailAddress(res.data[0].empDetailAddress);
+
+                if(res.data[0].regNo){
+                    setDetailFstRegNo((res.data[0].regNo).split('-')[0]);
+                    setDetailSndRegNo((res.data[0].regNo).split('-')[1]);
+                    setDetailThdRegNo((res.data[0].regNo).split('-')[2]);    
+                }else{
+                    setDetailFstRegNo('');
+                    setDetailSndRegNo('');
+                    setDetailThdRegNo('');
+                }
+                if(res.data[0].empHp){
+                    setDetailFstEmpHp((res.data[0].empHp).split('-')[0]);
+                    setDetailSndEmpHp((res.data[0].empHp).split('-')[1]);
+                    setDetailThdEmpHp((res.data[0].empHp).split('-')[2]);
+                }else{
+                    setDetailFstEmpHp('');
+                    setDetailSndEmpHp('');
+                    setDetailThdEmpHp('');
+                }
+                if(res.data[0].empEmail){
+                    setDetailEmpEmail((res.data[0].empEmail).split('@')[0]);
+                    setDetailDomain((res.data[0].empEmail).split('@')[1]);
+                }else{
+                    setDetailEmpEmail('');
+                    setDetailDomain('');                    
+                }
+                // const idCardImg = new Buffer.from(res.data[0].ID_CARD_IMAGE).toString();
+                // const busiLicfImg = new Buffer.from(res.data[0].BUSI_LICS_IMAGE).toString(); 
+                    setIdCardImg(res.data[0].idCardImg);
+                    setBusiLicfImg(res.data[0].busiLicfImg);
+                    setRealIdCardFileName(res.data[0].realIdCardFileName);
+                    setRealRegistCardFileName(res.data[0].realBusiCardFileName);
+
+            } else {
+                alert('상세정보 데이터를 불러오는데 실패하였습니다.');
+            }
+        })
     }
 
     useEffect(() => {
         detailMemberList();
     }, [])
-
-
 
     const detailIdCardHandleFileChange = (event) => {
         setDetailIdCardFile(event.currentTarget.files[0]);
@@ -366,8 +259,6 @@ function S010100050(props) {
     // 회원정보수정 함수
     const tempAddMember = () => {
         
-        let dataMemId = props.dataMemId;
-
         let realDetailIdCardFileName;
         let realDetailBusiCardFileName;
 
@@ -379,40 +270,32 @@ function S010100050(props) {
             realDetailBusiCardFileName = detailBusiCardFileName.split('\\')[2].split('.')[0];
         }
         
-        let body ={
-            dataMemId: dataMemId,
-            detailIdCardImg,
-            detailBusiLicfImg,
-            realDetailIdCardFileName,
-            realDetailBusiCardFileName,
-            detailMemberNm: detailMemberNm,
-            detailFstRegNo: detailFstRegNo,
-            detailSndRegNo: detailSndRegNo,
-            detailThdRegNo: detailThdRegNo,
-            detailMemberTp: detailMemberTp,
-            detailName: detailName,
-            detailFstEmpHp: detailFstEmpHp,
-            detailSndEmpHp: detailSndEmpHp,
-            detailThdEmpHp: detailThdEmpHp,
-            detailDomain: detailDomain,
-            detailEmpEmail: detailEmpEmail,
-            detailZipcode: detailZipcode,
-            detailAddress: detailAddress,
-            detailDetailAddress: detailDetailAddress
+        let detailMemInfo ={
+            memberId : props.dataMemId,
+            idCardImg : detailIdCardImg,
+            busiLicfImg : detailBusiLicfImg,
+            realIdCardFileName : realDetailIdCardFileName,
+            realBusiCardFileName : realDetailBusiCardFileName,
+            memberNm : detailMemberNm,
+            regNo : detailFstRegNo +"-"+ detailSndRegNo +"-"+ detailThdRegNo,
+            memberTp : detailMemberTp,
+            name : detailName,
+            empHp : detailFstEmpHp +"-"+ detailSndEmpHp +"-"+ detailThdEmpHp,
+            empEmail : detailDomain +"@"+ detailEmpEmail,
+            zipcode : detailZipcode,
+            empAddress : detailAddress,
+            empDetailAddress: detailDetailAddress
         }
 
-        axios.post('/api/s010100050/modifyMember',body)
-        .then(response => {
-            if (response.data.success) {
+        s010100050.updateDetailMemInfo(detailMemInfo).then((res) => {
+            if(res.status === 200){
                 alert('정상적으로 수정 되었습니다.');
                 props.setModalOpen(false);
                 props.memberList();
             } else {
-                alert(response.data.message);
                 alert('수정에 실패하였습니다.');
             }
-        })
-
+        });
 
     }
 
@@ -484,28 +367,23 @@ function S010100050(props) {
         setDetailDetailAddress(event.currentTarget.value);
     }
 
-    const onSubmitDetailHandler = (event) => {
+    const onSubmitDetailHandler = () => {
 
     }
 
     const onAllContractEndHandler = () => {
-        console.log('dataMemId',dataMemId);
-        let body = {
-            dataMemId: dataMemId
-        }
-        
-        axios.post('/api/s010100050/allContractEnd', body)
-        .then(response => {
-            if (response.data.success) {
-                
+
+        let memberId = dataMemId;
+       
+        s010100050.updateMemStEndFlag(memberId).then((res) => {
+            if(res.status === 200){
                 alert('종료처리 되었습니다.');
                 detailMemberList();
-                
             } else {
-                alert(response.data.message);
                 alert('종료처리를 실패 하였습니다.');
             }
-        })
+        });
+    
     }
 
     const onDetailClickOpen = (event) => {
@@ -538,16 +416,16 @@ function S010100050(props) {
     const displayUsers = detailAllInfo.slice(pagesVisited, pagesVisited + usersPerPage).map((detailAllInfo, index) => {
         return (
             <TableRow key={index}>
-                <TableCell onClick={onDetailClickOpen} className='underLineForDetail' id={detailAllInfo.CONTRACT_ID}>{detailAllInfo.CONTRACT_ID}</TableCell>
-                <TableCell>{detailAllInfo.CONTRACT_DATE}</TableCell>
-                <TableCell>{detailAllInfo.CONTRACT_TP}</TableCell>
-                <TableCell>{detailAllInfo.CONTRACT_ROOM}</TableCell>
-                <TableCell>{detailAllInfo.CONTRACT_TERM}개월 ({detailAllInfo.START_DATE} ~ {detailAllInfo.END_DATE})</TableCell>
-                <TableCell>{detailAllInfo.CONTRACT_ST}</TableCell>
-                <TableCell>{detailAllInfo.PAY_DATE}일</TableCell>
-                <TableCell>{detailAllInfo.MONTHLY_FEE}</TableCell>
-                <TableCell>{detailAllInfo.CONTRACT_LOCKER}</TableCell>
-                <TableCell>{detailAllInfo.END_FLAG}</TableCell>
+                <TableCell onClick={onDetailClickOpen} className='underLineForDetail' id={detailAllInfo.contractId}>{detailAllInfo.contractId}</TableCell>
+                <TableCell>{detailAllInfo.contractDate}</TableCell>
+                <TableCell>{detailAllInfo.contractTp}</TableCell>
+                <TableCell>{detailAllInfo.contractRoom}</TableCell>
+                <TableCell>{detailAllInfo.contractTerm}개월 ({detailAllInfo.startDate} ~ {detailAllInfo.endDate})</TableCell>
+                <TableCell>{detailAllInfo.contractSt}</TableCell>
+                <TableCell>{detailAllInfo.payDate}일</TableCell>
+                <TableCell>{detailAllInfo.monthlyFee}</TableCell>
+                <TableCell>{detailAllInfo.contractLocker}</TableCell>
+                <TableCell>{detailAllInfo.endFlag}</TableCell>
             </TableRow>
         )
 
@@ -615,7 +493,7 @@ function S010100050(props) {
                                 <td colSpan="2">
 
                                     <Form.Control style={{ width: 5 + 'em', display: 'inline' }} size="sm"
-                                        type="text" value={detailFstRegNo} id="detailRegNo" name="detailRegNo"
+                                        type="text" value={detailFstRegNo||''} id="detailRegNo" name="detailRegNo"
                                         onChange={onDetailFstRegNoHandler} maxLength="3"/>
                                 &nbsp; - &nbsp;
 

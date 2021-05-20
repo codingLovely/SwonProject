@@ -5,7 +5,6 @@ import S010100010 from './S010100010';
 
 
 import clsx from 'clsx';
-import { makeStyles } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Drawer from '@material-ui/core/Drawer';
 import AppBar from '@material-ui/core/AppBar';
@@ -47,98 +46,7 @@ import Form from 'react-bootstrap/Form';
 import ReactPaginate from 'react-paginate';
 
 import xlsx from 'xlsx';
-
-const drawerWidth = 240;
-
-const useStyles = makeStyles((theme) => ({
-    root: {
-        display: 'flex',
-        '& .MuiTextField-root': {
-            margin: theme.spacing(1),
-            width: 200,
-        },
-        textField: {
-            marginLeft: theme.spacing(1),
-            marginRight: theme.spacing(1),
-            width: '25ch',
-        },
-    },
-
-    toolbar: {
-        paddingRight: 24,
-    },
-    toolbarIcon: {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'flex-end',
-        padding: '0 8px',
-        ...theme.mixins.toolbar,
-    },
-    appBar: {
-        zIndex: theme.zIndex.drawer + 1,
-        transition: theme.transitions.create(['width', 'margin'], {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.leavingScreen,
-        }),
-    },
-    appBarShift: {
-        marginLeft: drawerWidth,
-        width: `calc(100% - ${drawerWidth}px)`,
-        transition: theme.transitions.create(['width', 'margin'], {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.enteringScreen,
-        }),
-    },
-    menuButton: {
-        marginRight: 36,
-    },
-    menuButtonHidden: {
-        display: 'none',
-    },
-    title: {
-        flexGrow: 1,
-    },
-    drawerPaper: {
-        position: 'relative',
-        whiteSpace: 'nowrap',
-        width: drawerWidth,
-        transition: theme.transitions.create('width', {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.enteringScreen,
-        }),
-    },
-    drawerPaperClose: {
-        overflowX: 'hidden',
-        transition: theme.transitions.create('width', {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.leavingScreen,
-        }),
-        width: theme.spacing(7),
-        [theme.breakpoints.up('sm')]: {
-            width: theme.spacing(9),
-        },
-    },
-    appBarSpacer: theme.mixins.toolbar,
-    content: {
-        flexGrow: 1,
-        height: '100vh',
-        overflow: 'auto',
-    },
-    container: {
-        paddingTop: theme.spacing(4),
-        paddingBottom: theme.spacing(4),
-    },
-    paper: {
-        padding: theme.spacing(2),
-        display: 'flex',
-        overflow: 'auto',
-        flexDirection: 'column',
-    },
-    fixedHeight: {
-        height: 240,
-    },
-    
-}));
+import {useStyles} from './Test';
 
 let num = '';
 let rNum = 0;
@@ -264,7 +172,6 @@ function S010100160(props) {
     const onDetailClickOpen = (event) =>{
         num = event.target.innerHTML;
         rNum = parseInt(num);
-        //setNameForDetailCModal(rNum);
         setConOpen(true);
      }
 
@@ -291,15 +198,11 @@ function S010100160(props) {
                 <TableCell>{contractList.CONTRACT_LOCKER}</TableCell>
             </TableRow>
         )
-
     });
 
     const excelHandler = (event) => {
-
         event.preventDefault();
-
         const ws = xlsx.utils.json_to_sheet(contractList);
-        //// console.log(tb_s10_ask010);
 
         ['회원명', '사업자번호','회원구분','No', '계약기간', '계약기간', '계약상태', '계약구분', '사물함', '호실' ,'계약기간','매월입금일','월회비','계약상태','시작날짜']
             .forEach((x, idx) => {
@@ -340,9 +243,9 @@ function S010100160(props) {
     
         return confirmAction;
       };
-    
+ 
+      
       const approvalConfirm = () => {
-    
         axios.post('/api/s010100150/userLogout')
         .then(response => {
           if (response.data.logoutResult == true) {
@@ -350,7 +253,6 @@ function S010100160(props) {
             sessionStorage.removeItem('member');
             sessionStorage.clear();
             props.history.push('/');
-            // console.log(sessionStorage.getItem('member'));
           }else if(response.data.loginResult == false){
             alert(response.data.message);
             alert('아이디 또는 비밀번호를 확인하세요.');

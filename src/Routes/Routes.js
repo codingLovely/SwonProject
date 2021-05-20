@@ -18,10 +18,12 @@ import ScreenLayout from '../ScreenLayout';
    return(
   <Router>
           {/* 메인 */}
-          <Route exact path = "/" component = {S010100150}></Route>
+          {/* <Route exact path = "/" component = {S010100150}></Route> */}
           <Route exact path = "/findemailPwd" component = {S010100151}></Route>
          
           {/* 회원현황 */}
+          <Route exact path = "/" component = {S010100150}></Route>
+          
           <Route exact path = "/member" component = {S010100040} />
           {/* 납부현황 */}
           <Route exact path = "/paymentStatus" component = {S010100060} />
